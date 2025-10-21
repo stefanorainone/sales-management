@@ -18,6 +18,18 @@ export default function AdminPage() {
       ]
     },
     {
+      title: '👥 Gestione Utenti',
+      description: 'Crea e gestisci gli account dei venditori e team leaders',
+      href: '/admin/users',
+      color: 'from-orange-500 to-orange-600',
+      features: [
+        'Creazione nuovi account venditori',
+        'Gestione ruoli e permessi',
+        'Visualizzazione utenti registrati',
+        'Controllo accessi al sistema',
+      ]
+    },
+    {
       title: '📋 Gestione Task',
       description: 'Visualizza, crea e gestisci i task di tutti i venditori',
       href: '/admin/tasks',
@@ -59,7 +71,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">3</div>
+            <div className="text-3xl font-bold text-blue-600">4</div>
             <div className="text-sm text-gray-600 mt-1">Sezioni Admin</div>
           </div>
         </Card>
@@ -78,7 +90,7 @@ export default function AdminPage() {
       </div>
 
       {/* Admin Sections Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {adminSections.map((section) => (
           <Link key={section.href} href={section.href}>
             <Card

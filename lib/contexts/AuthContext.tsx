@@ -13,7 +13,7 @@ import { auth, db } from '@/lib/firebase/config';
 import type { User as AppUser } from '@/types';
 
 // DEMO MODE: Set to true to bypass Firebase auth for UI testing
-const DEMO_MODE = true;
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 interface AuthContextType {
   user: AppUser | null;

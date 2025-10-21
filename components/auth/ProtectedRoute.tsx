@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/contexts/AuthContext';
 
 // DEMO MODE: Set to true to bypass Firebase auth for UI testing
-const DEMO_MODE = true;
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // In DEMO MODE, just render children without auth checks

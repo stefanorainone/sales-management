@@ -8,12 +8,10 @@ import { Button, Input, Card } from '@/components/ui';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,11 +20,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        await signUp(email, password, { displayName: name, role: 'seller', team: 'sales' });
-      } else {
-        await signIn(email, password);
-      }
+      await signIn(email, password);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
@@ -44,21 +38,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignUp && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome
-              </label>
-              <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Mario Rossi"
-                required
-              />
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email
@@ -97,33 +76,25 @@ export default function LoginPage() {
             className="w-full"
             disabled={loading}
           >
-            {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+            {loading ? 'Accedi...' : 'Accedi'}
           </Button>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isSignUp
-                ? 'Hai già un account? Sign In'
-                : 'Non hai un account? Sign Up'}
-            </button>
-          </div>
         </form>
 
-        {!isSignUp && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-gray-700 mb-2">
-              <strong>Demo Account:</strong>
-            </p>
-            <p className="text-xs text-gray-600">
-              Email: demo@salescrm.com<br />
-              Password: demo123456
-            </p>
-          </div>
-        )}
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-gray-700 mb-2">
+            <strong>Demo Account:</strong>
+          </p>
+          <p className="text-xs text-gray-600">
+            Email: demo@salescrm.com<br />
+            Password: demo123456
+          </p>
+        </div>
+
+        <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p className="text-xs text-gray-600 text-center">
+            Per creare nuovi account contattare l'amministratore
+          </p>
+        </div>
       </Card>
     </div>
   );
