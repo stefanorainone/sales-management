@@ -82,11 +82,11 @@ export default function LoginPage() {
 
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-gray-700 mb-2">
-            <strong>Demo Account:</strong>
+            <strong>Account Admin:</strong>
           </p>
           <p className="text-xs text-gray-600">
-            Email: demo@salescrm.com<br />
-            Password: demo123456
+            Email: admin@vr.com<br />
+            Password: Admin123!
           </p>
         </div>
 
