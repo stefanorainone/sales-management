@@ -33,7 +33,7 @@ interface SidebarProps {}
 
 export const Sidebar: React.FC<SidebarProps> = () => {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   // If admin, show seller items + admin items + admin nav items, otherwise just seller items
   const isAdmin = user?.role === 'admin';
@@ -95,19 +95,28 @@ export const Sidebar: React.FC<SidebarProps> = () => {
 
       {/* User Profile */}
       <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-            {user?.displayName
-              .split(' ')
-              .map((n) => n[0])
-              .join('') || 'U'}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+              {user?.displayName
+                .split(' ')
+                .map((n) => n[0])
+                .join('') || 'U'}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium">{user?.displayName || 'User'}</p>
+              <p className="text-xs text-gray-400">
+                {user?.role === 'admin' ? 'Admin' : user?.role === 'team_leader' ? 'Team Leader' : 'Venditore'}
+              </p>
+            </div>
           </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium">{user?.displayName || 'User'}</p>
-            <p className="text-xs text-gray-400">
-              {user?.role === 'admin' ? 'Admin' : user?.role === 'team_leader' ? 'Team Leader' : 'Venditore'}
-            </p>
-          </div>
+          <button
+            onClick={signOut}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            title="Logout"
+          >
+            <span className="text-xl">🚪</span>
+          </button>
         </div>
       </div>
     </div>
