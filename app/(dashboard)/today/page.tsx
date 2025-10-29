@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useDeals } from '@/lib/hooks/useDeals';
 import { useClients } from '@/lib/hooks/useClients';
@@ -12,9 +12,9 @@ import type { AITask, AIInsight, DailyBriefing } from '@/types';
 
 export default function TodayPage() {
   const { user } = useAuth();
-  const { deals } = useDeals();
-  const { clients } = useClients();
-  const { activities } = useActivities();
+  const { deals, loading: dealsLoading } = useDeals();
+  const { clients, loading: clientsLoading } = useClients();
+  const { activities, loading: activitiesLoading } = useActivities();
 
   const [briefing, setBriefing] = useState<DailyBriefing | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,12 +22,28 @@ export default function TodayPage() {
   const [isExecutionModalOpen, setIsExecutionModalOpen] = useState(false);
   const [tasks, setTasks] = useState<AITask[]>([]);
   const [insights, setInsights] = useState<AIInsight[]>([]);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    if (user && deals.length > 0) {
-      loadDailyBriefing();
+    // Wait for all data to load
+    if (dealsLoading || clientsLoading || activitiesLoading) {
+      return;
     }
-  }, [user, deals.length]);
+
+    // Only load once
+    if (hasLoadedRef.current) {
+      return;
+    }
+
+    if (user && deals.length > 0) {
+      hasLoadedRef.current = true;
+      loadDailyBriefing();
+    } else if (user) {
+      // No deals yet, stop loading
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, dealsLoading, clientsLoading, activitiesLoading, deals.length]);
 
   const loadDailyBriefing = async () => {
     try {

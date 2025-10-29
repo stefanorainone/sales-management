@@ -1,7 +1,8 @@
 'use client';
 
 import { Card, Badge, Button, Select } from '@/components/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 type TimePeriod = 'week' | 'month' | 'quarter' | 'year';
 type MetricType = 'activities' | 'conversion' | 'performance';
@@ -19,36 +20,50 @@ interface ConversionMetric {
   rate: number;
 }
 
+interface PerformanceData {
+  seller: string;
+  calls: number;
+  meetings: number;
+  proposals: number;
+  deals: number;
+  winRate: number;
+}
+
 export default function AnalyticsPage() {
+  const { user } = useAuth();
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
   const [activeMetric, setActiveMetric] = useState<MetricType>('activities');
+  const [loading, setLoading] = useState(true);
+  const [activityMetrics, setActivityMetrics] = useState<ActivityMetric[]>([]);
+  const [conversionFunnel, setConversionFunnel] = useState<ConversionMetric[]>([]);
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
 
-  // Mock data for activities
-  const activityMetrics: ActivityMetric[] = [
-    { type: 'Chiamate', count: 127, trend: 12, target: 150 },
-    { type: 'Email', count: 89, trend: -5, target: 100 },
-    { type: 'Meeting', count: 34, trend: 8, target: 30 },
-    { type: 'Demo', count: 12, trend: 20, target: 15 },
-    { type: 'Proposte Inviate', count: 18, trend: 15, target: 20 },
-    { type: 'Contratti Firmati', count: 8, trend: 33, target: 10 },
-  ];
+  // Fetch real analytics data
+  useEffect(() => {
+    if (!user) return;
 
-  // Mock data for conversion funnel
-  const conversionFunnel: ConversionMetric[] = [
-    { stage: 'Lead Acquisiti', count: 156, rate: 100 },
-    { stage: 'Qualified', count: 89, rate: 57 },
-    { stage: 'Proposal Sent', count: 34, rate: 38 },
-    { stage: 'Negotiation', count: 18, rate: 53 },
-    { stage: 'Won', count: 8, rate: 44 },
-  ];
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/analytics?userId=${user.id}&timePeriod=${timePeriod}`);
 
-  // Mock data for performance comparison
-  const performanceData = [
-    { seller: 'Tu (Mario)', calls: 127, meetings: 34, proposals: 18, deals: 8, winRate: 44 },
-    { seller: 'Luca Bianchi', calls: 145, meetings: 42, proposals: 25, deals: 15, winRate: 60 },
-    { seller: 'Sara Verdi', calls: 98, meetings: 28, proposals: 15, deals: 9, winRate: 60 },
-    { seller: 'Media Team', calls: 123, meetings: 35, proposals: 19, deals: 11, winRate: 55 },
-  ];
+        if (!response.ok) {
+          throw new Error('Failed to fetch analytics');
+        }
+
+        const data = await response.json();
+        setActivityMetrics(data.activityMetrics || []);
+        setConversionFunnel(data.conversionFunnel || []);
+        setPerformanceData(data.performanceData || []);
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [user, timePeriod]);
 
   const getPeriodLabel = () => {
     const labels = {
@@ -59,6 +74,19 @@ export default function AnalyticsPage() {
     };
     return labels[timePeriod];
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalActivities = activityMetrics.reduce((sum, metric) => sum + metric.count, 0);
 
   return (
     <div className="space-y-6">
@@ -224,9 +252,9 @@ export default function AnalyticsPage() {
               </div>
               <div className="flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-5xl font-bold text-gray-900">296</div>
+                  <div className="text-5xl font-bold text-gray-900">{totalActivities}</div>
                   <div className="text-sm text-gray-600 mt-2">Attività Totali</div>
-                  <div className="text-sm text-success mt-1">+15% vs mese scorso</div>
+                  <div className="text-sm text-gray-500 mt-1">{getPeriodLabel()}</div>
                 </div>
               </div>
             </div>
@@ -295,37 +323,57 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card padding={false} className="p-4 bg-green-50">
               <div className="text-sm text-gray-600">Win Rate Complessivo</div>
-              <div className="text-3xl font-bold text-success mt-2">44%</div>
-              <div className="text-sm text-gray-600 mt-1">Da Proposal a Won</div>
+              <div className="text-3xl font-bold text-success mt-2">
+                {conversionFunnel.length > 0 && conversionFunnel[conversionFunnel.length - 1].count > 0
+                  ? Math.round((conversionFunnel[conversionFunnel.length - 1].count / conversionFunnel[0].count) * 100)
+                  : 0}%
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Da Lead a Won</div>
             </Card>
             <Card padding={false} className="p-4 bg-blue-50">
               <div className="text-sm text-gray-600">Qualification Rate</div>
-              <div className="text-3xl font-bold text-primary mt-2">57%</div>
-              <div className="text-sm text-gray-600 mt-1">Da Lead a Qualified</div>
+              <div className="text-3xl font-bold text-primary mt-2">
+                {conversionFunnel.length > 2 && conversionFunnel[2].rate > 0
+                  ? conversionFunnel[2].rate
+                  : 0}%
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Da Contacted a Qualified</div>
             </Card>
             <Card padding={false} className="p-4 bg-yellow-50">
-              <div className="text-sm text-gray-600">Tempo Medio Closure</div>
-              <div className="text-3xl font-bold text-warning mt-2">18gg</div>
-              <div className="text-sm text-gray-600 mt-1">Da Lead a Won</div>
+              <div className="text-sm text-gray-600">Lead Totali</div>
+              <div className="text-3xl font-bold text-warning mt-2">
+                {conversionFunnel.length > 0 ? conversionFunnel[0].count : 0}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Nel periodo</div>
             </Card>
           </div>
 
-          {/* AI Insights */}
+          {/* Insights */}
           <Card className="bg-blue-50 border-blue-200">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">🤖</span>
+              <span className="text-2xl">💡</span>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">Insights AI</h3>
+                <h3 className="font-semibold text-gray-900">Insights</h3>
                 <div className="space-y-2 mt-3">
-                  <p className="text-sm text-gray-700">
-                    <strong>💡 Opportunità:</strong> Il tuo tasso di conversione da Qualified a Proposal (38%) è sotto la media del team (45%). L'AI suggerisce di migliorare il timing dei follow-up dopo la qualifica.
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <strong>✅ Punto di Forza:</strong> Ottimo win rate da Proposal a Won (53%)! Continua con le tecniche di negoziazione che stai usando.
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <strong>📈 Raccomandazione:</strong> Aumenta del 20% le attività di qualification per portare più lead nella fase Proposal.
-                  </p>
+                  {conversionFunnel.length > 0 && conversionFunnel[0].count === 0 ? (
+                    <p className="text-sm text-gray-700">
+                      <strong>📊 Inizia subito:</strong> Non ci sono ancora lead nel sistema. Inizia ad aggiungere prospect per vedere le tue metriche.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-700">
+                        <strong>📊 Conversion Rate:</strong> Stai convertendo il {conversionFunnel.length > 0 && conversionFunnel[conversionFunnel.length - 1].count > 0
+                          ? Math.round((conversionFunnel[conversionFunnel.length - 1].count / conversionFunnel[0].count) * 100)
+                          : 0}% dei lead in clienti.
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <strong>🎯 Focus:</strong> Hai {conversionFunnel.length > 2 ? conversionFunnel[2].count : 0} lead qualificati che necessitano attenzione.
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <strong>📈 Attività:</strong> Hai completato {totalActivities} attività nel periodo selezionato.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -333,139 +381,101 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Performance Comparison */}
+      {/* Performance Summary */}
       {activeMetric === 'performance' && (
         <div className="space-y-6">
           <Card>
             <div className="border-b border-gray-200 pb-3 mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Comparazione Team - {getPeriodLabel()}
+                Le Tue Performance - {getPeriodLabel()}
               </h3>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-gray-200">
-                  <tr className="text-left">
-                    <th className="pb-3 font-semibold text-gray-900">Seller</th>
-                    <th className="pb-3 font-semibold text-gray-900 text-center">Chiamate</th>
-                    <th className="pb-3 font-semibold text-gray-900 text-center">Meeting</th>
-                    <th className="pb-3 font-semibold text-gray-900 text-center">Proposte</th>
-                    <th className="pb-3 font-semibold text-gray-900 text-center">Deals Chiusi</th>
-                    <th className="pb-3 font-semibold text-gray-900 text-center">Win Rate</th>
-                    <th className="pb-3 font-semibold text-gray-900"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {performanceData.map((seller, idx) => (
-                    <tr
-                      key={idx}
-                      className={`border-b border-gray-100 ${
-                        seller.seller.includes('Tu') ? 'bg-blue-50' : ''
-                      }`}
-                    >
-                      <td className="py-3 font-medium text-gray-900">
-                        {seller.seller}
-                        {seller.seller.includes('Tu') && (
-                          <Badge variant="primary" size="sm" className="ml-2">You</Badge>
-                        )}
-                      </td>
-                      <td className="py-3 text-center text-gray-900">{seller.calls}</td>
-                      <td className="py-3 text-center text-gray-900">{seller.meetings}</td>
-                      <td className="py-3 text-center text-gray-900">{seller.proposals}</td>
-                      <td className="py-3 text-center">
-                        <span className="font-bold text-success">{seller.deals}</span>
-                      </td>
-                      <td className="py-3 text-center">
-                        <Badge
-                          variant={seller.winRate >= 55 ? 'success' : seller.winRate >= 45 ? 'warning' : 'danger'}
-                          size="sm"
-                        >
-                          {seller.winRate}%
-                        </Badge>
-                      </td>
-                      <td className="py-3 text-center">
-                        {seller.seller !== 'Media Team' && (
-                          <Button size="sm" variant="ghost">Dettagli</Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {performanceData.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-900">{performanceData[0].calls}</div>
+                  <div className="text-sm text-gray-600 mt-2">Chiamate</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-900">{performanceData[0].meetings}</div>
+                  <div className="text-sm text-gray-600 mt-2">Meeting</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-900">{performanceData[0].proposals}</div>
+                  <div className="text-sm text-gray-600 mt-2">Proposte</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-success">{performanceData[0].deals}</div>
+                  <div className="text-sm text-gray-600 mt-2">Deals Chiusi</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">{performanceData[0].winRate}%</div>
+                  <div className="text-sm text-gray-600 mt-2">Win Rate</div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Nessun dato disponibile per il periodo selezionato
+              </div>
+            )}
           </Card>
 
-          {/* Your Position */}
+          {/* Performance Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <div className="border-b border-gray-200 pb-3 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">La Tua Posizione</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Distribuzione Attività</h3>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Ranking Team</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-3xl">🥈</span>
-                    <span className="text-2xl font-bold text-gray-900">2° / 3</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Deals sopra media</span>
-                  <Badge variant="danger" size="sm">-3</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Win Rate vs Media</span>
-                  <Badge variant="danger" size="sm">-11%</Badge>
-                </div>
-                <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    <strong>🎯 Per raggiungere il 1°:</strong> Chiudi 4 deals in più rispetto a Luca entro fine mese
-                  </p>
-                </div>
+                {activityMetrics.slice(0, 5).map((metric, idx) => {
+                  const percentage = totalActivities > 0
+                    ? Math.round((metric.count / totalActivities) * 100)
+                    : 0;
+                  return (
+                    <div key={idx}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{metric.type}</span>
+                        <span className="font-medium">{metric.count} ({percentage}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-primary h-2 rounded-full"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
 
             <Card>
               <div className="border-b border-gray-200 pb-3 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Confronto vs Media Team</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Obiettivi vs Risultati</h3>
               </div>
               <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Attività (vs 123)</span>
-                    <span className="font-medium text-success">+4</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-success h-2 rounded-full" style={{ width: '103%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Meeting (vs 35)</span>
-                    <span className="font-medium text-danger">-1</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-danger h-2 rounded-full" style={{ width: '97%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Proposte (vs 19)</span>
-                    <span className="font-medium text-danger">-1</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-danger h-2 rounded-full" style={{ width: '95%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Deals (vs 11)</span>
-                    <span className="font-medium text-danger">-3</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-danger h-2 rounded-full" style={{ width: '73%' }}></div>
-                  </div>
-                </div>
+                {activityMetrics.slice(0, 5).map((metric, idx) => {
+                  const percentage = metric.target > 0
+                    ? Math.round((metric.count / metric.target) * 100)
+                    : 0;
+                  const isAboveTarget = metric.count >= metric.target;
+                  return (
+                    <div key={idx}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{metric.type}</span>
+                        <span className={`font-medium ${isAboveTarget ? 'text-success' : 'text-gray-900'}`}>
+                          {metric.count} / {metric.target} {isAboveTarget && '✅'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${isAboveTarget ? 'bg-success' : 'bg-primary'}`}
+                          style={{ width: `${Math.min(percentage, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
           </div>
