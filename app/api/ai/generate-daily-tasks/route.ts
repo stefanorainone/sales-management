@@ -191,6 +191,13 @@ Genera task SMART e actionable. Rispondi SOLO con il JSON array.`;
       console.log(`🤖 Generating AI tasks for ${seller.displayName}...`);
 
       const openai = getOpenAI();
+
+      // Check if OpenAI is properly configured
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey || apiKey === 'sk-placeholder') {
+        throw new Error('OPENAI_API_KEY not configured. Please set a valid API key in environment variables.');
+      }
+
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
         max_tokens: 4000,
