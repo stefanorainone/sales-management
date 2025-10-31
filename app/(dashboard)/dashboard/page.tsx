@@ -1,12 +1,27 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardHeader, Badge } from '@/components/ui';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // Redirect to the real "today" page that shows live data
+  useEffect(() => {
+    router.replace('/today');
+  }, [router]);
+
+  const userName = user?.displayName?.split(' ')[0] || 'Venditore';
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">
-          Benvenuto Mario!
+          Benvenuto {userName}!
         </h1>
         <p className="text-gray-600 mt-2">
           Hai 5 attività oggi | 3 follow-up urgenti

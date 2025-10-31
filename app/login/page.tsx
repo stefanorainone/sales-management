@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.push('/dashboard');
+      router.push('/today');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {
