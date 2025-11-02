@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -26,14 +26,27 @@ const adminOnlyItems: NavItem[] = [
 const adminNavItems: NavItem[] = [
   { name: 'Command Center', href: '/admin/dashboard', icon: '🎯' },
   { name: 'Gestione Task', href: '/admin/tasks', icon: '📋' },
+  { name: 'AI Task Manager', href: '/admin/ai-tasks', icon: '🤖' },
+  { name: 'Gestione Utenti', href: '/admin/users', icon: '👥' },
   { name: 'AI Config', href: '/admin/ai-config', icon: '🧠' },
 ];
 
-interface SidebarProps {}
+interface SidebarProps {
+  isMobileMenuOpen?: boolean;
+  setIsMobileMenuOpen?: (open: boolean) => void;
+}
 
-export const Sidebar: React.FC<SidebarProps> = () => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  isMobileMenuOpen = false,
+  setIsMobileMenuOpen
+}) => {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Use internal state if no external control is provided
+  const menuOpen = setIsMobileMenuOpen ? isMobileMenuOpen : isOpen;
+  const setMenuOpen = setIsMobileMenuOpen || setIsOpen;
 
   // If admin, show seller items + admin items + admin nav items, otherwise just seller items
   const isAdmin = user?.role === 'admin';
@@ -51,7 +64,45 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   return (
-    <div className="w-64 bg-gray-900 text-white min-h-screen flex flex-col fixed left-0 top-0">
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+        aria-label="Toggle menu"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          {menuOpen ? (
+            <path d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* Mobile Overlay */}
+      {menuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        w-64 bg-gray-900 text-white min-h-screen flex flex-col fixed left-0 top-0 z-40
+        transform transition-transform duration-300 ease-in-out
+        ${menuOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+      `}>
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
         <h1 className="text-xl font-bold">Sales CRM</h1>
@@ -64,6 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
         {isAdmin && isAdminPage && (
           <Link
             href="/today"
+            onClick={() => setMenuOpen(false)}
             className="flex items-center px-4 py-3 rounded-lg transition-colors text-gray-300 hover:bg-gray-800 hover:text-white mb-4 border-b border-gray-700 pb-4"
           >
             <span className="text-xl mr-3">←</span>
@@ -77,6 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setMenuOpen(false)}
               className={`
                 flex items-center px-4 py-3 rounded-lg transition-colors
                 ${
@@ -120,5 +173,6 @@ export const Sidebar: React.FC<SidebarProps> = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };

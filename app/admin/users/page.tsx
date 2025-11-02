@@ -23,6 +23,7 @@ export default function UsersManagementPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [generatingTasks, setGeneratingTasks] = useState<string | null>(null);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -95,6 +96,36 @@ export default function UsersManagementPage() {
       setError(err.message || 'Errore nella creazione utente');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleGenerateTasksForSeller = async (sellerId: string, sellerName: string) => {
+    if (!confirm(`Generare task AI per ${sellerName}?`)) {
+      return;
+    }
+
+    setGeneratingTasks(sellerId);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch('/api/ai/generate-tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sellerId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate tasks');
+      }
+
+      setSuccess(`✅ Generati ${data.tasksGenerated} task per ${sellerName}!`);
+    } catch (err: any) {
+      setError(`Errore: ${err.message}`);
+    } finally {
+      setGeneratingTasks(null);
     }
   };
 
@@ -260,6 +291,7 @@ export default function UsersManagementPage() {
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Ruolo</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Team</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Creato</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Azioni</th>
                 </tr>
               </thead>
               <tbody>
@@ -285,6 +317,18 @@ export default function UsersManagementPage() {
                     <td className="py-3 px-4 text-gray-600">{user.team}</td>
                     <td className="py-3 px-4 text-gray-500 text-sm">
                       {new Date(user.createdAt).toLocaleDateString('it-IT')}
+                    </td>
+                    <td className="py-3 px-4">
+                      {(user.role === 'seller' || user.role === 'team_leader') && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleGenerateTasksForSeller(user.id, user.displayName)}
+                          disabled={generatingTasks === user.id}
+                        >
+                          {generatingTasks === user.id ? '⏳ Generando...' : '🤖 Genera Task AI'}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

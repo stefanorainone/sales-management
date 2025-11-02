@@ -60,6 +60,17 @@ service cloud.firestore {
                        (resource.data.userId == request.auth.uid || isAdmin());
     }
 
+    // Tasks collection
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
     // AI Tasks collection
     match /aiTasks/{taskId} {
       allow read: if isAuthenticated() &&

@@ -11,9 +11,9 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.push('/today');
+        router.replace('/today');
       } else {
-        router.push('/login');
+        router.replace('/login');
       }
     }
   }, [user, loading, router]);

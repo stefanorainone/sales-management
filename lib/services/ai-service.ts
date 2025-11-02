@@ -1,5 +1,7 @@
 import OpenAI from 'openai';
 import type { AITask, AIInsight, DailyBriefing, Deal, Client, Activity, AICustomInstructions } from '@/types';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -94,6 +96,69 @@ export async function generateDailyTasks(
     return generateMockTasks(params);
   }
 
+  // First, load existing tasks from Firestore
+  try {
+    const tasksQuery = query(
+      collection(db, 'tasks'),
+      where('userId', '==', params.userId)
+    );
+    const tasksSnapshot = await getDocs(tasksQuery);
+    const existingTasks = tasksSnapshot.docs.map(doc => {
+      const data = doc.data();
+
+      // Helper function to convert Firestore Timestamps (both client and admin SDK)
+      const convertTimestamp = (timestamp: any): string => {
+        if (typeof timestamp === 'string') {
+          return timestamp;
+        }
+        // Client SDK Timestamp
+        if (timestamp?.toDate) {
+          return timestamp.toDate().toISOString();
+        }
+        // Admin SDK Timestamp format {_seconds, _nanoseconds}
+        if (timestamp?._seconds) {
+          return new Date(timestamp._seconds * 1000).toISOString();
+        }
+        return new Date().toISOString();
+      };
+
+      return {
+        id: doc.id,
+        ...data,
+        // Convert Firestore Timestamps to ISO strings
+        createdAt: convertTimestamp(data.createdAt),
+        updatedAt: convertTimestamp(data.updatedAt),
+        scheduledAt: convertTimestamp(data.scheduledAt),
+      };
+    }) as AITask[];
+
+    // Filter for pending and in_progress tasks
+    const activeTasks = existingTasks.filter(
+      task => task.status === 'pending' || task.status === 'in_progress'
+    );
+
+    // If there are active tasks, return them
+    if (activeTasks.length > 0) {
+      console.log(`Found ${activeTasks.length} existing active tasks for user ${params.userId}`);
+      return activeTasks.map(task => ({
+        ...task,
+        // Ensure all required fields are present
+        userId: task.userId || params.userId,
+        status: task.status || 'pending',
+        type: task.type || 'call',
+        priority: task.priority || 'medium',
+        title: task.title || 'Task',
+        description: task.description || '',
+      }));
+    }
+
+    console.log(`No existing tasks found for user ${params.userId}, generating new ones...`);
+  } catch (error) {
+    console.error('Error loading tasks from Firestore:', error);
+    // Continue to generate new tasks if loading fails
+  }
+
+  // If no existing tasks, generate new ones with AI
   // Fetch custom instructions from admin
   const customInstructions = await fetchCustomInstructions(params.userId);
 
