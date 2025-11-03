@@ -179,18 +179,43 @@ COMPLETED TASKS TODAY:
 ${JSON.stringify(params.completedTasks || [], null, 2)}
 ${customInstructions ? `\n${customInstructions}\n` : ''}
 Generate 4-8 high-priority tasks for tomorrow that will maximize sales success. For each task, provide:
-1. Type (call, email, meeting, demo, follow_up)
+1. Type (call, email, meeting, demo, follow_up, research, admin)
 2. Title (brief, action-oriented)
 3. Description (what to do)
 4. AI Rationale (why this task is important)
 5. Priority (critical, high, medium, low)
 6. Scheduled time (suggest optimal time based on task type)
-7. Estimated duration in minutes
+7. estimatedDuration: OPTIMISTIC time estimate in minutes (be aggressive to incentivize speed!)
+   - call: 10-15 min
+   - email: 5-10 min
+   - meeting: 20-30 min
+   - demo: 30-40 min
+   - follow_up: 10-15 min
+   - research: 15-20 min
+   - admin: 10-15 min
 8. Related client/deal IDs if applicable
 9. Script/talking points if it's a call or email
 10. Objectives for the task
-11. Confidence score (0-100) for success
-12. Impact score (0-100) on deal progression
+11. guidelines: Step-by-step guidelines on how to execute the task (3-5 steps)
+   - Example: ["1. Prepara ambiente: trova stanza tranquilla, apri CRM", "2. Rivedi storia cliente prima di chiamare", "3. Segui script ma sii flessibile", "4. Prendi appunti durante chiamata", "5. Aggiorna CRM immediatamente dopo"]
+12. bestPractices: Best practices and tips for success (3-5 tips)
+   - Example: ["Sorridi mentre parli al telefono - si sente nella voce!", "Fai domande aperte per far parlare il cliente", "Riassumi i punti chiave prima di chiudere", "Conferma sempre i prossimi step"]
+13. commonMistakes: Common mistakes to avoid (3-5 mistakes)
+   - Example: ["Non parlare troppo - ascolta più del 60% del tempo", "Non saltare subito al prezzo - costruisci valore prima", "Non terminare senza next step definito", "Non dimenticare di prendere appunti"]
+14. expectedOutputFormat: OBBLIGATORIO - Specifica SEMPRE il formato in cui il venditore deve fornire il risultato e caricare documenti
+   - type: "text" | "structured_data" | "google_sheet" | "document" | "mixed"
+   - description: Istruzioni dettagliate su COSA caricare e in CHE FORMATO (es: "Carica screenshot della conversazione WhatsApp + Google Sheet con i dati raccolti")
+   - example: Esempio concreto di cosa caricare
+   - fields: Per structured_data/google_sheet, lista i campi da includere
+   - documentRequired: true (sempre true - documento OBBLIGATORIO)
+
+   IMPORTANTE: Il venditore DEVE caricare un documento per completare il task. Specifica sempre cosa deve caricare.
+
+   Examples:
+   - For calls: { type: "document", description: "Carica screenshot/foto della chiamata (durata, orario) + documento di testo con: riassunto conversazione, obiezioni, budget discusso, prossimi step", example: "Screenshot chiamata di 12min + documento Word con sezioni: Riassunto, Budget, Obiezioni, Next Steps", documentRequired: true }
+   - For research: { type: "google_sheet", description: "Carica link a Google Sheet condiviso con colonne: Nome Contatto, Ruolo, Email, Telefono, LinkedIn, Note, Livello Interesse (1-5)", fields: ["Nome Contatto", "Ruolo", "Email", "Telefono", "LinkedIn", "Note", "Livello Interesse"], example: "https://docs.google.com/spreadsheets/d/...", documentRequired: true }
+   - For meetings: { type: "mixed", description: "Carica foto/scan del verbale meeting firmato + documento Word con: argomenti discussi, decisioni prese, action items con responsabili e deadline", fields: ["Argomento", "Decisione", "Action Item", "Responsabile", "Deadline"], example: "Scan verbale.pdf + verbale_dettagliato.docx", documentRequired: true }
+   - For demo: { type: "document", description: "Carica foto/screenshot della demo in azione + feedback form compilato dal cliente (può essere foto del foglio cartaceo o PDF)", example: "foto_demo_1.jpg, foto_demo_2.jpg, feedback_cliente.pdf", documentRequired: true }
 
 Focus on:
 - Following up on stalled deals
@@ -564,11 +589,36 @@ OBIETTIVO: Confermare che siamo nel loro budget e timeline prevista per marzo.`,
         'Offrire supporto documentazione',
         'Mantenere entusiasmo e relazione',
       ],
+      guidelines: [
+        '1. Prepara ambiente: trova stanza tranquilla, apri CRM con scheda cliente',
+        '2. Rivedi proposta inviata e note ultime interazioni prima di chiamare',
+        '3. Inizia con tono cordiale, ricorda incontro precedente',
+        '4. Fai domande aperte per capire stato approvazione e eventuali dubbi',
+        '5. Prendi appunti durante chiamata e aggiorna CRM immediatamente dopo',
+      ],
+      bestPractices: [
+        'Sorridi mentre parli - si sente nella voce e trasmette entusiasmo!',
+        'Ascolta più del 50% del tempo - lascia che il Preside condivida preoccupazioni',
+        'Usa case study di altre scuole per rafforzare credibilità',
+        'Offri supporto concreto (es: documentazione extra) invece di solo chiedere aggiornamenti',
+        'Conferma sempre prossimo step con data precisa prima di chiudere',
+      ],
+      commonMistakes: [
+        'Non pressare per una risposta immediata - le scuole hanno tempi burocratici',
+        'Non ignorare il DSGA - anche se il Preside decide, il DSGA gestisce budget',
+        'Non dimenticare di menzionare valore PCTO - è un forte incentivo per licei',
+        'Non terminare senza aver concordato un follow-up concreto',
+      ],
       clientContext:
         'Preside tech-friendly, DSGA attento a budget ma favorevole. 850 studenti, liceo scientifico prestigioso Firenze.',
       dealContext: scuolaDeal ? `Stage: ${scuolaDeal.stage}. Probabilità ${scuolaDeal.probability}%. Evento previsto marzo 2026 per 250 studenti.` : 'Proposta inviata, alta probabilità',
-      confidence: 85,
-      impactScore: 90,
+      estimatedDuration: 12,
+      expectedOutputFormat: {
+        type: 'document',
+        description: 'Carica screenshot/foto della chiamata (durata, orario) + documento di testo con: riassunto conversazione, stato approvazione Collegio Docenti, eventuali dubbi/obiezioni emersi, prossimi step concordati',
+        example: 'Screenshot chiamata di 12min + documento Word con sezioni: Riassunto conversazione, Stato approvazione, Obiezioni/Dubbi, Next Steps con date precise',
+        documentRequired: true
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -622,11 +672,36 @@ OBIETTIVO: Confermare dettagli e inviare contratto entro venerdì.`,
         'Approvare revenue share 70/30',
         'Inviare contratto entro 2 giorni',
       ],
+      guidelines: [
+        '1. Prepara checklist punti da discutere prima della chiamata',
+        '2. Usa linguaggio consulenziale, non venditore - sei partner strategico',
+        '3. Prendi nota decisioni su ogni punto in tempo reale',
+        '4. Riassumi accordi verbali prima di chiudere per conferma',
+        '5. Invia email riepilogativa entro 1 ora con prossimi step',
+      ],
+      bestPractices: [
+        'Enfatizza partnership win-win - zero rischio per hotel',
+        'Parla di esperienza premium per ospiti, non di tecnologia',
+        'Sii flessibile su dettagli operativi - mostra che capisci hospitality',
+        'Offri analytics mensili - i GM adorano dati su ROI',
+      ],
+      commonMistakes: [
+        'Non essere troppo tecnico - focus su benefici business',
+        'Non complicare contratto - mantieni semplicità revenue share',
+        'Non dimenticare aspetti operativi (manutenzione, formazione staff)',
+        'Non tardare invio contratto - capitalizza entusiasmo immediato',
+      ],
       clientContext:
         'GM entusiasta, hotel 5 stelle luxury 160 camere. Focus esperienza premium ospiti. Stagione alta aprile-ottobre.',
       dealContext: hotelDeal ? `Stage: ${hotelDeal.stage}. Probabilità ${hotelDeal.probability}%. Accordo verbale ottenuto, GM vuole procedere rapidamente.` : 'Accordo verbale, alta probabilità firma',
-      confidence: 90,
-      impactScore: 95,
+      estimatedDuration: 15,
+      expectedOutputFormat: {
+        type: 'mixed',
+        description: 'Carica foto/scan del verbale meeting firmato (se cartaceo) + Google Sheet o documento Word con: per ogni punto discusso specifica Argomento, Decisione presa, Action item, Responsabile, Deadline',
+        fields: ['Argomento', 'Decisione', 'Action Item', 'Responsabile', 'Deadline'],
+        example: 'Scan verbale_firmato.pdf + verbale_dettagliato.xlsx con tabella: 1) Location lobby | Decisione: angolo destro ingresso | Action: sopralluogo | Responsabile: Staff tecnico | Deadline: 15 nov',
+        documentRequired: true
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -692,8 +767,13 @@ VALORE DA ENFATIZZARE:
       clientContext:
         'Assessore Turismo molto favorevole, Sindaco supporta. Comune 28k abitanti, 5M turisti/anno, UNESCO. Budget ciclo anno solare.',
       dealContext: comuneDeal ? `Stage: ${comuneDeal.stage}. Probabilità ${comuneDeal.probability}%. Giunta approva 25 ottobre. Progetto completo: sviluppo esperienza 360° (6 location) + postazione InfoPoint + evento inaugurale.` : 'In valutazione Giunta, decisione imminente',
-      confidence: 80,
-      impactScore: 95,
+      estimatedDuration: 12,
+      expectedOutputFormat: {
+        type: 'document',
+        description: 'Carica screenshot/foto della chiamata + documento di testo con: 1) Esito approvazione Giunta (SI/NO/RINVIATO), 2) Eventuali modifiche richieste al progetto, 3) Prossimi step operativi concordati con date, 4) Timeline firma contratto',
+        example: 'Screenshot chiamata.jpg + documento Word: APPROVATO! Giunta ha approvato progetto completo €18.5k. Richiesta: aggiungere esperienza Basilica di San Francesco. Prossimi step: contratto entro 10 nov, sopralluogo location 15 nov, shooting dicembre.',
+        documentRequired: true
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -752,8 +832,14 @@ OBIETTIVO: Schedulare sopralluogo questa settimana e mostrare demo delle esperie
       dealContext: params.deals.find(d => d.entityType === 'museo_privato') ?
         `Stage: meeting_scheduled. Probabilità 70%. Meeting fissato per 25 ottobre. Interesse a postazione VR complementare.` :
         'Lead da fiera, alta qualità, meeting schedulato',
-      confidence: 75,
-      impactScore: 80,
+      estimatedDuration: 10,
+      expectedOutputFormat: {
+        type: 'google_sheet',
+        description: 'Carica link a Google Sheet condiviso con colonne: Nome Museo, Contatto Principale, Ruolo, Email, Telefono, Area Museo Ideale, Contenuti VR Interesse, Budget Indicativo, Livello Interesse (1-5), Note, Next Step. Se non hai account Google, carica Excel/CSV.',
+        fields: ['Nome Museo', 'Contatto Principale', 'Ruolo', 'Email', 'Telefono', 'Area Museo Ideale', 'Contenuti VR Interesse', 'Budget Indicativo', 'Livello Interesse', 'Note', 'Next Step'],
+        example: 'https://docs.google.com/spreadsheets/d/... oppure museo_leonardo3_info.xlsx con riga: Museo Leonardo3 | Dott.ssa Chiara Rizzo | Direttore | c.rizzo@leonardo3.net | 02-xxx | Sala macchine | Leonardo VR | Revenue share | 4/5 | Molto interessata | Sopralluogo settimana prossima',
+        documentRequired: true
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },

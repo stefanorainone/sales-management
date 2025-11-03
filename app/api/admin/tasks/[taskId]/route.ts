@@ -61,11 +61,7 @@ export async function DELETE(
   }
 }
 
-/**
- * PUT /api/admin/tasks/[taskId]
- * Modifica un task esistente
- */
-export async function PUT(
+async function updateTask(
   req: NextRequest,
   { params }: { params: Promise<{ taskId: string }> }
 ) {
@@ -111,10 +107,18 @@ export async function PUT(
 
     console.log(`✅ Task updated: ${taskId}`);
 
+    // Rileggi il task aggiornato per restituirlo
+    const updatedTaskDoc = await adminDb!.collection('tasks').doc(taskId).get();
+    const updatedTaskData = updatedTaskDoc.data();
+
     return NextResponse.json({
       success: true,
       message: 'Task updated successfully',
       taskId,
+      task: {
+        id: updatedTaskDoc.id,
+        ...updatedTaskData,
+      },
     });
 
   } catch (error: any) {
@@ -124,4 +128,26 @@ export async function PUT(
       { status: 500 }
     );
   }
+}
+
+/**
+ * PUT /api/admin/tasks/[taskId]
+ * Modifica un task esistente
+ */
+export async function PUT(
+  req: NextRequest,
+  context: { params: Promise<{ taskId: string }> }
+) {
+  return updateTask(req, context);
+}
+
+/**
+ * PATCH /api/admin/tasks/[taskId]
+ * Modifica parziale di un task esistente
+ */
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<{ taskId: string }> }
+) {
+  return updateTask(req, context);
 }

@@ -1,0 +1,938 @@
+{
+  "timestamp": "2025-11-01T13:18:43.550Z",
+  "summary": {
+    "totalTests": 64,
+    "successful": 57,
+    "failed": 7,
+    "pagesWithOverflow": 0,
+    "overflowTests": 0
+  },
+  "overflowByPage": {},
+  "allResults": [
+    {
+      "page": "Home",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "home_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Home",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "home_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Home",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Home",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "home_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Login",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/login",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Login",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/login",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "login_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Login",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/login",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "login_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Login",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/login",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "login_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Today",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/today",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "today_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Today",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/today",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Today",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/today",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "today_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Today",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/today",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "today_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Dashboard",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "dashboard_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Dashboard",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "dashboard_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Dashboard",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/dashboard",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Dashboard",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "dashboard_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Analytics",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/analytics",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "analytics_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Analytics",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/analytics",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "analytics_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Analytics",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/analytics",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Analytics",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/analytics",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "analytics_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Pipeline",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/pipeline",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "pipeline_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Pipeline",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/pipeline",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "pipeline_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Pipeline",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/pipeline",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "pipeline_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Pipeline",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/pipeline",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "pipeline_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Clients",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/clients",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "clients_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Clients",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/clients",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "clients_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Clients",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/clients",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "clients_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Clients",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/clients",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "clients_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Activities",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/activities",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "activities_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Activities",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/activities",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "activities_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Activities",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/activities",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "activities_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Activities",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/activities",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Coach",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/coach",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "coach_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Coach",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/coach",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "coach_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Coach",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/coach",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "coach_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Coach",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/coach",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "coach_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Training",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/training",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "training_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Training",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/training",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "training_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Training",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/training",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "training_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Training",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/training",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "training_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "AI Tasks",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/ai-tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "ai_tasks_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "AI Tasks",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/ai-tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "ai_tasks_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "AI Tasks",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/ai-tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "ai_tasks_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "AI Tasks",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/ai-tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "ai_tasks_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Admin Dashboard",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/admin/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_dashboard_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Admin Dashboard",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/admin/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_dashboard_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Admin Dashboard",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/admin/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_dashboard_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Admin Dashboard",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/admin/dashboard",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_dashboard_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Admin Users",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/admin/users",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_users_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Admin Users",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/admin/users",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_users_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Admin Users",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/admin/users",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_users_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Admin Users",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/admin/users",
+      "success": false,
+      "hasOverflow": false,
+      "overflowInfo": null,
+      "screenshot": null,
+      "error": "Navigation timeout of 30000 ms exceeded"
+    },
+    {
+      "page": "Admin Tasks",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/admin/tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_tasks_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Admin Tasks",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/admin/tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_tasks_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Admin Tasks",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/admin/tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_tasks_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Admin Tasks",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/admin/tasks",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_tasks_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Admin AI Config",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/admin/ai-config",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_ai_config_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Admin AI Config",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/admin/ai-config",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_ai_config_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Admin AI Config",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/admin/ai-config",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_ai_config_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Admin AI Config",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/admin/ai-config",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_ai_config_ipad_mini.png",
+      "error": null
+    },
+    {
+      "page": "Admin",
+      "viewport": "iPhone 12",
+      "url": "http://localhost:3001/admin",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 390,
+        "viewportWidth": 390,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_iphone_12.png",
+      "error": null
+    },
+    {
+      "page": "Admin",
+      "viewport": "iPhone SE",
+      "url": "http://localhost:3001/admin",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 375,
+        "viewportWidth": 375,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_iphone_se.png",
+      "error": null
+    },
+    {
+      "page": "Admin",
+      "viewport": "Samsung Galaxy S20",
+      "url": "http://localhost:3001/admin",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 360,
+        "viewportWidth": 360,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_samsung_galaxy_s20.png",
+      "error": null
+    },
+    {
+      "page": "Admin",
+      "viewport": "iPad Mini",
+      "url": "http://localhost:3001/admin",
+      "success": true,
+      "hasOverflow": false,
+      "overflowInfo": {
+        "hasOverflow": false,
+        "documentWidth": 768,
+        "viewportWidth": 768,
+        "overflowAmount": 0
+      },
+      "screenshot": "admin_ipad_mini.png",
+      "error": null
+    }
+  ]
+}

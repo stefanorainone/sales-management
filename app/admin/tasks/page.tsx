@@ -20,7 +20,11 @@ export default function AdminTasksPage() {
   const [selectedSeller, setSelectedSeller] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<AITask | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingTask, setViewingTask] = useState<AITask | null>(null);
 
   // Form state for new task
   const [newTask, setNewTask] = useState({
@@ -67,6 +71,46 @@ export default function AdminTasksPage() {
       alert('Errore nel caricamento dei task');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditTask = (task: AITask) => {
+    setEditingTask(task);
+    setIsEditModalOpen(true);
+  };
+
+  const handleViewTask = (task: AITask) => {
+    setViewingTask(task);
+    setIsViewModalOpen(true);
+  };
+
+  const handleUpdateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask) return;
+
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const response = await fetch(`/api/admin/tasks/${editingTask.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingTask),
+      });
+
+      if (!response.ok) throw new Error('Failed to update task');
+
+      const data = await response.json();
+      setTasks(prev => prev.map(t => t.id === editingTask.id ? data.task : t));
+      setIsEditModalOpen(false);
+      setEditingTask(null);
+      alert('✅ Task aggiornato con successo');
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('❌ Errore nell\'aggiornamento del task');
     }
   };
 
@@ -349,7 +393,27 @@ export default function AdminTasksPage() {
                   )}
                 </div>
 
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 flex gap-2">
+                  {task.status === 'completed' ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleViewTask(task)}
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                      title="Visualizza risultati"
+                    >
+                      👁️
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEditTask(task)}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                      ✏️
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
@@ -419,7 +483,7 @@ export default function AdminTasksPage() {
               value={newTask.title}
               onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
               placeholder="Es: Chiamare Mario Rossi per follow-up"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
               required
             />
           </div>
@@ -432,7 +496,7 @@ export default function AdminTasksPage() {
               value={newTask.description}
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
               placeholder="Descrizione dettagliata del task..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
               rows={3}
             />
           </div>
@@ -461,7 +525,7 @@ export default function AdminTasksPage() {
                 type="datetime-local"
                 value={newTask.scheduledAt}
                 onChange={(e) => setNewTask({ ...newTask, scheduledAt: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
                 required
               />
             </div>
@@ -477,7 +541,7 @@ export default function AdminTasksPage() {
                 value={newTask.clientName}
                 onChange={(e) => setNewTask({ ...newTask, clientName: e.target.value })}
                 placeholder="Nome cliente"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
               />
             </div>
 
@@ -490,7 +554,7 @@ export default function AdminTasksPage() {
                 value={newTask.dealTitle}
                 onChange={(e) => setNewTask({ ...newTask, dealTitle: e.target.value })}
                 placeholder="Titolo deal"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
               />
             </div>
           </div>
@@ -503,7 +567,7 @@ export default function AdminTasksPage() {
               value={newTask.objectives}
               onChange={(e) => setNewTask({ ...newTask, objectives: e.target.value })}
               placeholder="Es:&#10;Qualificare interesse&#10;Fissare meeting&#10;Inviare proposta"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
               rows={3}
             />
           </div>
@@ -523,6 +587,322 @@ export default function AdminTasksPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingTask(null);
+          }}
+          title="Modifica Task"
+        >
+          <form onSubmit={handleUpdateTask} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Titolo *
+              </label>
+              <input
+                type="text"
+                value={editingTask.title}
+                onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                placeholder="Es: Chiamare Mario Rossi per follow-up"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Descrizione
+              </label>
+              <textarea
+                value={editingTask.description || ''}
+                onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                placeholder="Descrizione dettagliata del task..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo Task
+                </label>
+                <Select
+                  value={editingTask.type}
+                  onChange={(e) => setEditingTask({ ...editingTask, type: e.target.value as any })}
+                >
+                  <option value="call">📞 Chiamata</option>
+                  <option value="email">✉️ Email</option>
+                  <option value="meeting">🤝 Meeting</option>
+                  <option value="demo">🎯 Demo</option>
+                  <option value="follow_up">🔄 Follow-up</option>
+                  <option value="research">🔍 Ricerca</option>
+                  <option value="admin">📋 Admin</option>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Priorità
+                </label>
+                <Select
+                  value={editingTask.priority}
+                  onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as any })}
+                >
+                  <option value="low">⚪ Bassa</option>
+                  <option value="medium">🟢 Media</option>
+                  <option value="high">🟡 Alta</option>
+                  <option value="critical">🔴 Critica</option>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Stato
+              </label>
+              <Select
+                value={editingTask.status}
+                onChange={(e) => setEditingTask({ ...editingTask, status: e.target.value as any })}
+              >
+                <option value="pending">⏳ Da fare</option>
+                <option value="in_progress">🔄 In corso</option>
+                <option value="completed">✅ Completato</option>
+                <option value="snoozed">😴 Posticipato</option>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data/Ora *
+              </label>
+              <input
+                type="datetime-local"
+                value={editingTask.scheduledAt ? new Date(editingTask.scheduledAt).toISOString().slice(0, 16) : ''}
+                onChange={(e) => setEditingTask({ ...editingTask, scheduledAt: new Date(e.target.value).toISOString() })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cliente (opzionale)
+                </label>
+                <input
+                  type="text"
+                  value={editingTask.clientName || ''}
+                  onChange={(e) => setEditingTask({ ...editingTask, clientName: e.target.value })}
+                  placeholder="Nome cliente"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deal (opzionale)
+                </label>
+                <input
+                  type="text"
+                  value={editingTask.dealTitle || ''}
+                  onChange={(e) => setEditingTask({ ...editingTask, dealTitle: e.target.value })}
+                  placeholder="Titolo deal"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Obiettivi (uno per riga)
+              </label>
+              <textarea
+                value={editingTask.objectives?.join('\n') || ''}
+                onChange={(e) => setEditingTask({ ...editingTask, objectives: e.target.value.split('\n').filter(o => o.trim()) })}
+                placeholder="Es:&#10;Qualificare interesse&#10;Fissare meeting&#10;Inviare proposta"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingTask(null);
+                }}
+                className="flex-1"
+              >
+                Annulla
+              </Button>
+              <Button type="submit" className="flex-1">
+                💾 Salva Modifiche
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* View Completed Task Modal */}
+      {viewingTask && (
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setViewingTask(null);
+          }}
+          title="📊 Risultati Task Completato"
+          size="lg"
+        >
+          <div className="space-y-6">
+            {/* Task Info */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-xl p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{viewingTask.title}</h3>
+                  <p className="text-gray-700">{viewingTask.description}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  {getTypeBadge(viewingTask.type)}
+                  {getPriorityBadge(viewingTask.priority)}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {viewingTask.clientName && (
+                  <div>
+                    <span className="text-sm text-gray-600">👤 Cliente:</span>
+                    <p className="font-semibold text-gray-900">{viewingTask.clientName}</p>
+                  </div>
+                )}
+                {viewingTask.dealTitle && (
+                  <div>
+                    <span className="text-sm text-gray-600">🎯 Deal:</span>
+                    <p className="font-semibold text-gray-900">{viewingTask.dealTitle}</p>
+                  </div>
+                )}
+                {viewingTask.completedAt && (
+                  <div>
+                    <span className="text-sm text-gray-600">✅ Completato il:</span>
+                    <p className="font-semibold text-gray-900">
+                      {new Date(viewingTask.completedAt).toLocaleString('it-IT', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                )}
+                {viewingTask.actualDuration && (
+                  <div>
+                    <span className="text-sm text-gray-600">⏱️ Tempo impiegato:</span>
+                    <p className="font-semibold text-gray-900">{viewingTask.actualDuration} minuti</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Outcome */}
+            {viewingTask.outcome && (
+              <div className="border-2 rounded-xl p-6 bg-white">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  📈 Esito
+                </h4>
+                <div className="flex items-center gap-2">
+                  {viewingTask.outcome === 'success' && (
+                    <Badge variant="success" size="lg">😊 Ottimo - Obiettivi raggiunti</Badge>
+                  )}
+                  {viewingTask.outcome === 'partial' && (
+                    <Badge variant="warning" size="lg">😐 Parziale - Alcuni obiettivi raggiunti</Badge>
+                  )}
+                  {viewingTask.outcome === 'failed' && (
+                    <Badge variant="danger" size="lg">😞 Non riuscito - Obiettivi non raggiunti</Badge>
+                  )}
+                  {viewingTask.outcome === 'no_answer' && (
+                    <Badge variant="gray" size="lg">📵 Nessuna risposta</Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Notes */}
+            {viewingTask.notes && (
+              <div className="border-2 rounded-xl p-6 bg-white">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  📝 Note del Venditore
+                </h4>
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{viewingTask.notes}</p>
+                </div>
+              </div>
+            )}
+
+            {/* AI Analysis */}
+            {viewingTask.aiAnalysis && (
+              <div className="border-2 border-purple-200 rounded-xl p-6 bg-purple-50">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  🤖 Analisi AI
+                </h4>
+                <p className="text-gray-800 leading-relaxed">{viewingTask.aiAnalysis}</p>
+              </div>
+            )}
+
+            {/* Attachments */}
+            {viewingTask.attachments && viewingTask.attachments.length > 0 && (
+              <div className="border-2 rounded-xl p-6 bg-white">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  📎 Documenti Allegati ({viewingTask.attachments.length})
+                </h4>
+                <div className="space-y-2">
+                  {viewingTask.attachments.map((attachment, index) => (
+                    <a
+                      key={index}
+                      href={attachment}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                    >
+                      <span className="text-2xl">📄</span>
+                      <span className="text-sm text-gray-700 flex-1 truncate">{attachment}</span>
+                      <span className="text-blue-600 text-sm font-medium">Apri →</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* No data message */}
+            {!viewingTask.notes && !viewingTask.attachments?.length && (
+              <div className="text-center py-8 text-gray-400">
+                <div className="text-4xl mb-3">📭</div>
+                <p>Nessuna nota o documento allegato per questo task</p>
+              </div>
+            )}
+
+            {/* Close button */}
+            <div className="flex justify-end pt-4 border-t">
+              <Button
+                onClick={() => {
+                  setIsViewModalOpen(false);
+                  setViewingTask(null);
+                }}
+                variant="secondary"
+              >
+                Chiudi
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

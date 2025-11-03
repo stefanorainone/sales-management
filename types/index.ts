@@ -244,6 +244,19 @@ export interface AITask {
   emailDraft?: string; // Pre-written email
   demoScript?: string; // Demo presentation flow
 
+  // Task Guidance
+  guidelines?: string[]; // Step-by-step guidelines on how to execute the task
+  bestPractices?: string[]; // Tips and best practices for this task
+  commonMistakes?: string[]; // Common errors to avoid
+
+  // Expected Output Format
+  expectedOutputFormat?: {
+    type: 'text' | 'structured_data' | 'google_sheet' | 'document' | 'mixed';
+    description: string; // What format the seller should provide
+    example?: string; // Example of expected output
+    fields?: string[]; // For structured data, what fields to include
+  };
+
   // Context
   clientContext?: string; // AI summary of client history
   dealContext?: string; // AI summary of deal status
@@ -255,10 +268,15 @@ export interface AITask {
   outcome?: 'success' | 'partial' | 'failed' | 'no_answer';
   notes?: string; // Seller notes after completion
   aiAnalysis?: string; // AI analysis of notes
+  attachments?: string[]; // URLs to uploaded documents/files
+
+  // Time Tracking
+  estimatedDuration?: number; // Estimated time in minutes (optimistic)
+  actualDuration?: number; // Actual time taken in minutes
 
   // Metadata
-  confidence: number; // 0-100 AI confidence this task will succeed
-  impactScore: number; // 0-100 expected impact on deal
+  confidence?: number; // 0-100 AI confidence this task will succeed (optional, legacy)
+  impactScore?: number; // 0-100 expected impact on deal (optional, legacy)
   createdAt: string;
   updatedAt: string;
 }
