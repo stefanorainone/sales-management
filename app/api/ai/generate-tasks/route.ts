@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateDailyTasks } from '@/lib/ai/openai';
+import { generateDailyTasks } from '@/lib/services/ai-service';
 import { adminDb } from '@/lib/firebase/admin';
 
 export async function POST(request: NextRequest) {
@@ -70,35 +70,35 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Generate tasks using Claude
+    // Generate tasks using AI with correct format
     const tasks = await generateDailyTasks({
-      sellerId,
-      sellerName: seller?.displayName || 'Unknown',
-      activities,
-      deals,
-      inactiveLeads,
-      historicalMetrics,
-      goals: {
-        revenue: 50,
-        deals: 20,
-        activities: 100,
-      },
+      userId: sellerId,
+      userName: seller?.displayName || 'Unknown',
+      deals: deals as any,
+      clients: inactiveLeads as any,
+      recentActivities: activities as any,
+      date: new Date().toISOString().split('T')[0],
     });
 
-    // Save generated tasks to Firestore
+    // Save generated tasks to Firestore with ALL fields including expectedOutputFormat
     const batch = adminDb!.batch();
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(8, 0, 0, 0);
 
     tasks.forEach((task) => {
-      const taskRef = adminDb!.collection('ai_tasks').doc();
+      const taskRef = adminDb!.collection('tasks').doc();
       batch.set(taskRef, {
+        // Save ALL task fields
         ...task,
-        sellerId,
+        // Ensure these fields are preserved
+        userId: sellerId,
         status: 'pending',
         createdAt: new Date(),
-        scheduledFor: tomorrow,
+        updatedAt: new Date(),
+        createdBy: 'ai',
+        // Keep expectedOutputFormat, guidelines, bestPractices, commonMistakes
+        expectedOutputFormat: task.expectedOutputFormat || null,
+        guidelines: task.guidelines || [],
+        bestPractices: task.bestPractices || [],
+        commonMistakes: task.commonMistakes || [],
       });
     });
 

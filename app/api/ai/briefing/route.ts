@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         priority: data.priority,
         scheduledAt: convertTimestamp(data.scheduledAt),
         createdAt: convertTimestamp(data.createdAt),
+        updatedAt: convertTimestamp(data.updatedAt),
         createdBy: data.createdBy || 'ai',
         dealId: data.dealId || null,
         clientId: data.clientId || null,
@@ -53,7 +54,13 @@ export async function POST(request: NextRequest) {
         talkingPoints: data.talkingPoints || [],
         clientContext: data.clientContext || '',
         dealContext: data.dealContext || '',
+        // IMPORTANT: Load all AI-generated fields
         expectedOutputFormat: data.expectedOutputFormat || undefined,
+        guidelines: data.guidelines || [],
+        bestPractices: data.bestPractices || [],
+        commonMistakes: data.commonMistakes || [],
+        demoScript: data.demoScript || '',
+        emailDraft: data.emailDraft || '',
       };
     });
 
