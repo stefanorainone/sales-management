@@ -255,6 +255,7 @@ export interface AITask {
     description: string; // What format the seller should provide
     example?: string; // Example of expected output
     fields?: string[]; // For structured data, what fields to include
+    documentRequired?: boolean; // Whether file upload is mandatory
   };
 
   // Context
