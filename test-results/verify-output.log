@@ -1,0 +1,26 @@
+🔍 VERIFY SELLER TASKS - Upload Section Test
+
+📍 URL: https://sales-management-412055180465.europe-west1.run.app
+
+📱 STEP 1: Login as Aya Ftissi
+
+   → Login submitted...
+   ✅ Logged in as Aya Ftissi
+
+📱 STEP 2: Check /today Page
+
+   → Navigated to /today
+   ⏳ Waiting 8 seconds for briefing to load...
+   ✅ Screenshot: verify-03-today-page.png
+
+   📋 Found 0 tasks with "Inizia" button
+   ❌ No tasks found with "Inizia" button
+
+   💡 This might mean:
+      - Tasks were not saved to Firestore
+      - Tasks are saved but briefing API is not loading them
+      - Tasks are in wrong status (not "pending")
+
+Keeping browser open for 15 seconds...
+✅ Verification completed!
+

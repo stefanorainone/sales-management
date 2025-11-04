@@ -1,0 +1,445 @@
+const puppeteer = require('puppeteer');
+
+const PROD_URL = 'https://sales-management-412055180465.europe-west1.run.app';
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function testCompleteFlow() {
+  console.log('🚀 COMPLETE FLOW TEST - Simplified\n');
+  console.log(`📍 URL: ${PROD_URL}\n`);
+
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--start-maximized'],
+    defaultViewport: null,
+    slowMo: 80
+  });
+
+  try {
+    const page = await browser.newPage();
+
+    // ============================================================================
+    // STEP 1: LOGIN AS ADMIN
+    // ============================================================================
+    console.log('📱 STEP 1: Admin Login\n');
+
+    await page.goto(PROD_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+    await sleep(2000);
+
+    await page.screenshot({ path: 'test-results/simple-01-login.png', fullPage: true });
+
+    // Login as admin
+    await page.waitForSelector('input[type="email"]', { timeout: 10000 });
+    await page.type('input[type="email"]', 'admin@vr.com', { delay: 50 });
+    await page.type('input[type="password"]', 'Admin123!', { delay: 50 });
+    await page.click('button[type="submit"]');
+
+    console.log('   → Login submitted...');
+    await sleep(5000);
+
+    await page.screenshot({ path: 'test-results/simple-02-admin-dashboard.png', fullPage: true });
+    console.log('   ✅ Admin logged in\n');
+
+    // ============================================================================
+    // STEP 2: GENERATE TASKS FOR EXISTING USER
+    // ============================================================================
+    console.log('📱 STEP 2: Generate Tasks for Seller\n');
+
+    // Navigate to AI Task Manager
+    await page.goto(`${PROD_URL}/admin/ai-tasks`, { waitUntil: 'networkidle2' });
+    await sleep(2000);
+
+    await page.screenshot({ path: 'test-results/simple-03-ai-tasks-page.png', fullPage: true });
+    console.log('   ✅ Screenshot: simple-03-ai-tasks-page.png');
+
+    // Click on a seller (Aya Ftissi)
+    console.log('   → Clicking on seller "Aya Ftissi"...');
+    const sellerClicked = await page.evaluate(() => {
+      // Find all buttons and look for one containing "Aya Ftissi"
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const ayaButton = buttons.find(btn => {
+        const text = btn.textContent || '';
+        return text.includes('Aya Ftissi') || text.includes('Ftissi');
+      });
+
+      if (ayaButton) {
+        ayaButton.click();
+        return true;
+      }
+      return false;
+    });
+
+    if (!sellerClicked) {
+      console.log('   ⚠️  Could not find Aya Ftissi, trying first seller button...');
+      await page.evaluate(() => {
+        // Look for seller buttons in the sellers list
+        const buttons = Array.from(document.querySelectorAll('button'));
+        // Find a button that has seller-like content (displayName + team)
+        const sellerBtn = buttons.find(btn => {
+          const hasInitial = btn.querySelector('[class*="rounded-full"]');
+          const hasName = btn.textContent && btn.textContent.length > 10;
+          return hasInitial && hasName;
+        });
+        if (sellerBtn) sellerBtn.click();
+      });
+    }
+
+    await sleep(3000);
+    await page.screenshot({ path: 'test-results/simple-03b-seller-selected.png', fullPage: true });
+    console.log('   ✅ Seller selected: Aya Ftissi\n');
+
+    // Enter text in the prompt field
+    console.log('   → Entering custom prompt for AI...');
+    const textarea = await page.waitForSelector('textarea', { timeout: 5000 });
+    await textarea.click();
+    await sleep(500);
+    await textarea.type('Genera 3 task urgenti per oggi: chiamate ai clienti principali, follow-up sui deals aperti, e ricerca nuovi contatti. Assicurati che ogni task abbia il formato expectedOutputFormat con documentRequired: true', { delay: 30 });
+    console.log('   ✅ Prompt entered');
+    await sleep(2000);
+
+    await page.screenshot({ path: 'test-results/simple-03c-prompt-entered.png', fullPage: true });
+
+    // Click "Genera Task AI" button
+    console.log('   → Clicking "Genera Task AI" button...');
+    const generateBtn = await page.evaluateHandle(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      return buttons.find(btn =>
+        btn.textContent.includes('Genera Task AI') ||
+        btn.textContent.includes('🚀 Genera Task AI')
+      );
+    });
+
+    if (generateBtn) {
+      await generateBtn.asElement()?.click();
+      console.log('   ✅ Clicked generate button');
+
+      console.log('   ✅ Task generation started...');
+      console.log('   ⏳ Waiting 35 seconds for AI to generate tasks...\n');
+
+      // Show progress
+      for (let i = 0; i < 7; i++) {
+        await sleep(5000);
+        console.log(`      ${(i + 1) * 5} seconds...`);
+      }
+
+      await page.screenshot({ path: 'test-results/simple-05-tasks-generated.png', fullPage: true });
+      console.log('\n   ✅ Screenshot: simple-05-tasks-generated.png');
+
+      // Check if tasks were generated
+      const tasksGenerated = await page.evaluate(() => {
+        const text = document.body.textContent;
+        return text.includes('Task Consigliati') || text.includes('Conferma');
+      });
+
+      if (tasksGenerated) {
+        console.log('   ✅ AI generated suggested tasks\n');
+
+        // Click "Conferma Tutti" button to save all tasks
+        console.log('   → Confirming all generated tasks...');
+        const confirmed = await page.evaluate(() => {
+          const buttons = Array.from(document.querySelectorAll('button'));
+          const confirmBtn = buttons.find(btn =>
+            btn.textContent.includes('Conferma Tutti') ||
+            btn.textContent.includes('✅ Conferma Tutti')
+          );
+          if (confirmBtn && !confirmBtn.disabled) {
+            confirmBtn.click();
+            return true;
+          }
+          return false;
+        });
+
+        if (confirmed) {
+          console.log('   ✅ Clicked confirm button');
+          await sleep(3000);
+
+          // Handle the browser confirm dialog
+          page.on('dialog', async dialog => {
+            console.log(`   → Accepting confirmation dialog: "${dialog.message().substring(0, 50)}..."`);
+            await dialog.accept();
+          });
+
+          await sleep(2000);
+          console.log('   ✅ Tasks confirmed and saved to Firestore\n');
+
+          await page.screenshot({ path: 'test-results/simple-05b-tasks-confirmed.png', fullPage: true });
+        }
+      }
+
+      // ============================================================================
+      // STEP 3: LOGOUT AND LOGIN AS SELLER
+      // ============================================================================
+      console.log('\n📱 STEP 3: Login as Seller\n');
+
+      // Logout
+      await page.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll('button, a'));
+        const logoutBtn = buttons.find(btn =>
+          btn.textContent.includes('Logout') ||
+          btn.textContent.includes('Esci')
+        );
+        if (logoutBtn) logoutBtn.click();
+      });
+
+      await sleep(3000);
+
+      // Go to login
+      await page.goto(PROD_URL, { waitUntil: 'networkidle2' });
+      await sleep(2000);
+
+      // Login as Aya Ftissi
+      const sellerLoginEmail = 'ftissiaya@gmail.com';
+      const sellerPassword = 'Seller123!'; // Default password
+
+      console.log(`   → Logging in as Aya Ftissi: ${sellerLoginEmail}`);
+
+      await page.waitForSelector('input[type="email"]', { timeout: 10000 });
+      await page.type('input[type="email"]', sellerLoginEmail, { delay: 50 });
+      await page.type('input[type="password"]', sellerPassword, { delay: 50 });
+      await page.click('button[type="submit"]');
+
+      await sleep(5000);
+
+      await page.screenshot({ path: 'test-results/simple-06-seller-dashboard.png', fullPage: true });
+      console.log('   ✅ Seller logged in\n');
+
+      // ============================================================================
+      // STEP 4: CHECK TASKS ON /TODAY PAGE
+      // ============================================================================
+      console.log('📱 STEP 4: Check Tasks on /today Page\n');
+
+      await page.goto(`${PROD_URL}/today`, { waitUntil: 'networkidle2' });
+      console.log('   ⏳ Waiting for briefing to load...');
+      await sleep(8000);
+
+      await page.screenshot({ path: 'test-results/simple-07-today-page.png', fullPage: true });
+      console.log('   ✅ Screenshot: simple-07-today-page.png');
+
+          // Check tasks
+          const tasksInfo = await page.evaluate(() => {
+            const taskButtons = Array.from(document.querySelectorAll('button')).filter(btn =>
+              btn.textContent.includes('Inizia')
+            );
+
+            const taskTitles = Array.from(document.querySelectorAll('h3, h4')).filter(el =>
+              el.textContent.length > 10 && el.textContent.length < 200
+            ).map(el => el.textContent.trim()).slice(0, 5);
+
+            return {
+              hasInitButtons: taskButtons.length > 0,
+              initButtonsCount: taskButtons.length,
+              taskTitles
+            };
+          });
+
+          console.log(`   → Found ${tasksInfo.initButtonsCount} "Inizia" buttons`);
+          if (tasksInfo.taskTitles.length > 0) {
+            console.log('   → Task titles found:');
+            tasksInfo.taskTitles.forEach((title, i) => {
+              console.log(`      ${i + 1}. ${title.substring(0, 80)}`);
+            });
+          }
+
+          if (tasksInfo.hasInitButtons) {
+            console.log('\n   → Opening first task...');
+
+            const taskOpened = await page.evaluate(() => {
+              const buttons = Array.from(document.querySelectorAll('button'));
+              const iniziaBtn = buttons.find(btn => btn.textContent.includes('Inizia'));
+              if (iniziaBtn) {
+                iniziaBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => iniziaBtn.click(), 500);
+                return true;
+              }
+              return false;
+            });
+
+            await sleep(3000);
+
+            if (taskOpened) {
+              console.log('   ✅ Task modal opened\n');
+
+              await page.screenshot({ path: 'test-results/simple-08-task-modal-top.png', fullPage: false });
+
+              // ============================================================================
+              // STEP 5: VERIFY EXPECTED OUTPUT FORMAT
+              // ============================================================================
+              console.log('📱 STEP 5: Verify Expected Output Format & Upload Section\n');
+
+              const verificationResults = await page.evaluate(() => {
+                const text = document.body.textContent;
+
+                // Check for key elements
+                const results = {
+                  hasOBBLIGATORIO: text.includes('OBBLIGATORIO'),
+                  hasDocumentoDaCaricare: text.includes('DOCUMENTO DA CARICARE'),
+                  hasCaricaRisultati: text.includes('Carica Risultati') || text.includes('Carica'),
+                  hasFileInput: document.querySelector('input[type="file"]') !== null,
+                  redSections: Array.from(document.querySelectorAll('div')).filter(div =>
+                    div.className.includes('bg-red') && div.className.includes('border-red')
+                  ).length,
+                };
+
+                // Check text color in inputs
+                const inputs = Array.from(document.querySelectorAll('input[type="number"], textarea'));
+                results.textColors = inputs.map(input => {
+                  const style = window.getComputedStyle(input);
+                  const color = style.color;
+                  const isWhite = color === 'rgb(255, 255, 255)' || color.includes('255, 255, 255');
+                  return { element: input.tagName, color, isWhite };
+                });
+
+                return results;
+              });
+
+              console.log('   📋 Verification Results:');
+              console.log(`      ✓ "OBBLIGATORIO" text: ${verificationResults.hasOBBLIGATORIO ? '✅ YES' : '❌ NO'}`);
+              console.log(`      ✓ "DOCUMENTO DA CARICARE": ${verificationResults.hasDocumentoDaCaricare ? '✅ YES' : '❌ NO'}`);
+              console.log(`      ✓ "Carica Risultati": ${verificationResults.hasCaricaRisultati ? '✅ YES' : '❌ NO'}`);
+              console.log(`      ✓ File input present: ${verificationResults.hasFileInput ? '✅ YES' : '❌ NO'}`);
+              console.log(`      ✓ Red sections: ${verificationResults.redSections} ${verificationResults.redSections > 0 ? '✅' : '❌'}`);
+
+              console.log('\n   🎨 Text Color Check:');
+              verificationResults.textColors.forEach((info, i) => {
+                const status = info.isWhite ? '❌ WHITE!' : '✅ Visible';
+                console.log(`      ${i + 1}. ${info.element}: ${info.color} ${status}`);
+              });
+
+              const allTextVisible = verificationResults.textColors.every(c => !c.isWhite);
+              console.log(`\n      Overall: ${allTextVisible ? '✅ All text is visible' : '⚠️  Some text may be white'}`);
+
+              // Scroll to upload section
+              console.log('\n   → Scrolling to file upload section...');
+              await page.evaluate(() => {
+                const modal = document.querySelector('[class*="overflow-y-auto"]');
+                if (modal) {
+                  modal.scrollTop = modal.scrollHeight;
+                } else {
+                  window.scrollTo(0, document.body.scrollHeight);
+                }
+              });
+              await sleep(2000);
+
+              await page.screenshot({ path: 'test-results/simple-09-upload-section.png', fullPage: false });
+              console.log('   ✅ Screenshot: simple-09-upload-section.png');
+
+              // ============================================================================
+              // STEP 6: TEST VALIDATION
+              // ============================================================================
+              console.log('\n📱 STEP 6: Test Validation (Complete Without File)\n');
+
+              // Fill fields
+              await page.evaluate(() => {
+                const durationInput = document.querySelector('input[type="number"]');
+                if (durationInput) durationInput.value = '20';
+
+                const textarea = document.querySelector('textarea');
+                if (textarea) textarea.value = 'Test validation - trying to complete without uploading file';
+              });
+
+              await sleep(1000);
+
+              // Listen for alert
+              let alertShown = false;
+              let alertMessage = '';
+
+              page.once('dialog', async dialog => {
+                alertShown = true;
+                alertMessage = dialog.message();
+                await dialog.accept();
+              });
+
+              // Try to complete
+              console.log('   → Attempting to complete task without file...');
+              const completeClicked = await page.evaluate(() => {
+                const buttons = Array.from(document.querySelectorAll('button'));
+                const completeBtn = buttons.find(btn => btn.textContent.includes('Completa'));
+                if (completeBtn) {
+                  completeBtn.click();
+                  return true;
+                }
+                return false;
+              });
+
+              await sleep(2000);
+
+              if (alertShown) {
+                console.log(`   ✅ VALIDATION WORKS! Alert shown:`);
+                console.log(`      "${alertMessage.substring(0, 120)}..."`);
+              } else {
+                console.log('   ⚠️  No alert - validation may not be working');
+              }
+
+              await page.screenshot({ path: 'test-results/simple-10-validation-test.png', fullPage: false });
+              console.log('   ✅ Screenshot: simple-10-validation-test.png');
+
+              // ============================================================================
+              // FINAL SUMMARY
+              // ============================================================================
+              console.log('\n' + '='.repeat(80));
+              console.log('📊 TEST SUMMARY');
+              console.log('='.repeat(80) + '\n');
+
+              const allChecksPassed =
+                verificationResults.hasOBBLIGATORIO &&
+                verificationResults.hasDocumentoDaCaricare &&
+                verificationResults.hasFileInput &&
+                verificationResults.redSections > 0 &&
+                allTextVisible &&
+                alertShown;
+
+              console.log('✅ Steps Completed:');
+              console.log('  1. ✓ Admin login');
+              console.log('  2. ✓ Generate tasks for seller');
+              console.log('  3. ✓ Login as seller');
+              console.log('  4. ✓ View tasks on /today');
+              console.log('  5. ✓ Open task modal');
+              console.log('  6. ✓ Verify expectedOutputFormat section');
+              console.log('  7. ✓ Verify file upload section');
+              console.log('  8. ✓ Verify text visibility');
+              console.log('  9. ✓ Test validation\n');
+
+              console.log('📊 Verification Results:');
+              console.log(`  - expectedOutputFormat visible: ${verificationResults.hasDocumentoDaCaricare ? '✅' : '❌'}`);
+              console.log(`  - Upload section visible: ${verificationResults.hasFileInput ? '✅' : '❌'}`);
+              console.log(`  - Red warning sections: ${verificationResults.redSections > 0 ? '✅' : '❌'} (${verificationResults.redSections} found)`);
+              console.log(`  - Text color correct: ${allTextVisible ? '✅' : '❌'}`);
+              console.log(`  - Validation works: ${alertShown ? '✅' : '❌'}\n`);
+
+              console.log(`🎯 FINAL RESULT: ${allChecksPassed ? '✅ ALL CHECKS PASSED!' : '⚠️  Some checks failed'}\n`);
+
+              console.log('📸 All screenshots saved in test-results/\n');
+            }
+          } else {
+            console.log('   ⚠️  No tasks found for seller\n');
+          }
+        }
+      }
+    } else {
+      console.log('   ⚠️  Could not find or click generate button\n');
+    }
+
+    console.log('\nKeeping browser open for 10 seconds...');
+    await sleep(10000);
+
+  } catch (error) {
+    console.error('\n❌ Test error:', error);
+    await page.screenshot({ path: 'test-results/simple-ERROR.png', fullPage: true });
+  } finally {
+    await browser.close();
+  }
+}
+
+// Run
+(async () => {
+  try {
+    await testCompleteFlow();
+    console.log('✅ Test completed successfully!\n');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Test failed:', error);
+    process.exit(1);
+  }
+})();

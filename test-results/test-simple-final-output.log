@@ -1,0 +1,59 @@
+🚀 COMPLETE FLOW TEST - Simplified
+
+📍 URL: https://sales-management-412055180465.europe-west1.run.app
+
+📱 STEP 1: Admin Login
+
+   → Login submitted...
+   ✅ Admin logged in
+
+📱 STEP 2: Generate Tasks for Seller
+
+   ✅ Screenshot: simple-03-ai-tasks-page.png
+   → Clicking on seller "Aya Ftissi"...
+   ✅ Seller selected: Aya Ftissi
+
+   → Entering custom prompt for AI...
+   ✅ Prompt entered
+   → Clicking "Genera Task AI" button...
+   ✅ Clicked generate button
+   ✅ Task generation started...
+   ⏳ Waiting 35 seconds for AI to generate tasks...
+
+      5 seconds...
+      10 seconds...
+      15 seconds...
+      20 seconds...
+      25 seconds...
+      30 seconds...
+      35 seconds...
+
+   ✅ Screenshot: simple-05-tasks-generated.png
+   ✅ AI generated suggested tasks
+
+   → Confirming all generated tasks...
+   ✅ Clicked confirm button
+   ✅ Tasks confirmed and saved to Firestore
+
+
+📱 STEP 3: Login as Seller
+
+   → Logging in as Aya Ftissi: ftissiaya@gmail.com
+
+❌ Test error: TimeoutError: Waiting for selector `input[type="email"]` failed
+    at CSSQueryHandler.waitFor (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/common/QueryHandler.js:214:46)
+    at async CdpFrame.waitForSelector (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Frame.js:544:21)
+    ... 2 lines matching cause stack trace ...
+    at async /Users/dev/sales-managment/scripts/test-complete-flow-simple.js:436:5 {
+  cause: TimeoutError: Waiting failed: 10000ms exceeded
+      at new WaitTask (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/common/WaitTask.js:49:34)
+      at IsolatedWorld.waitForFunction (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Realm.js:25:26)
+      at CSSQueryHandler.waitFor (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/common/QueryHandler.js:179:95)
+      at async CdpFrame.waitForSelector (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Frame.js:544:21)
+      at async CdpPage.waitForSelector (/Users/dev/sales-managment/node_modules/puppeteer-core/lib/cjs/puppeteer/api/Page.js:1377:20)
+      at async testCompleteFlow (/Users/dev/sales-managment/scripts/test-complete-flow-simple.js:198:7)
+      at async /Users/dev/sales-managment/scripts/test-complete-flow-simple.js:436:5
+}
+❌ Test failed: ReferenceError: page is not defined
+    at testCompleteFlow (/Users/dev/sales-managment/scripts/test-complete-flow-simple.js:427:5)
+    at async /Users/dev/sales-managment/scripts/test-complete-flow-simple.js:436:5

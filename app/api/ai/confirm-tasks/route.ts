@@ -52,6 +52,17 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
         createdBy: 'admin_confirmed',
         estimatedDuration: task.estimatedDuration || 30,
+        // IMPORTANT: Save all AI-generated fields
+        expectedOutputFormat: task.expectedOutputFormat || null,
+        guidelines: task.guidelines || [],
+        bestPractices: task.bestPractices || [],
+        commonMistakes: task.commonMistakes || [],
+        script: task.script || '',
+        talkingPoints: task.talkingPoints || [],
+        demoScript: task.demoScript || '',
+        emailDraft: task.emailDraft || '',
+        clientContext: task.clientContext || '',
+        dealContext: task.dealContext || '',
       };
 
       const docRef = await adminDb!.collection('tasks').add(taskDoc);
