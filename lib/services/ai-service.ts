@@ -540,6 +540,19 @@ export async function getCoachResponse(
     return `Ciao ${params.userName}! In DEMO MODE, l'AI Coach non è ancora attivo. La tua domanda era: "${params.question}". Una volta configurato con una API key valida di OpenAI, riceverai risposte personalizzate basate sul tuo pipeline e performance.`;
   }
 
+  // Carica il contesto AI personalizzato del venditore
+  let aiContextStr = '';
+  try {
+    const { getAIContext, formatContextForAI } = await import('@/lib/services/ai-context-service');
+    const aiContext = await getAIContext(params.userId);
+    if (aiContext) {
+      aiContextStr = formatContextForAI(aiContext);
+    }
+  } catch (error) {
+    console.error('Error loading AI context:', error);
+    // Continua senza contesto personalizzato se c'è un errore
+  }
+
   const contextStr = params.context
     ? `
 CURRENT CONTEXT:
@@ -551,16 +564,24 @@ CURRENT CONTEXT:
 
   const prompt = `You are an expert sales coach helping ${params.userName}.
 
+${aiContextStr ? `${aiContextStr}\n` : ''}
 ${contextStr}
 
 QUESTION: ${params.question}
 
-Provide actionable, specific advice. Be encouraging but practical.`;
+IMPORTANTE: Usa il contesto del venditore sopra per fornire risposte PERSONALIZZATE e COERENTI con:
+- Le sue esperienze passate (task completati, note, file caricati)
+- I suoi punti di forza e aree di miglioramento
+- Le istruzioni specifiche dall'admin
+- Lo stile di comunicazione preferito
+- Le linee guida aziendali
+
+Provide actionable, specific advice. Be encouraging but practical. Riferisci esempi concreti dalle sue esperienze passate quando possibile.`;
 
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
-      max_tokens: 1000,
+      max_tokens: 2000, // Aumentato per risposte più dettagliate con contesto
       temperature: 0.7,
       messages: [{ role: 'user', content: prompt }],
     });

@@ -677,3 +677,82 @@ export interface AdminDashboardData {
     totalRevenue: number;
   };
 }
+
+// AI Context Types - Sistema di contesto personalizzato per ogni venditore
+export interface AIContextTask {
+  taskId: string;
+  taskType: AITaskType;
+  title: string;
+  description: string;
+  completedAt: string;
+  outcome: 'success' | 'partial' | 'failed' | 'no_answer';
+
+  // Guide del task
+  guidelines?: string[];
+  bestPractices?: string[];
+  commonMistakes?: string[];
+  script?: string;
+
+  // Note e risultati del venditore
+  notes?: string;
+  actualDuration?: number;
+
+  // File caricati e loro trascrizioni
+  attachments?: Array<{
+    url: string;
+    fileName: string;
+    transcription?: string; // Trascrizione OCR o contenuto estratto
+    summary?: string; // Riassunto AI del contenuto
+  }>;
+
+  // Insights AI dal task completato
+  aiAnalysis?: string;
+  lessonsLearned?: string[];
+}
+
+export interface AIContext {
+  id: string;
+  userId: string;
+  sellerName: string;
+
+  // Contesto automaticamente generato dai task completati
+  completedTasks: AIContextTask[];
+
+  // Statistiche aggregate
+  stats: {
+    totalTasksCompleted: number;
+    successRate: number; // % success vs partial/failed
+    averageDuration: number;
+    commonObjections: string[];
+    bestPerformingTactics: string[];
+  };
+
+  // Contesto personalizzato dall'admin (modificabile)
+  customContext: {
+    sellerStrengths: string[]; // Punti di forza del venditore
+    sellerWeaknesses: string[]; // Aree di miglioramento
+    learningGoals: string[]; // Obiettivi di apprendimento
+    specificInstructions: string; // Istruzioni specifiche per questo venditore
+    communicationStyle: string; // Come l'AI dovrebbe parlare con questo venditore
+    industryKnowledge: string; // Conoscenze specifiche del settore
+    companyGuidelines: string; // Linee guida aziendali specifiche
+  };
+
+  // Metadata
+  createdAt: string;
+  updatedAt: string;
+  lastTaskAddedAt?: string;
+  version: number; // Per tracking delle modifiche
+}
+
+// Per l'admin: form per modificare il contesto
+export interface AIContextUpdateInput {
+  userId: string;
+  sellerStrengths?: string[];
+  sellerWeaknesses?: string[];
+  learningGoals?: string[];
+  specificInstructions?: string;
+  communicationStyle?: string;
+  industryKnowledge?: string;
+  companyGuidelines?: string;
+}
