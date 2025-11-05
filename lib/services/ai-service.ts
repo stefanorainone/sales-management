@@ -194,14 +194,60 @@ Generate 4-8 high-priority tasks for tomorrow that will maximize sales success. 
    - research: 15-20 min
    - admin: 10-15 min
 8. Related client/deal IDs if applicable
-9. Script/talking points if it's a call or email
-10. Objectives for the task
-11. guidelines: Step-by-step guidelines on how to execute the task (3-5 steps)
-   - Example: ["1. Prepara ambiente: trova stanza tranquilla, apri CRM", "2. Rivedi storia cliente prima di chiamare", "3. Segui script ma sii flessibile", "4. Prendi appunti durante chiamata", "5. Aggiorna CRM immediatamente dopo"]
-12. bestPractices: Best practices and tips for success (3-5 tips)
-   - Example: ["Sorridi mentre parli al telefono - si sente nella voce!", "Fai domande aperte per far parlare il cliente", "Riassumi i punti chiave prima di chiudere", "Conferma sempre i prossimi step"]
-13. commonMistakes: Common mistakes to avoid (3-5 mistakes)
-   - Example: ["Non parlare troppo - ascolta più del 60% del tempo", "Non saltare subito al prezzo - costruisci valore prima", "Non terminare senza next step definito", "Non dimenticare di prendere appunti"]
+9. Script/talking points if it's a call or email (detailed, specific to the client context)
+10. Objectives for the task (3-5 clear, measurable objectives)
+
+11. guidelines: GUIDA PASSO-PASSO DETTAGLIATA E APPROFONDITA (7-12 steps) - Ogni step deve essere specifico, concreto e attuabile
+   IMPORTANTE: Le guidelines devono essere MOLTO DETTAGLIATE, come se stessi guidando un venditore junior step-by-step
+   - Includi preparazione mentale e fisica
+   - Dettagli su cosa fare PRIMA, DURANTE e DOPO il task
+   - Specifiche tecniche (quali strumenti usare, cosa avere pronto, timing preciso)
+   - Cosa dire esattamente nelle situazioni chiave
+   - Come gestire diverse reazioni del cliente
+
+   Example per una chiamata:
+   ["1. PREPARAZIONE AMBIENTE (5min): Trova stanza tranquilla e silenziosa, chiudi porta, prepara acqua, carica telefono, apri CRM su computer, prepara blocco note e penna per appunti rapidi",
+    "2. STUDIO CLIENTE (10min): Rivedi TUTTA la storia cliente nel CRM - ultimo contatto, deal in corso, esigenze espresse, obiezioni passate, budget, decision maker. Leggi le note dei colleghi. Controlla LinkedIn del cliente per aggiornamenti recenti (nuovo ruolo? post interessanti?)",
+    "3. PREPARAZIONE MENTALE (2min): Respira profondamente 3 volte, ricorda che stai offrendo VALORE non vendendo. Sorridi prima di chiamare - il tono si sente! Visualizza una conversazione positiva.",
+    "4. TIMING PERFETTO: Chiama tra 10:00-11:30 o 14:30-16:00 (evita lunedì mattina e venerdì pomeriggio). Se non risponde, richiama dopo 2-3 ore, mai immediatamente.",
+    "5. APERTURA CHIAMATA (primi 30sec): 'Buongiorno [Nome], sono [Tuo Nome] di [Azienda]. Ti disturbo?' - PAUSA e ascolta. Poi: 'Ti chiamo perché [motivo specifico legato a loro esigenza]. Hai 10 minuti ora o preferisci che ti richiami?'",
+    "6. DISCOVERY PROFONDA (5-7min): Fai domande aperte. 'Come sta andando [riferimento a problema discusso]?' 'Quali sono le tue priorità principali in questo momento?' 'Cosa ti tiene sveglio la notte riguardo a [area]?'. ASCOLTA PIÙ DEL 70% DEL TEMPO. Annota tutto.",
+    "7. GESTIONE OBIEZIONI: Se dice 'costa troppo': 'Capisco, parliamo di investimento. Quanto ti costa OGGI non avere questa soluzione?' Se dice 'devo pensarci': 'Certo, cosa specificamente vuoi valutare? Posso aiutarti con informazioni aggiuntive?'",
+    "8. PROPOSTA VALORE PERSONALIZZATA (3min): 'Basandomi su quello che mi hai detto su [ripeti loro problema], la nostra soluzione [beneficio specifico] ti permetterebbe di [risultato misurabile]. Questo risolverebbe [loro pain point]?'",
+    "9. CHIUSURA MORBIDA: 'Ha senso? Cosa ne pensi?' NON dire 'Sei interessato?' ma 'Quali sono i prossimi step dalla tua parte?' - li coinvolgi nella decisione",
+   "10. DEFINISCI NEXT STEP CONCRETO: Non terminare con 'ci sentiamo'. Ma: 'Ti invio proposta via email oggi pomeriggio, la rivediamo insieme venerdì alle 15:00. Ti va?' Prendi IMPEGNO preciso.",
+   "11. RINGRAZIA E CONFERMA: 'Perfetto, ricapitolando: ti invio [X] oggi, tu fai [Y] entro [data], ci sentiamo [giorno] alle [ora]. Corretto?' Aspetta conferma. 'Grazie [Nome], buona giornata!'",
+   "12. FOLLOW-UP IMMEDIATO (entro 15min): Mentre è tutto fresco, aggiorna CRM con: riassunto conversazione, esigenze emerse, obiezioni, budget discusso, prossimi step concordati, sentiment del cliente (1-5), probabilità chiusura. Invia email di follow-up con recap e prossimi step."]
+
+12. bestPractices: BEST PRACTICES APPROFONDITE E CONCRETE (6-10 tips) - Ogni tip deve includere il PERCHÉ e un esempio pratico
+   IMPORTANTE: Non generiche frasi motivazionali, ma consigli TECNICI e PRATICI con spiegazione del perché funzionano
+
+   Example per una chiamata:
+   ["🎭 SORRIDI MENTRE PARLI: Il sorriso cambia il tono della voce - il cliente lo 'sente' anche al telefono e percepisce più positività. Test: registrati mentre parli serio vs sorridente, sentirai la differenza!",
+    "👂 REGOLA 70/30: Tu parli max 30%, cliente parla 70%. I migliori venditori ASCOLTANO più di quanto parlano. Il cliente deve sentirsi ASCOLTATO, non 'venduto'. Annota quanto parli tu vs cliente.",
+    "🎯 FAI DOMANDE APERTE: Evita domande sì/no. Invece di 'Ti interessa?' chiedi 'Come vedi questa soluzione integrarsi nel tuo processo attuale?' Le domande aperte rivelano VERO interesse e obiezioni nascoste.",
+    "📝 PRENDI APPUNTI VISIBILI: Dì 'Sto prendendo appunti perché quello che mi stai dicendo è importante'. Questo comunica: 1) Rispetto, 2) Professionalità, 3) Seguirai quanto detto. Il cliente si sente valorizzato.",
+    "🔁 RIPETI E RIASSUMI: Ogni 3-4min ripeti con parole tue quello che ha detto il cliente: 'Quindi se ho capito bene, il tuo problema principale è [X]?'. Questo: 1) Verifica comprensione, 2) Mostra ascolto attivo, 3) Evita fraintendimenti.",
+    "⏱️ RISPETTA IL TEMPO: Se hai detto '10 minuti', dopo 9min chiedi 'Ho ancora 5 minuti?' Mostra rispetto del loro tempo. Se servono più tempo, LORO te lo daranno. Mai sforare senza chiedere.",
+    "💰 PARLA DI VALORE PRIMA DEL PREZZO: Non menzionare costi finché non hanno CAPITO il valore. Prima costruisci il dolore del problema, poi la soluzione, poi il valore, POI il prezzo. Prezzo senza valore = obiezione garantita.",
+    "🎪 USA STORYTELLING: Invece di 'Funziona bene', racconta: 'Un cliente simile a te, [Azienda], aveva [stesso problema]. Dopo 3 mesi con noi, [risultato misurabile: +40% vendite]. Ora usano [feature] ogni giorno.' Le storie vendono più dei dati.",
+    "🚫 GESTISCI 'NO' CON CURIOSITÀ: Se dice no, NON insistere. Ma chiedi con genuina curiosità: 'Posso chiederti cosa ti ha fatto decidere di no?' Spesso rivela obiezione gestibile. E mostra che accetti loro decisione = meno pressione.",
+    "📧 EMAIL DI FOLLOW-UP ENTRO 1H: Invia recap della chiamata entro 60min mentre è fresco. Include: 1) Grazie per tempo, 2) Punti chiave discussi, 3) Prossimi step con DATE precise, 4) Tua disponibilità. Questo mostra professionalità e mantiene momentum."]
+
+13. commonMistakes: ERRORI COMUNI DA EVITARE - MOLTO DETTAGLIATI (6-10 mistakes) - Spiega perché è un errore e cosa fare invece
+   IMPORTANTE: Ogni errore deve includere la CONSEGUENZA negativa e l'ALTERNATIVA corretta
+
+   Example per una chiamata:
+   ["❌ ERRORE: Parlare troppo (parlare >50% del tempo) → CONSEGUENZA: Cliente si annoia, perde interesse, sente 'venditore invadente' → ✅ FAI INVECE: Poni domande aperte, ascolta attivamente, parla max 30% del tempo. Usa silenzi strategici - il cliente riempirà il silenzio con info preziose.",
+    "❌ ERRORE: Saltare subito al prezzo/demo senza discovery → CONSEGUENZA: Non conosci vere esigenze, proponi soluzione generica, cliente non vede valore personalizzato → ✅ FAI INVECE: Dedica primi 10min solo a CAPIRE loro situazione con domande. Solo dopo proponi soluzione su misura.",
+    "❌ ERRORE: Non gestire obiezioni, cambiar subito argomento → CONSEGUENZA: Obiezione resta irrisolta, cliente non convinto, probabilità chiusura crolla → ✅ FAI INVECE: Accogli obiezione 'Capisco la tua preoccupazione', chiedi più info 'Puoi dirmi di più?', poi affronta con empatia.",
+    "❌ ERRORE: Terminare chiamata senza prossimo step definito → CONSEGUENZA: Deal si 'raffredda', nessun momentum, devi ripartire da zero alla prossima chiamata → ✅ FAI INVECE: Sempre concordare azione concreta con DATA: 'Ti invio proposta giovedì, la rivediamo insieme lunedì 15:00. Ti va?'",
+    "❌ ERRORE: Non aggiornare CRM subito dopo chiamata → CONSEGUENZA: Dimentichi dettagli cruciali, prossima interazione sembra poco preparata, cliente sente mancanza di professionalità → ✅ FAI INVECE: Blocca 15min dopo ogni chiamata per aggiornare CRM dettagliatamente mentre è fresco.",
+    "❌ ERRORE: Usare troppo gergo tecnico o acronimi → CONSEGUENZA: Cliente confuso, si sente stupido a chiedere, annuisce ma non ha capito → ✅ FAI INVECE: Parla come parla il CLIENTE. Se usa termini semplici, anche tu fallo. Spiega concetti complessi con analogie semplici.",
+    "❌ ERRORE: Non fare recap dei punti chiave prima di chiudere → CONSEGUENZA: Cliente esce confuso, non ricorda next step, non sa cosa deve fare → ✅ FAI INVECE: Ultimi 2min: 'Ricapitoliamo: hai detto [X], io farò [Y] entro [data], tu farai [Z], ci risentiamo [quando]. Tutto chiaro?'",
+    "❌ ERRORE: Essere difensivo con obiezioni su prezzo → CONSEGUENZA: Cliente sente che nascondi qualcosa, difensività = insicurezza percepita → ✅ FAI INVECE: 'Capisco, parliamo di investimento. Quanto ti costa oggi NON avere questa soluzione? Qual è il costo dell'inazione?' - sposta focus su costo del problema.",
+    "❌ ERRORE: Chiamare senza aver studiato cliente → CONSEGUENZA: Fai domande le cui risposte sono nel CRM, sembri poco preparato, cliente perde fiducia → ✅ FAI INVECE: Dedica 10min PRIMA della chiamata a studiare tutto: storico, deal, note, LinkedIn. Entra preparato = rispetto.",
+    "❌ ERRORE: Accettare vago 'ci penso' senza scavare → CONSEGUENZA: È un no mascherato, perdi tempo aspettando risposta che non arriva → ✅ FAI INVECE: 'Certo, cosa specificamente vuoi valutare? C'è qualcosa che ti blocca? Parliamone ora.' Porta obiezioni allo scoperto per gestirle."]
 14. expectedOutputFormat: OBBLIGATORIO - Specifica SEMPRE il formato in cui il venditore deve fornire il risultato e caricare documenti
    - type: "text" | "structured_data" | "google_sheet" | "document" | "mixed"
    - description: Istruzioni dettagliate su COSA caricare e in CHE FORMATO (es: "Carica screenshot della conversazione WhatsApp + Google Sheet con i dati raccolti")
@@ -228,7 +274,7 @@ Return ONLY a valid JSON array of tasks. No additional text.`;
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
-      max_tokens: 4000,
+      max_tokens: 8000, // Aumentato per supportare guide molto dettagliate
       temperature: 0.7,
       messages: [
         {
