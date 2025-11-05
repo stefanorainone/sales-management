@@ -39,7 +39,7 @@ export async function addTaskToContext(
       actualDuration: task.actualDuration,
       attachments: attachmentTranscriptions || [],
       aiAnalysis: task.aiAnalysis || '',
-      lessonsLearned: task.lessonsLearned || [],
+      lessonsLearned: [], // TODO: Estrarre da AI analysis
     };
 
     if (contextDoc.exists) {
