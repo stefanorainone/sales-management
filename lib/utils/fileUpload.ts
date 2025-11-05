@@ -24,6 +24,12 @@ export async function uploadFile(
     const storageRef = ref(storage, path);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
+    // Timeout after 30 seconds to prevent infinite loops
+    const timeout = setTimeout(() => {
+      uploadTask.cancel();
+      reject(new Error('Upload timeout - Firebase Storage might not be configured'));
+    }, 30000);
+
     uploadTask.on(
       'state_changed',
       (snapshot) => {
@@ -33,10 +39,12 @@ export async function uploadFile(
         }
       },
       (error) => {
+        clearTimeout(timeout);
         console.error('Upload error:', error);
         reject(error);
       },
       async () => {
+        clearTimeout(timeout);
         try {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           resolve(downloadURL);

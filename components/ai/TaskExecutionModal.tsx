@@ -88,8 +88,8 @@ export function TaskExecutionModal({
       return;
     }
 
-    // Validazione: DOCUMENTI OBBLIGATORI
-    if (selectedFiles.length === 0) {
+    // Validazione: DOCUMENTI OBBLIGATORI (se richiesto)
+    if (task.expectedOutputFormat?.documentRequired && selectedFiles.length === 0) {
       const formatDesc = task.expectedOutputFormat?.description || 'Carica screenshot, foto o documento con i risultati ottenuti';
       alert(`⚠️ DOCUMENTO OBBLIGATORIO!\n\nDevi caricare almeno un documento per completare questo task.\n\nFormato richiesto:\n${formatDesc}`);
       return;
@@ -97,17 +97,41 @@ export function TaskExecutionModal({
 
     try {
       setIsUploading(true);
-      const basePath = `task-attachments/${task.userId}/${task.id}`;
+      let attachmentUrls: string[] = [];
 
-      const attachmentUrls = await uploadMultipleFiles(selectedFiles, basePath, (progress) => {
-        setUploadProgress(progress);
-      });
+      // Upload files only if there are files selected
+      if (selectedFiles.length > 0) {
+        const basePath = `task-attachments/${task.userId}/${task.id}`;
+
+        try {
+          attachmentUrls = await uploadMultipleFiles(selectedFiles, basePath, (progress) => {
+            setUploadProgress(progress);
+          });
+        } catch (uploadError) {
+          console.error('Error uploading files:', uploadError);
+          // Se l'upload fallisce, chiedi conferma all'utente
+          const confirmWithoutFiles = confirm(
+            '❌ Errore durante il caricamento dei file.\n\n' +
+            'Possibile causa: Firebase Storage non configurato.\n\n' +
+            'Vuoi completare il task SENZA i file allegati?\n\n' +
+            '(Potrai ricaricarli più tardi quando Firebase Storage sarà configurato)'
+          );
+
+          if (!confirmWithoutFiles) {
+            setIsUploading(false);
+            return;
+          }
+          // Procedi senza file
+          attachmentUrls = [];
+        }
+      }
 
       onComplete(task.id, notes, outcome, parseInt(actualDuration), attachmentUrls);
       onClose();
+      setIsUploading(false);
     } catch (error) {
-      console.error('Error uploading files:', error);
-      alert('❌ Errore durante il caricamento dei file. Riprova.');
+      console.error('Error completing task:', error);
+      alert('❌ Errore durante il completamento del task. Riprova.');
       setIsUploading(false);
     }
   };
