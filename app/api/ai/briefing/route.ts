@@ -66,25 +66,14 @@ export async function POST(request: NextRequest) {
 
     console.log('[Briefing API] Converted tasks:', existingTasks.length);
 
-    // If we have existing tasks, return them with the briefing
+    // If we have existing tasks, return them immediately without calling AI
     if (existingTasks.length > 0) {
       console.log('[Briefing API] Returning existing tasks without generating new ones');
 
-      // Generate only the briefing message, not new tasks
-      const briefing = await generateDailyBriefing({
-        userId,
-        userName,
-        deals,
-        clients,
-        recentActivities,
-        yesterdayTasks,
-        date,
-      });
-
-      // Override the tasks with the existing ones from Firestore
       return NextResponse.json({
-        ...briefing,
-        tasks: existingTasks
+        message: `Buongiorno ${userName}! Ecco i tuoi task per oggi.`,
+        tasks: existingTasks,
+        insights: []
       });
     }
 
