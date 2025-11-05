@@ -1,9 +1,13 @@
 #!/bin/bash
 
-# Deploy to Cloud Run with all environment variables
+# Deploy to Cloud Run with all environment variables using Artifact Registry
 
+# Build and push to Artifact Registry
+gcloud builds submit --tag europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest
+
+# Deploy to Cloud Run
 gcloud run deploy sales-crm \
-  --source . \
+  --image=europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest \
   --region=europe-west1 \
   --platform=managed \
   --allow-unauthenticated \
