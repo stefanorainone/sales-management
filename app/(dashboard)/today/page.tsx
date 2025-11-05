@@ -2,9 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { useDeals } from '@/lib/hooks/useDeals';
-import { useClients } from '@/lib/hooks/useClients';
-import { useActivities } from '@/lib/hooks/useActivities';
 import { TaskCard } from '@/components/ai/TaskCard';
 import { TaskExecutionModal } from '@/components/ai/TaskExecutionModal';
 import { CompletedTaskModal } from '@/components/today/CompletedTaskModal';
@@ -13,9 +10,6 @@ import type { AITask, AIInsight, DailyBriefing } from '@/types';
 
 export default function TodayPage() {
   const { user } = useAuth();
-  const { deals, loading: dealsLoading } = useDeals();
-  const { clients, loading: clientsLoading } = useClients();
-  const { activities, loading: activitiesLoading } = useActivities();
 
   const [briefing, setBriefing] = useState<DailyBriefing | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,22 +22,15 @@ export default function TodayPage() {
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    // Wait for all data to load
-    if (dealsLoading || clientsLoading || activitiesLoading) {
+    // Only load once when user is available
+    if (hasLoadedRef.current || !user) {
       return;
     }
 
-    // Only load once
-    if (hasLoadedRef.current) {
-      return;
-    }
-
-    if (user) {
-      hasLoadedRef.current = true;
-      loadDailyBriefing();
-    }
+    hasLoadedRef.current = true;
+    loadDailyBriefing();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, dealsLoading, clientsLoading, activitiesLoading]);
+  }, [user?.id]);
 
   const loadDailyBriefing = async () => {
     try {
@@ -55,9 +42,9 @@ export default function TodayPage() {
         body: JSON.stringify({
           userId: user?.id,
           userName: user?.displayName || 'Venditore',
-          deals,
-          clients,
-          recentActivities: activities.slice(0, 10),
+          deals: [],
+          clients: [],
+          recentActivities: [],
           date: today,
         }),
       });
