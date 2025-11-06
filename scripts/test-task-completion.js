@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const BASE_URL = process.env.BASE_URL || 'https://sales-management-01-651164440715.europe-west1.run.app';
+const BASE_URL = process.env.BASE_URL || 'https://sales-crm-412055180465.europe-west1.run.app';
 const TEST_EMAIL = 'admin@vr.com';
 const TEST_PASSWORD = 'Admin123!';
 const SCREENSHOT_DIR = path.join(__dirname, '../test-results');
@@ -68,7 +68,27 @@ async function testTaskCompletion() {
     // Step 2: Navigate to Today's Tasks
     console.log('📅 Step 2: Navigate to Today\'s Tasks...');
     await page.goto(`${BASE_URL}/today`, { waitUntil: 'networkidle2', timeout: 30000 });
-    await wait(3000); // Wait for tasks to load
+
+    // Wait for briefing to load (look for loading message to disappear)
+    console.log('⏳ Waiting for daily briefing to load...');
+    try {
+      // Wait up to 15 seconds for tasks to appear
+      await page.waitForFunction(
+        () => {
+          const buttons = Array.from(document.querySelectorAll('button'));
+          return buttons.some(btn =>
+            btn.textContent &&
+            (btn.textContent.includes('Inizia Task') || btn.textContent.includes('Scrivi Email'))
+          );
+        },
+        { timeout: 15000 }
+      );
+      console.log('✅ Briefing loaded, tasks are visible');
+    } catch (error) {
+      console.log('⏳ No tasks appeared after 15s, continuing anyway...');
+    }
+
+    await wait(2000);
     await takeScreenshot(page, 'step4-today-page');
 
     // Step 3: Find and click on "Inizia Task" button

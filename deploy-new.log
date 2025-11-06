@@ -1,0 +1,350 @@
+Creating temporary archive of 212 file(s) totalling 16.5 MiB before compression.
+Some files were not included in the source upload.
+
+Check the gcloud log [/Users/dev/.config/gcloud/logs/2025.11.05/19.41.32.361116.log] to see which files and the contents of the
+default gcloudignore file used (see `$ gcloud topic gcloudignore` to learn
+more).
+
+Uploading tarball of [.] to [gs://sales-management-01_cloudbuild/source/1762368092.432451-1cafe478d8e2404f99375a0f6307f34f.tgz]
+Created [https://cloudbuild.googleapis.com/v1/projects/sales-management-01/locations/global/builds/b1b71dac-d69d-43d5-b345-a786af7db5af].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds/b1b71dac-d69d-43d5-b345-a786af7db5af?project=412055180465 ].
+Waiting for build to complete. Polling interval: 1 second(s).
+----------------------------- REMOTE BUILD OUTPUT ------------------------------
+starting build "b1b71dac-d69d-43d5-b345-a786af7db5af"
+
+FETCHSOURCE
+Fetching storage object: gs://sales-management-01_cloudbuild/source/1762368092.432451-1cafe478d8e2404f99375a0f6307f34f.tgz#1762368103196377
+Copying gs://sales-management-01_cloudbuild/source/1762368092.432451-1cafe478d8e2404f99375a0f6307f34f.tgz#1762368103196377...
+/ [0 files][    0.0 B/ 14.3 MiB]                                                / [1 files][ 14.3 MiB/ 14.3 MiB]                                                
+Operation completed over 1 objects/14.3 MiB.
+BUILD
+Already have image (with digest): gcr.io/cloud-builders/docker
+Sending build context to Docker daemon  10.18MB
+Step 1/24 : FROM node:18-alpine AS base
+18-alpine: Pulling from library/node
+f18232174bc9: Pulling fs layer
+dd71dde834b5: Pulling fs layer
+1e5a4c89cee5: Pulling fs layer
+25ff2da83641: Pulling fs layer
+25ff2da83641: Waiting
+f18232174bc9: Verifying Checksum
+f18232174bc9: Download complete
+1e5a4c89cee5: Download complete
+f18232174bc9: Pull complete
+dd71dde834b5: Verifying Checksum
+dd71dde834b5: Download complete
+25ff2da83641: Verifying Checksum
+25ff2da83641: Download complete
+dd71dde834b5: Pull complete
+1e5a4c89cee5: Pull complete
+25ff2da83641: Pull complete
+Digest: sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+Status: Downloaded newer image for node:18-alpine
+ ---> ee77c6cd7c18
+Step 2/24 : FROM base AS deps
+ ---> ee77c6cd7c18
+Step 3/24 : RUN apk add --no-cache libc6-compat
+ ---> Running in c3df778f4ab4
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+(1/3) Installing musl-obstack (1.2.3-r2)
+(2/3) Installing libucontext (1.3.2-r0)
+(3/3) Installing gcompat (1.1.0-r4)
+OK: 10 MiB in 20 packages
+Removing intermediate container c3df778f4ab4
+ ---> a5991052d665
+Step 4/24 : WORKDIR /app
+ ---> Running in b8ba0899e427
+Removing intermediate container b8ba0899e427
+ ---> 4b6d8df9bb7f
+Step 5/24 : COPY package.json package-lock.json* ./
+ ---> 8da7d350060e
+Step 6/24 : RUN npm ci
+ ---> Running in fefd485e39d6
+[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/ai@2.4.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app@0.14.4',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app-check@0.11.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app-check-compat@0.4.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app-compat@0.5.4',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/auth@1.11.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/auth-compat@0.6.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/component@0.7.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/database@1.1.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/database-compat@2.1.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/firestore@4.9.2',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/firestore-compat@0.4.2',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/functions@0.13.1',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/functions-compat@0.4.1',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/logger@0.5.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/storage@0.14.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/storage-compat@0.4.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/util@1.13.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m
+added 353 packages, and audited 354 packages in 39s
+
+43 packages are looking for funding
+  run `npm fund` for details
+
+1 moderate severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[91mnpm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+[0mRemoving intermediate container fefd485e39d6
+ ---> a965bcddc7f4
+Step 7/24 : FROM base AS builder
+ ---> ee77c6cd7c18
+Step 8/24 : WORKDIR /app
+ ---> Running in 4186c8838219
+Removing intermediate container 4186c8838219
+ ---> f54b91e3ef31
+Step 9/24 : COPY --from=deps /app/node_modules ./node_modules
+ ---> 3c2b15993979
+Step 10/24 : COPY . .
+ ---> 6516f0c1520b
+Step 11/24 : RUN npm run build
+ ---> Running in 3491c78e360b
+
+> sales-managment@1.0.0 build
+> next build
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+   ▲ Next.js 15.5.5
+   - Environments: .env.production
+   - Experiments (use with caution):
+     · serverActions
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 35.7s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/40) ...
+   Generating static pages (10/40)
+   Generating static pages (20/40) 
+   Generating static pages (30/40) 
+ ✓ Generating static pages (40/40)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                     1.3 kB         226 kB
+├ ○ /_not-found                            996 B         103 kB
+├ ○ /activities                          6.25 kB         231 kB
+├ ○ /admin                                3.9 kB         109 kB
+├ ○ /admin/ai-config                     1.26 kB         103 kB
+├ ○ /admin/ai-context                    3.13 kB         105 kB
+├ ○ /admin/ai-tasks                      9.07 kB         234 kB
+├ ○ /admin/dashboard                     5.18 kB         230 kB
+├ ○ /admin/tasks                          7.3 kB         232 kB
+├ ○ /admin/users                         5.05 kB         230 kB
+├ ○ /ai-tasks                            1.26 kB         103 kB
+├ ○ /analytics                           5.49 kB         230 kB
+├ ƒ /api/admin/ai-context                  184 B         102 kB
+├ ƒ /api/admin/chats                       184 B         102 kB
+├ ƒ /api/admin/create-user                 184 B         102 kB
+├ ƒ /api/admin/database                    184 B         102 kB
+├ ƒ /api/admin/instructions                184 B         102 kB
+├ ƒ /api/admin/overview                    184 B         102 kB
+├ ƒ /api/admin/tasks                       184 B         102 kB
+├ ƒ /api/admin/tasks/[taskId]              184 B         102 kB
+├ ƒ /api/ai/analyze-notes                  184 B         102 kB
+├ ƒ /api/ai/briefing                       184 B         102 kB
+├ ƒ /api/ai/coach                          184 B         102 kB
+├ ƒ /api/ai/confirm-tasks                  184 B         102 kB
+├ ƒ /api/ai/context                        184 B         102 kB
+├ ƒ /api/ai/generate-daily-tasks           184 B         102 kB
+├ ƒ /api/ai/generate-tasks                 184 B         102 kB
+├ ƒ /api/ai/generate-tasks-custom          184 B         102 kB
+├ ƒ /api/ai/research-prospects             184 B         102 kB
+├ ƒ /api/analytics                         184 B         102 kB
+├ ƒ /api/cron/daily-automation             184 B         102 kB
+├ ƒ /api/debug/check-tasks                 184 B         102 kB
+├ ○ /clients                             2.29 kB         231 kB
+├ ○ /coach                               3.68 kB         229 kB
+├ ○ /dashboard                           1.85 kB         234 kB
+├ ○ /login                               3.81 kB         229 kB
+├ ○ /pipeline                            6.06 kB         231 kB
+├ ○ /today                               12.6 kB         238 kB
+└ ○ /training                            4.51 kB         106 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/1255-ba098675cb6696ab.js      45.7 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          1.93 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+[91mnpm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+[0mRemoving intermediate container 3491c78e360b
+ ---> ef1848e81532
+Step 12/24 : FROM base AS runner
+ ---> ee77c6cd7c18
+Step 13/24 : WORKDIR /app
+ ---> Running in a91db5297702
+Removing intermediate container a91db5297702
+ ---> 2390933b1fc3
+Step 14/24 : ENV NODE_ENV production
+ ---> Running in 291ccb8e718b
+Removing intermediate container 291ccb8e718b
+ ---> f27124389239
+Step 15/24 : RUN addgroup --system --gid 1001 nodejs
+ ---> Running in 3fddd7a081e2
+Removing intermediate container 3fddd7a081e2
+ ---> eee2be8a25a4
+Step 16/24 : RUN adduser --system --uid 1001 nextjs
+ ---> Running in f6c7eb469350
+Removing intermediate container f6c7eb469350
+ ---> bfe459f62aa2
+Step 17/24 : COPY --from=builder /app/public ./public
+ ---> ad445eff5d2f
+Step 18/24 : COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+ ---> 7fd5332aa2b0
+Step 19/24 : COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+ ---> e5982aaae8d2
+Step 20/24 : USER nextjs
+ ---> Running in c59a3a35389d
+Removing intermediate container c59a3a35389d
+ ---> 1d021f4c296a
+Step 21/24 : EXPOSE 8080
+ ---> Running in a1f6d2e4d21f
+Removing intermediate container a1f6d2e4d21f
+ ---> 2191c1ab4d9e
+Step 22/24 : ENV PORT 8080
+ ---> Running in fb69598450b5
+Removing intermediate container fb69598450b5
+ ---> 783ef38060e3
+Step 23/24 : ENV HOSTNAME "0.0.0.0"
+ ---> Running in 4de6825bc56f
+Removing intermediate container 4de6825bc56f
+ ---> 52545a5f0878
+Step 24/24 : CMD ["node", "server.js"]
+ ---> Running in 79ee8ee324cb
+Removing intermediate container 79ee8ee324cb
+ ---> ca27b3a32878
+Successfully built ca27b3a32878
+Successfully tagged europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest
+PUSH
+Pushing europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest
+The push refers to repository [europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm]
+ac877cb8e25a: Preparing
+7e99b68b5659: Preparing
+8a7d450614ff: Preparing
+e82bc6147ae6: Preparing
+b4eedb60ac25: Preparing
+00d8741c6fdb: Preparing
+82140d9a70a7: Preparing
+f3b40b0cdb1c: Preparing
+0b1f26057bd0: Preparing
+08000c18d16d: Preparing
+00d8741c6fdb: Waiting
+82140d9a70a7: Waiting
+f3b40b0cdb1c: Waiting
+0b1f26057bd0: Waiting
+08000c18d16d: Waiting
+e82bc6147ae6: Pushed
+8a7d450614ff: Pushed
+b4eedb60ac25: Pushed
+ac877cb8e25a: Pushed
+82140d9a70a7: Layer already exists
+f3b40b0cdb1c: Layer already exists
+0b1f26057bd0: Layer already exists
+08000c18d16d: Layer already exists
+7e99b68b5659: Pushed
+00d8741c6fdb: Pushed
+latest: digest: sha256:0f5563f8c581c34aa44fec1b3242b0179caf54360dc1c228de73d832da68caa3 size: 2409
+DONE
+--------------------------------------------------------------------------------
+ID                                    CREATE_TIME                DURATION  SOURCE                                                                                             IMAGES                                                                              STATUS
+b1b71dac-d69d-43d5-b345-a786af7db5af  2025-11-05T18:41:44+00:00  3M57S     gs://sales-management-01_cloudbuild/source/1762368092.432451-1cafe478d8e2404f99375a0f6307f34f.tgz  europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm (+1 more)  SUCCESS
+Deploying container to Cloud Run service [[1msales-crm[m] in project [[1msales-management-01[m] region [[1meurope-west1[m]
+Deploying...
+Setting IAM Policy................done
+Creating Revision.................................................done
+Done.
+Service [[1msales-crm[m] revision [[1msales-crm-00036-5ms[m] has been deployed and is serving [1m100[m percent of traffic.
+Service URL: [1mhttps://sales-crm-412055180465.europe-west1.run.app[m
