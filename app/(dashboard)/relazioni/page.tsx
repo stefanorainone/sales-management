@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 export default function RelazioniPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterTemperature, setFilterTemperature] = useState<string>('all');
+  const [filterStrength, setFilterStrength] = useState<string>('all');
   const [filterImportance, setFilterImportance] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -19,8 +19,8 @@ export default function RelazioniPage() {
       name: 'Marco Bianchi',
       company: 'Liceo Scientifico Einstein',
       role: 'Preside',
-      temperature: 'calda' as const,
-      importance: 'critica' as const,
+      strength: 'active' as const,
+      importance: 'critical' as const,
       category: 'decision_maker' as const,
       lastContact: '2 giorni fa',
       nextAction: 'Chiamata follow-up proposta VR',
@@ -33,8 +33,8 @@ export default function RelazioniPage() {
       name: 'Laura Rossi',
       company: 'Hotel Paradiso',
       role: 'General Manager',
-      temperature: 'bollente' as const,
-      importance: 'alta' as const,
+      strength: 'strong' as const,
+      importance: 'high' as const,
       category: 'champion' as const,
       lastContact: '5 giorni fa',
       nextAction: 'Meeting firma contratto',
@@ -47,8 +47,8 @@ export default function RelazioniPage() {
       name: 'Giuseppe Verdi',
       company: 'Comune di Milano',
       role: 'Assessore Turismo',
-      temperature: 'tiepida' as const,
-      importance: 'critica' as const,
+      strength: 'developing' as const,
+      importance: 'critical' as const,
       category: 'influencer' as const,
       lastContact: '2 settimane fa',
       nextAction: 'Ricontattare per aggiornamento budget',
@@ -61,45 +61,65 @@ export default function RelazioniPage() {
   const relationships = mockRelationships.filter(rel => {
     const matchesSearch = rel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rel.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTemperature = filterTemperature === 'all' || rel.temperature === filterTemperature;
+    const matchesStrength = filterStrength === 'all' || rel.strength === filterStrength;
     const matchesImportance = filterImportance === 'all' || rel.importance === filterImportance;
-    return matchesSearch && matchesTemperature && matchesImportance;
+    return matchesSearch && matchesStrength && matchesImportance;
   });
 
   const stats = {
     total: mockRelationships.length,
-    hot: mockRelationships.filter(r => r.temperature === 'bollente' || r.temperature === 'calda').length,
-    critical: mockRelationships.filter(r => r.importance === 'critica').length,
+    strong: mockRelationships.filter(r => r.strength === 'strong' || r.strength === 'active').length,
+    critical: mockRelationships.filter(r => r.importance === 'critical').length,
     needsAction: mockRelationships.filter(r => r.valueBalance === 'do_give_more').length,
   };
 
-  const getTemperatureColor = (temp: string) => {
-    switch (temp) {
-      case 'bollente': return 'bg-red-100 text-red-700 border-red-300';
-      case 'calda': return 'bg-orange-100 text-orange-700 border-orange-300';
-      case 'tiepida': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
-      case 'fredda': return 'bg-blue-100 text-blue-700 border-blue-300';
+  const getStrengthColor = (strength: string) => {
+    switch (strength) {
+      case 'strong': return 'bg-green-100 text-green-700 border-green-300';
+      case 'active': return 'bg-blue-100 text-blue-700 border-blue-300';
+      case 'developing': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+      case 'weak': return 'bg-gray-100 text-gray-700 border-gray-300';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
 
-  const getTemperatureIcon = (temp: string) => {
-    switch (temp) {
-      case 'bollente': return '🔥';
-      case 'calda': return '🌡️';
-      case 'tiepida': return '☀️';
-      case 'fredda': return '❄️';
-      default: return '⚪';
+  const getStrengthIcon = (strength: string) => {
+    switch (strength) {
+      case 'strong': return '💪';
+      case 'active': return '✓';
+      case 'developing': return '⟳';
+      case 'weak': return '○';
+      default: return '○';
+    }
+  };
+
+  const getStrengthLabel = (strength: string) => {
+    switch (strength) {
+      case 'strong': return 'Strong';
+      case 'active': return 'Active';
+      case 'developing': return 'Developing';
+      case 'weak': return 'Weak';
+      default: return strength;
     }
   };
 
   const getImportanceIcon = (imp: string) => {
     switch (imp) {
-      case 'critica': return '⭐⭐⭐';
-      case 'alta': return '⭐⭐';
-      case 'media': return '⭐';
-      case 'bassa': return '○';
+      case 'critical': return '⭐⭐⭐';
+      case 'high': return '⭐⭐';
+      case 'medium': return '⭐';
+      case 'low': return '○';
       default: return '';
+    }
+  };
+
+  const getImportanceLabel = (imp: string) => {
+    switch (imp) {
+      case 'critical': return 'Critical';
+      case 'high': return 'High';
+      case 'medium': return 'Medium';
+      case 'low': return 'Low';
+      default: return imp;
     }
   };
 
@@ -147,10 +167,10 @@ export default function RelazioniPage() {
           <div className="text-xs text-gray-500 mt-1">Rete professionale attiva</div>
         </Card>
 
-        <Card padding={false} className="p-4 border-l-4 border-red-500">
-          <div className="text-sm text-gray-600">Relazioni Calde</div>
-          <div className="text-2xl font-bold text-red-600 mt-1">{stats.hot}</div>
-          <div className="text-xs text-gray-500 mt-1">Pronte per opportunità</div>
+        <Card padding={false} className="p-4 border-l-4 border-green-500">
+          <div className="text-sm text-gray-600">Strong Relationships</div>
+          <div className="text-2xl font-bold text-green-600 mt-1">{stats.strong}</div>
+          <div className="text-xs text-gray-500 mt-1">Ready for opportunities</div>
         </Card>
 
         <Card padding={false} className="p-4 border-l-4 border-yellow-500">
@@ -179,14 +199,14 @@ export default function RelazioniPage() {
 
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            value={filterTemperature}
-            onChange={(e) => setFilterTemperature(e.target.value)}
+            value={filterStrength}
+            onChange={(e) => setFilterStrength(e.target.value)}
           >
-            <option value="all">🌡️ Tutte le temperature</option>
-            <option value="bollente">🔥 Bollenti</option>
-            <option value="calda">🌡️ Calde</option>
-            <option value="tiepida">☀️ Tiepide</option>
-            <option value="fredda">❄️ Fredde</option>
+            <option value="all">💪 All Strengths</option>
+            <option value="strong">💪 Strong</option>
+            <option value="active">✓ Active</option>
+            <option value="developing">⟳ Developing</option>
+            <option value="weak">○ Weak</option>
           </select>
 
           <select
@@ -194,11 +214,11 @@ export default function RelazioniPage() {
             value={filterImportance}
             onChange={(e) => setFilterImportance(e.target.value)}
           >
-            <option value="all">⭐ Tutte le importanze</option>
-            <option value="critica">⭐⭐⭐ Critiche</option>
-            <option value="alta">⭐⭐ Alte</option>
-            <option value="media">⭐ Medie</option>
-            <option value="bassa">○ Basse</option>
+            <option value="all">⭐ All Importance</option>
+            <option value="critical">⭐⭐⭐ Critical</option>
+            <option value="high">⭐⭐ High</option>
+            <option value="medium">⭐ Medium</option>
+            <option value="low">○ Low</option>
           </select>
         </div>
 
@@ -241,8 +261,8 @@ export default function RelazioniPage() {
                     <p className="text-sm text-gray-600">{rel.role}</p>
                     <p className="text-xs text-gray-500">{rel.company}</p>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${getTemperatureColor(rel.temperature)}`}>
-                    {getTemperatureIcon(rel.temperature)} {rel.temperature.toUpperCase()}
+                  <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStrengthColor(rel.strength)}`}>
+                    {getStrengthIcon(rel.strength)} {getStrengthLabel(rel.strength)}
                   </div>
                 </div>
 
@@ -303,9 +323,9 @@ export default function RelazioniPage() {
                   key={rel.id}
                   className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
                 >
-                  {/* Temperature */}
-                  <div className={`px-3 py-2 rounded-full text-sm font-semibold border ${getTemperatureColor(rel.temperature)}`}>
-                    {getTemperatureIcon(rel.temperature)}
+                  {/* Strength */}
+                  <div className={`px-3 py-2 rounded-full text-sm font-semibold border ${getStrengthColor(rel.strength)}`}>
+                    {getStrengthIcon(rel.strength)}
                   </div>
 
                   {/* Info */}

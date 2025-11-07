@@ -90,8 +90,8 @@ export interface Client {
 
 // Relationship Action Plan (Ferrazzi Model)
 // Basato su "Never Eat Alone" di Keith Ferrazzi
-export type RelationshipTemperature = 'fredda' | 'tiepida' | 'calda' | 'bollente';
-export type RelationshipImportance = 'bassa' | 'media' | 'alta' | 'critica';
+export type RelationshipStrength = 'weak' | 'developing' | 'active' | 'strong';
+export type RelationshipImportance = 'low' | 'medium' | 'high' | 'critical';
 export type RelationshipCategory = 'decision_maker' | 'influencer' | 'champion' | 'gatekeeper' | 'advisor' | 'connector';
 
 export interface RelationshipNote {
@@ -136,7 +136,7 @@ export interface Relationship {
   linkedIn?: string;
 
   // Ferrazzi Model - Metriche Chiave
-  temperature: RelationshipTemperature; // quanto è "calda" la relazione
+  strength: RelationshipStrength; // forza e solidità della relazione
   importance: RelationshipImportance; // quanto è importante per i nostri obiettivi
   category: RelationshipCategory; // tipo di relazione strategica
 
