@@ -13,7 +13,7 @@ interface NavItem {
 
 const sellerNavItems: NavItem[] = [
   { name: 'I Miei Task', href: '/today', icon: '🎯' },
-  { name: 'Clienti', href: '/clients', icon: '👥' },
+  { name: 'Relazioni', href: '/relazioni', icon: '🤝' },
   { name: 'Attività', href: '/activities', icon: '✅' },
   { name: 'Analytics', href: '/analytics', icon: '📈' },
   { name: 'Training', href: '/training', icon: '🎓' },

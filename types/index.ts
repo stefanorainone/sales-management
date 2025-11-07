@@ -88,6 +88,103 @@ export interface Client {
   lastContactedAt?: string;
 }
 
+// Relationship Action Plan (Ferrazzi Model)
+// Basato su "Never Eat Alone" di Keith Ferrazzi
+export type RelationshipTemperature = 'fredda' | 'tiepida' | 'calda' | 'bollente';
+export type RelationshipImportance = 'bassa' | 'media' | 'alta' | 'critica';
+export type RelationshipCategory = 'decision_maker' | 'influencer' | 'champion' | 'gatekeeper' | 'advisor' | 'connector';
+
+export interface RelationshipNote {
+  id: string;
+  date: string;
+  content: string;
+  type: 'meeting' | 'call' | 'email' | 'event' | 'personal' | 'gift' | 'favor';
+  mood?: 'positive' | 'neutral' | 'negative';
+  nextAction?: string;
+}
+
+export interface ValueExchangeTracker {
+  // Valore che diamo alla persona
+  valueGiven: {
+    introductions?: string[]; // presentazioni fatte
+    advice?: string[]; // consigli/expertise condivisi
+    opportunities?: string[]; // opportunità create
+    personalSupport?: string[]; // supporto personale offerto
+    other?: string[];
+  };
+  // Valore che riceviamo
+  valueReceived: {
+    introductions?: string[]; // presentazioni ricevute
+    advice?: string[]; // consigli ricevuti
+    opportunities?: string[]; // opportunità ricevute
+    personalSupport?: string[]; // supporto ricevuto
+    other?: string[];
+  };
+  balance: 'do_give_more' | 'balanced' | 'do_receive_more'; // chi deve dare di più
+}
+
+export interface Relationship {
+  id: string;
+  userId: string; // venditore che gestisce la relazione
+
+  // Informazioni Persona
+  name: string;
+  company?: string;
+  role?: string;
+  email?: string;
+  phone?: string;
+  linkedIn?: string;
+
+  // Ferrazzi Model - Metriche Chiave
+  temperature: RelationshipTemperature; // quanto è "calda" la relazione
+  importance: RelationshipImportance; // quanto è importante per i nostri obiettivi
+  category: RelationshipCategory; // tipo di relazione strategica
+
+  // Obiettivi e Allineamento
+  theirGoals?: string[]; // cosa vogliono raggiungere loro
+  ourGoals?: string[]; // cosa vogliamo raggiungere noi con questa relazione
+  mutualBenefits?: string[]; // benefici reciproci
+
+  // Scambio di Valore (oltre il business)
+  valueExchange?: ValueExchangeTracker;
+
+  // Relazione Personale
+  personalInterests?: string[]; // hobby, passioni, interessi personali
+  familyNotes?: string; // note su famiglia (compleanno figli, etc)
+  importantDates?: { // date importanti da ricordare
+    type: 'birthday' | 'anniversary' | 'work_anniversary' | 'other';
+    date: string;
+    description?: string;
+  }[];
+
+  // Storico Interazioni
+  notes: RelationshipNote[]; // cronologia dettagliata interazioni
+
+  // Rete e Connessioni
+  introducedBy?: string; // chi ci ha presentato
+  introducedTo?: string[]; // a chi l'abbiamo presentato
+  mutualConnections?: string[]; // conoscenze in comune
+
+  // Business Context
+  relatedDeals?: string[]; // IDs di deal collegati
+  potentialValue?: number; // valore potenziale business
+  currentValue?: number; // valore business attuale
+
+  // Reminder e Follow-up
+  nextContactDate?: string;
+  nextContactReason?: string;
+  reminderSet?: boolean;
+
+  // Metadata
+  createdAt: string;
+  updatedAt: string;
+  lastContactedAt?: string;
+  contactFrequency?: 'weekly' | 'biweekly' | 'monthly' | 'quarterly'; // frequenza consigliata
+
+  // Tags liberi
+  tags?: string[];
+}
+
 // Deal/Pipeline Types - VR Business Specific
 export type DealStage =
   | 'prospect'           // AI ha individuato, da contattare
