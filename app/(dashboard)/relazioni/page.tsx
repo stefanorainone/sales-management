@@ -286,7 +286,7 @@ export default function RelazioniPage() {
                   </div>
                 </div>
 
-                <Button variant="outline" size="sm" className="w-full mt-3">
+                <Button variant="secondary" size="sm" className="w-full mt-3">
                   Vedi Dettagli
                 </Button>
               </Card>
@@ -334,7 +334,7 @@ export default function RelazioniPage() {
                     <span className="font-semibold">⏭️</span> {rel.nextAction}
                   </div>
 
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     Dettagli
                   </Button>
                 </div>
