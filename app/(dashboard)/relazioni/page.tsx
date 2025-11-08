@@ -1,19 +1,37 @@
 'use client';
 
-import { Card, Badge, Button, Input } from '@/components/ui';
+import { Card, Badge, Button, Input, Modal } from '@/components/ui';
 import { useState } from 'react';
 
 // Modello Ferrazzi "Never Eat Alone"
 // Focus su RELAZIONI strategiche, non solo clienti
+
+interface Relationship {
+  id: string;
+  name: string;
+  company: string;
+  role: string;
+  strength: 'strong' | 'active' | 'developing' | 'weak';
+  importance: 'critical' | 'high' | 'medium' | 'low';
+  category: 'decision_maker' | 'influencer' | 'champion' | 'gatekeeper' | 'advisor' | 'connector';
+  lastContact: string;
+  nextAction: string;
+  mutualBenefits: string[];
+  valueBalance: 'do_give_more' | 'balanced' | 'do_receive_more';
+  noteCount: number;
+}
 
 export default function RelazioniPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStrength, setFilterStrength] = useState<string>('all');
   const [filterImportance, setFilterImportance] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRelation, setEditingRelation] = useState<Relationship | null>(null);
+  const [formData, setFormData] = useState<Partial<Relationship>>({});
 
   // Mock data - dopo creeremo hook e Firestore
-  const mockRelationships = [
+  const [relationships, setRelationships] = useState<Relationship[]>([
     {
       id: '1',
       name: 'Marco Bianchi',
@@ -56,9 +74,80 @@ export default function RelazioniPage() {
       valueBalance: 'do_receive_more' as const,
       noteCount: 5,
     },
-  ];
+  ]);
 
-  const relationships = mockRelationships.filter(rel => {
+  const openAddModal = () => {
+    setEditingRelation(null);
+    setFormData({
+      name: '',
+      company: '',
+      role: '',
+      strength: 'developing',
+      importance: 'medium',
+      category: 'decision_maker',
+      nextAction: '',
+      mutualBenefits: [''],
+      valueBalance: 'balanced',
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (relation: Relationship) => {
+    setEditingRelation(relation);
+    setFormData(relation);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    if (editingRelation) {
+      // Update existing
+      setRelationships(relationships.map(r =>
+        r.id === editingRelation.id ? { ...formData as Relationship, id: r.id } : r
+      ));
+    } else {
+      // Add new
+      const newRelation: Relationship = {
+        ...formData as Relationship,
+        id: Date.now().toString(),
+        lastContact: 'Oggi',
+        noteCount: 0,
+      };
+      setRelationships([...relationships, newRelation]);
+    }
+    setIsModalOpen(false);
+    setFormData({});
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Sei sicuro di voler eliminare questa relazione?')) {
+      setRelationships(relationships.filter(r => r.id !== id));
+      setIsModalOpen(false);
+    }
+  };
+
+  const updateFormField = (field: keyof Relationship, value: any) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const updateBenefit = (index: number, value: string) => {
+    const newBenefits = [...(formData.mutualBenefits || [''])];
+    newBenefits[index] = value;
+    setFormData({ ...formData, mutualBenefits: newBenefits });
+  };
+
+  const addBenefit = () => {
+    setFormData({
+      ...formData,
+      mutualBenefits: [...(formData.mutualBenefits || []), '']
+    });
+  };
+
+  const removeBenefit = (index: number) => {
+    const newBenefits = (formData.mutualBenefits || []).filter((_, i) => i !== index);
+    setFormData({ ...formData, mutualBenefits: newBenefits });
+  };
+
+  const filteredRelationships = relationships.filter(rel => {
     const matchesSearch = rel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rel.company?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStrength = filterStrength === 'all' || rel.strength === filterStrength;
@@ -67,10 +156,10 @@ export default function RelazioniPage() {
   });
 
   const stats = {
-    total: mockRelationships.length,
-    strong: mockRelationships.filter(r => r.strength === 'strong' || r.strength === 'active').length,
-    critical: mockRelationships.filter(r => r.importance === 'critical').length,
-    needsAction: mockRelationships.filter(r => r.valueBalance === 'do_give_more').length,
+    total: relationships.length,
+    strong: relationships.filter(r => r.strength === 'strong' || r.strength === 'active').length,
+    critical: relationships.filter(r => r.importance === 'critical').length,
+    needsAction: relationships.filter(r => r.valueBalance === 'do_give_more').length,
   };
 
   const getStrengthColor = (strength: string) => {
@@ -156,7 +245,7 @@ export default function RelazioniPage() {
             Gestisci le tue relazioni professionali con il metodo Ferrazzi
           </p>
         </div>
-        <Button>+ Nuova Relazione</Button>
+        <Button onClick={openAddModal}>+ Nuova Relazione</Button>
       </div>
 
       {/* Stats Cards - Ferrazzi Focus */}
@@ -250,7 +339,7 @@ export default function RelazioniPage() {
       {/* Relationships Grid/List */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {relationships.map((rel) => {
+          {filteredRelationships.map((rel) => {
             const balance = getBalanceIndicator(rel.valueBalance);
             return (
               <Card key={rel.id} className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -306,9 +395,16 @@ export default function RelazioniPage() {
                   </div>
                 </div>
 
-                <Button variant="secondary" size="sm" className="w-full mt-3">
-                  Vedi Dettagli
-                </Button>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => openEditModal(rel)}
+                  >
+                    ✏️ Modifica
+                  </Button>
+                </div>
               </Card>
             );
           })}
@@ -316,7 +412,7 @@ export default function RelazioniPage() {
       ) : (
         <Card>
           <div className="space-y-3">
-            {relationships.map((rel) => {
+            {filteredRelationships.map((rel) => {
               const balance = getBalanceIndicator(rel.valueBalance);
               return (
                 <div
@@ -354,8 +450,12 @@ export default function RelazioniPage() {
                     <span className="font-semibold">⏭️</span> {rel.nextAction}
                   </div>
 
-                  <Button variant="secondary" size="sm">
-                    Dettagli
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => openEditModal(rel)}
+                  >
+                    ✏️ Modifica
                   </Button>
                 </div>
               );
@@ -365,7 +465,7 @@ export default function RelazioniPage() {
       )}
 
       {/* Empty State */}
-      {relationships.length === 0 && (
+      {filteredRelationships.length === 0 && (
         <Card className="text-center py-12">
           <div className="text-6xl mb-4">🤝</div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -374,9 +474,196 @@ export default function RelazioniPage() {
           <p className="text-gray-600 mb-6">
             Inizia a costruire la tua rete di relazioni strategiche
           </p>
-          <Button>+ Aggiungi Prima Relazione</Button>
+          <Button onClick={openAddModal}>+ Aggiungi Prima Relazione</Button>
         </Card>
       )}
+
+      {/* Modal per Aggiungere/Modificare */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingRelation ? '✏️ Modifica Relazione' : '➕ Nuova Relazione'}
+        size="lg"
+      >
+        <div className="space-y-4">
+          {/* Nome, Azienda, Ruolo */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome *
+              </label>
+              <Input
+                value={formData.name || ''}
+                onChange={(e) => updateFormField('name', e.target.value)}
+                placeholder="Es. Mario Rossi"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Azienda *
+              </label>
+              <Input
+                value={formData.company || ''}
+                onChange={(e) => updateFormField('company', e.target.value)}
+                placeholder="Es. Acme Corp"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ruolo *
+            </label>
+            <Input
+              value={formData.role || ''}
+              onChange={(e) => updateFormField('role', e.target.value)}
+              placeholder="Es. CEO, Responsabile Acquisti"
+            />
+          </div>
+
+          {/* Strength e Importance */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                💪 Forza della Relazione
+              </label>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                value={formData.strength || 'developing'}
+                onChange={(e) => updateFormField('strength', e.target.value)}
+              >
+                <option value="strong">💪 Strong - Relazione consolidata</option>
+                <option value="active">✓ Active - Regolarmente in contatto</option>
+                <option value="developing">⟳ Developing - In sviluppo</option>
+                <option value="weak">○ Weak - Da rafforzare</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ⭐ Importanza Strategica
+              </label>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                value={formData.importance || 'medium'}
+                onChange={(e) => updateFormField('importance', e.target.value)}
+              >
+                <option value="critical">⭐⭐⭐ Critical - Essenziale</option>
+                <option value="high">⭐⭐ High - Molto importante</option>
+                <option value="medium">⭐ Medium - Importante</option>
+                <option value="low">○ Low - Bassa priorità</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Categoria e Value Balance */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                🎯 Categoria
+              </label>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                value={formData.category || 'decision_maker'}
+                onChange={(e) => updateFormField('category', e.target.value)}
+              >
+                <option value="decision_maker">👑 Decisore</option>
+                <option value="influencer">📢 Influencer</option>
+                <option value="champion">🏆 Champion</option>
+                <option value="gatekeeper">🚪 Gatekeeper</option>
+                <option value="advisor">🎓 Consulente</option>
+                <option value="connector">🌐 Connettore</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ⚖️ Bilancio del Valore
+              </label>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                value={formData.valueBalance || 'balanced'}
+                onChange={(e) => updateFormField('valueBalance', e.target.value)}
+              >
+                <option value="do_give_more">⬆️ Devo dare più valore</option>
+                <option value="balanced">⚖️ Bilanciato</option>
+                <option value="do_receive_more">⬇️ Sto ricevendo più valore</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Prossima Azione */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ⏭️ Prossima Azione
+            </label>
+            <Input
+              value={formData.nextAction || ''}
+              onChange={(e) => updateFormField('nextAction', e.target.value)}
+              placeholder="Es. Chiamata per follow-up, Meeting per proposta"
+            />
+          </div>
+
+          {/* Benefici Reciproci */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              💚 Benefici Reciproci
+            </label>
+            <div className="space-y-2">
+              {(formData.mutualBenefits || ['']).map((benefit, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={benefit}
+                    onChange={(e) => updateBenefit(index, e.target.value)}
+                    placeholder="Es. Partnership strategica, Revenue share"
+                    className="flex-1"
+                  />
+                  {(formData.mutualBenefits?.length || 0) > 1 && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => removeBenefit(index)}
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={addBenefit}
+                className="w-full"
+              >
+                + Aggiungi Beneficio
+              </Button>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4 border-t">
+            {editingRelation && (
+              <Button
+                variant="secondary"
+                onClick={() => handleDelete(editingRelation.id)}
+                className="bg-red-50 text-red-600 hover:bg-red-100"
+              >
+                🗑️ Elimina
+              </Button>
+            )}
+            <div className="flex-1" />
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+              Annulla
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!formData.name || !formData.company || !formData.role}
+            >
+              {editingRelation ? '💾 Salva Modifiche' : '➕ Aggiungi Relazione'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Ferrazzi Quote */}
       <Card className="bg-gradient-to-r from-primary/10 to-purple-100 border-l-4 border-primary">
