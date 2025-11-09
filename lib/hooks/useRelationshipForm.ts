@@ -9,7 +9,6 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
       category: 'decision_maker',
       valueBalance: 'balanced',
       mutualBenefits: [''],
-      notes: [],
     }
   );
 
@@ -73,7 +72,6 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
         category: 'decision_maker',
         valueBalance: 'balanced',
         mutualBenefits: [''],
-        notes: [],
       }
     );
     setErrors({});
