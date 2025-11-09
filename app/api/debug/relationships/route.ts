@@ -3,6 +3,10 @@ import { adminDb } from '@/lib/firebase/admin';
 
 export async function GET(request: NextRequest) {
   try {
+    if (!adminDb) {
+      return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
+    }
+
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action'); // 'list' or 'delete'
     const userId = searchParams.get('userId');
