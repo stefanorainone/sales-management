@@ -1,8 +1,9 @@
 'use client';
 
 import { Card, Badge, Button, Input, Modal } from '@/components/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRelationships, type Relationship } from '@/lib/hooks/useRelationships';
+import { useAuth } from '@/lib/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -10,7 +11,8 @@ import { it } from 'date-fns/locale';
 // Focus su RELAZIONI strategiche, non solo clienti
 
 export default function RelazioniPage() {
-  const { relationships, loading, addRelationship, updateRelationship, deleteRelationship } = useRelationships();
+  const { user } = useAuth();
+  const { relationships, loading, error, addRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStrength, setFilterStrength] = useState<string>('all');
   const [filterImportance, setFilterImportance] = useState<string>('all');
@@ -19,6 +21,14 @@ export default function RelazioniPage() {
   const [editingRelation, setEditingRelation] = useState<Relationship | null>(null);
   const [formData, setFormData] = useState<Partial<Relationship>>({});
   const [saving, setSaving] = useState(false);
+
+  // Debug: log quando i dati cambiano
+  useEffect(() => {
+    console.log('👤 User:', user);
+    console.log('🔍 Relazioni caricate:', relationships);
+    console.log('📊 Numero relazioni:', relationships.length);
+    if (error) console.error('❌ Error:', error);
+  }, [user, relationships, error]);
 
   const openAddModal = () => {
     setEditingRelation(null);
@@ -233,6 +243,32 @@ export default function RelazioniPage() {
 
   return (
     <div className="space-y-6">
+      {/* DEBUG PANEL - Rimuovere in produzione */}
+      {process.env.NODE_ENV === 'development' && (
+        <Card className="bg-yellow-50 border-yellow-200">
+          <div className="text-sm space-y-2">
+            <div className="font-bold text-yellow-800">🐛 Debug Info:</div>
+            <div><strong>User ID:</strong> {user?.id || 'No user'}</div>
+            <div><strong>User Email:</strong> {user?.email || 'N/A'}</div>
+            <div><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</div>
+            <div><strong>Relationships count:</strong> {relationships.length}</div>
+            <div><strong>Error:</strong> {error || 'None'}</div>
+            {relationships.length > 0 && (
+              <div className="mt-2">
+                <strong>IDs delle relazioni:</strong>
+                <ul className="list-disc ml-5">
+                  {relationships.map(r => (
+                    <li key={r.id} className="text-xs">
+                      {r.id} - {r.name} (userId: {r.userId})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
