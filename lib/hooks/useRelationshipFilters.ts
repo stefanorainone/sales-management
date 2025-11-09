@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Relationship } from '@/lib/types';
+import { type Relationship } from '@/lib/hooks/useRelationships';
 
 export function useRelationshipFilters(relationships: Relationship[]) {
   const [searchTerm, setSearchTerm] = useState('');
