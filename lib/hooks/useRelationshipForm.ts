@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Relationship } from '@/lib/types';
+import { type Relationship } from '@/lib/hooks/useRelationships';
 
 export function useRelationshipForm(initialData?: Partial<Relationship>) {
   const [formData, setFormData] = useState<Partial<Relationship>>(
