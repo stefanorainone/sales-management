@@ -53,12 +53,7 @@ export const exportToCSV = (relationships: Relationship[]) => {
 export const exportToJSON = (relationships: Relationship[]) => {
   const data = relationships.map((rel) => ({
     ...rel,
-    lastContact: rel.lastContact
-      ? new Date(rel.lastContact.toMillis()).toISOString()
-      : null,
-    createdAt: rel.createdAt
-      ? new Date(rel.createdAt.toMillis()).toISOString()
-      : null,
+    // lastContact and createdAt are already ISO strings, no conversion needed
   }));
 
   const jsonContent = JSON.stringify(data, null, 2);
