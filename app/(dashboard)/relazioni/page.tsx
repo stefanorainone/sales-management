@@ -79,7 +79,7 @@ export default function RelazioniPage() {
     try {
       const dataToSave = {
         ...form.formData,
-        mutualBenefits: form.formData.mutualBenefits?.filter(b => b.trim()) || [],
+        mutualBenefits: form.formData.mutualBenefits?.filter((b: string) => b.trim()) || [],
       };
 
       if (editingRelation) {
