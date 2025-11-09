@@ -33,7 +33,7 @@ export function useRelationshipFilters(relationships: Relationship[]) {
           comparison = a.company.localeCompare(b.company);
           break;
         case 'lastContact':
-          comparison = (a.lastContact?.toMillis() || 0) - (b.lastContact?.toMillis() || 0);
+          comparison = new Date(a.lastContact || 0).getTime() - new Date(b.lastContact || 0).getTime();
           break;
         case 'importance':
           const importanceOrder = { critical: 4, high: 3, medium: 2, low: 1 };
