@@ -138,7 +138,7 @@ export default function RelazioniPage() {
   };
 
   const removeBenefit = (index: number) => {
-    const newBenefits = (form.formData.mutualBenefits || []).filter((_, i) => i !== index);
+    const newBenefits = (form.formData.mutualBenefits || []).filter((_: string, i: number) => i !== index);
     form.updateField('mutualBenefits', newBenefits);
   };
 
