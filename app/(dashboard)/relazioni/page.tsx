@@ -18,6 +18,8 @@ export default function RelazioniPage() {
   const [filterImportance, setFilterImportance] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [viewingRelation, setViewingRelation] = useState<Relationship | null>(null);
   const [editingRelation, setEditingRelation] = useState<Relationship | null>(null);
   const [formData, setFormData] = useState<Partial<Relationship>>({});
   const [saving, setSaving] = useState(false);
@@ -52,12 +54,26 @@ export default function RelazioniPage() {
     setIsModalOpen(true);
   };
 
+  const openDetailsModal = (relation: Relationship) => {
+    setViewingRelation(relation);
+    setIsDetailsModalOpen(true);
+  };
+
   const handleSave = async () => {
+    console.log('💾 handleSave called', { formData });
+
     if (!formData.name || !formData.company || !formData.role) {
+      console.error('❌ Validation failed:', {
+        name: formData.name,
+        company: formData.company,
+        role: formData.role
+      });
+      alert('Per favore compila i campi obbligatori: Nome, Azienda e Ruolo');
       return;
     }
 
     setSaving(true);
+    console.log('🔄 Saving...', editingRelation ? 'UPDATE' : 'CREATE');
     try {
       if (editingRelation) {
         // Update existing
@@ -88,11 +104,13 @@ export default function RelazioniPage() {
           noteCount: 0,
         });
       }
+      console.log('✅ Save successful');
       setIsModalOpen(false);
       setFormData({});
-    } catch (error) {
-      console.error('Error saving relationship:', error);
-      alert('Errore nel salvataggio. Riprova.');
+      setEditingRelation(null);
+    } catch (error: any) {
+      console.error('❌ Error saving relationship:', error);
+      alert(`Errore nel salvataggio: ${error.message || 'Riprova'}`);
     } finally {
       setSaving(false);
     }
@@ -429,11 +447,17 @@ export default function RelazioniPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-3">
+                <div className="grid grid-cols-2 gap-2 mt-3">
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="flex-1"
+                    onClick={() => openDetailsModal(rel)}
+                  >
+                    👁️ Dettagli
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => openEditModal(rel)}
                   >
                     ✏️ Modifica
@@ -484,13 +508,22 @@ export default function RelazioniPage() {
                     <span className="font-semibold">⏭️</span> {rel.nextAction}
                   </div>
 
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => openEditModal(rel)}
-                  >
-                    ✏️ Modifica
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => openDetailsModal(rel)}
+                    >
+                      👁️
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => openEditModal(rel)}
+                    >
+                      ✏️ Modifica
+                    </Button>
+                  </div>
                 </div>
               );
             })}
@@ -697,6 +730,103 @@ export default function RelazioniPage() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Modal Dettagli - Read Only */}
+      <Modal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        title="👁️ Dettagli Relazione"
+        size="lg"
+      >
+        {viewingRelation && (
+          <div className="space-y-4">
+            {/* Info di base */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-1">{viewingRelation.name}</h3>
+              <p className="text-gray-600">{viewingRelation.role}</p>
+              <p className="text-sm text-gray-500">{viewingRelation.company}</p>
+            </div>
+
+            {/* Metriche */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="text-xs text-blue-600 font-semibold mb-1">💪 Forza Relazione</div>
+                <div className="text-sm font-medium text-blue-900">
+                  {getStrengthIcon(viewingRelation.strength)} {getStrengthLabel(viewingRelation.strength)}
+                </div>
+              </div>
+              <div className="bg-yellow-50 p-3 rounded-lg">
+                <div className="text-xs text-yellow-600 font-semibold mb-1">⭐ Importanza</div>
+                <div className="text-sm font-medium text-yellow-900">
+                  {getImportanceLabel(viewingRelation.importance)}
+                </div>
+              </div>
+            </div>
+
+            {/* Categoria e Balance */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <div className="text-xs text-purple-600 font-semibold mb-1">🎯 Categoria</div>
+                <div className="text-sm font-medium text-purple-900">
+                  {getCategoryLabel(viewingRelation.category)}
+                </div>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg">
+                <div className="text-xs text-green-600 font-semibold mb-1">⚖️ Bilancio Valore</div>
+                <div className="text-sm font-medium text-green-900">
+                  {getBalanceIndicator(viewingRelation.valueBalance).icon} {getBalanceIndicator(viewingRelation.valueBalance).text}
+                </div>
+              </div>
+            </div>
+
+            {/* Benefici Reciproci */}
+            {viewingRelation.mutualBenefits && viewingRelation.mutualBenefits.length > 0 && (
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-sm font-semibold text-green-700 mb-2">💚 Benefici Reciproci:</div>
+                <ul className="space-y-1">
+                  {viewingRelation.mutualBenefits.map((benefit, idx) => (
+                    <li key={idx} className="text-sm text-green-600">• {benefit}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Prossima Azione */}
+            {viewingRelation.nextAction && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-sm font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
+                <div className="text-sm text-blue-600">{viewingRelation.nextAction}</div>
+              </div>
+            )}
+
+            {/* Info temporali */}
+            <div className="border-t pt-4 flex justify-between text-xs text-gray-500">
+              <div>📅 Ultimo contatto: {formatLastContact(viewingRelation.lastContact)}</div>
+              <div>📝 {viewingRelation.noteCount} note</div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => {
+                  setIsDetailsModalOpen(false);
+                  openEditModal(viewingRelation);
+                }}
+              >
+                ✏️ Modifica
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setIsDetailsModalOpen(false)}
+              >
+                Chiudi
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Ferrazzi Quote */}
