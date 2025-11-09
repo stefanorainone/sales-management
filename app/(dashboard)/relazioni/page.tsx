@@ -339,7 +339,7 @@ export default function RelazioniPage() {
           </div>
 
           <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
             value={filterStrength}
             onChange={(e) => setFilterStrength(e.target.value)}
           >
@@ -351,7 +351,7 @@ export default function RelazioniPage() {
           </select>
 
           <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
             value={filterImportance}
             onChange={(e) => setFilterImportance(e.target.value)}
           >
@@ -595,7 +595,7 @@ export default function RelazioniPage() {
                 💪 Forza della Relazione
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                 value={formData.strength || 'developing'}
                 onChange={(e) => updateFormField('strength', e.target.value)}
               >
@@ -611,7 +611,7 @@ export default function RelazioniPage() {
                 ⭐ Importanza Strategica
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                 value={formData.importance || 'medium'}
                 onChange={(e) => updateFormField('importance', e.target.value)}
               >
@@ -630,7 +630,7 @@ export default function RelazioniPage() {
                 🎯 Categoria
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                 value={formData.category || 'decision_maker'}
                 onChange={(e) => updateFormField('category', e.target.value)}
               >
@@ -648,7 +648,7 @@ export default function RelazioniPage() {
                 ⚖️ Bilancio del Valore
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                 value={formData.valueBalance || 'balanced'}
                 onChange={(e) => updateFormField('valueBalance', e.target.value)}
               >
