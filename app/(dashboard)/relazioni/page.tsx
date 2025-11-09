@@ -2,26 +2,15 @@
 
 import { Card, Badge, Button, Input, Modal } from '@/components/ui';
 import { useState } from 'react';
+import { useRelationships, type Relationship } from '@/lib/hooks/useRelationships';
+import { formatDistanceToNow } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 // Modello Ferrazzi "Never Eat Alone"
 // Focus su RELAZIONI strategiche, non solo clienti
 
-interface Relationship {
-  id: string;
-  name: string;
-  company: string;
-  role: string;
-  strength: 'strong' | 'active' | 'developing' | 'weak';
-  importance: 'critical' | 'high' | 'medium' | 'low';
-  category: 'decision_maker' | 'influencer' | 'champion' | 'gatekeeper' | 'advisor' | 'connector';
-  lastContact: string;
-  nextAction: string;
-  mutualBenefits: string[];
-  valueBalance: 'do_give_more' | 'balanced' | 'do_receive_more';
-  noteCount: number;
-}
-
 export default function RelazioniPage() {
+  const { relationships, loading, addRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStrength, setFilterStrength] = useState<string>('all');
   const [filterImportance, setFilterImportance] = useState<string>('all');
@@ -29,52 +18,7 @@ export default function RelazioniPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRelation, setEditingRelation] = useState<Relationship | null>(null);
   const [formData, setFormData] = useState<Partial<Relationship>>({});
-
-  // Mock data - dopo creeremo hook e Firestore
-  const [relationships, setRelationships] = useState<Relationship[]>([
-    {
-      id: '1',
-      name: 'Marco Bianchi',
-      company: 'Liceo Scientifico Einstein',
-      role: 'Preside',
-      strength: 'active' as const,
-      importance: 'critical' as const,
-      category: 'decision_maker' as const,
-      lastContact: '2 giorni fa',
-      nextAction: 'Chiamata follow-up proposta VR',
-      mutualBenefits: ['Partnership educativa', 'Innovazione didattica'],
-      valueBalance: 'balanced' as const,
-      noteCount: 12,
-    },
-    {
-      id: '2',
-      name: 'Laura Rossi',
-      company: 'Hotel Paradiso',
-      role: 'General Manager',
-      strength: 'strong' as const,
-      importance: 'high' as const,
-      category: 'champion' as const,
-      lastContact: '5 giorni fa',
-      nextAction: 'Meeting firma contratto',
-      mutualBenefits: ['Esperienza ospiti', 'Revenue share VR'],
-      valueBalance: 'do_give_more' as const,
-      noteCount: 8,
-    },
-    {
-      id: '3',
-      name: 'Giuseppe Verdi',
-      company: 'Comune di Milano',
-      role: 'Assessore Turismo',
-      strength: 'developing' as const,
-      importance: 'critical' as const,
-      category: 'influencer' as const,
-      lastContact: '2 settimane fa',
-      nextAction: 'Ricontattare per aggiornamento budget',
-      mutualBenefits: ['Promozione città', 'Turismo innovativo'],
-      valueBalance: 'do_receive_more' as const,
-      noteCount: 5,
-    },
-  ]);
+  const [saving, setSaving] = useState(false);
 
   const openAddModal = () => {
     setEditingRelation(null);
@@ -98,30 +42,64 @@ export default function RelazioniPage() {
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (editingRelation) {
-      // Update existing
-      setRelationships(relationships.map(r =>
-        r.id === editingRelation.id ? { ...formData as Relationship, id: r.id } : r
-      ));
-    } else {
-      // Add new
-      const newRelation: Relationship = {
-        ...formData as Relationship,
-        id: Date.now().toString(),
-        lastContact: 'Oggi',
-        noteCount: 0,
-      };
-      setRelationships([...relationships, newRelation]);
+  const handleSave = async () => {
+    if (!formData.name || !formData.company || !formData.role) {
+      return;
     }
-    setIsModalOpen(false);
-    setFormData({});
+
+    setSaving(true);
+    try {
+      if (editingRelation) {
+        // Update existing
+        await updateRelationship(editingRelation.id, {
+          name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          strength: formData.strength || 'developing',
+          importance: formData.importance || 'medium',
+          category: formData.category || 'decision_maker',
+          nextAction: formData.nextAction || '',
+          mutualBenefits: formData.mutualBenefits?.filter(b => b.trim()) || [],
+          valueBalance: formData.valueBalance || 'balanced',
+        });
+      } else {
+        // Add new
+        await addRelationship({
+          name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          strength: formData.strength || 'developing',
+          importance: formData.importance || 'medium',
+          category: formData.category || 'decision_maker',
+          lastContact: new Date().toISOString(),
+          nextAction: formData.nextAction || '',
+          mutualBenefits: formData.mutualBenefits?.filter(b => b.trim()) || [],
+          valueBalance: formData.valueBalance || 'balanced',
+          noteCount: 0,
+        });
+      }
+      setIsModalOpen(false);
+      setFormData({});
+    } catch (error) {
+      console.error('Error saving relationship:', error);
+      alert('Errore nel salvataggio. Riprova.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Sei sicuro di voler eliminare questa relazione?')) {
-      setRelationships(relationships.filter(r => r.id !== id));
-      setIsModalOpen(false);
+      setSaving(true);
+      try {
+        await deleteRelationship(id);
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error('Error deleting relationship:', error);
+        alert('Errore durante l\'eliminazione. Riprova.');
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -232,6 +210,26 @@ export default function RelazioniPage() {
       default: return { icon: '', text: '', color: '' };
     }
   };
+
+  const formatLastContact = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDistanceToNow(date, { addSuffix: true, locale: it });
+    } catch {
+      return dateString;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento relazioni...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -388,7 +386,7 @@ export default function RelazioniPage() {
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                   <div className="text-xs text-gray-500">
-                    📅 {rel.lastContact}
+                    📅 {formatLastContact(rel.lastContact)}
                   </div>
                   <div className="text-xs text-gray-500">
                     📝 {rel.noteCount} note
@@ -441,7 +439,7 @@ export default function RelazioniPage() {
                       <span className={`text-xs font-medium ${balance.color}`}>
                         {balance.icon} {balance.text}
                       </span>
-                      <span className="text-xs text-gray-500">• {rel.lastContact}</span>
+                      <span className="text-xs text-gray-500">• {formatLastContact(rel.lastContact)}</span>
                     </div>
                   </div>
 
@@ -657,9 +655,9 @@ export default function RelazioniPage() {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!formData.name || !formData.company || !formData.role}
+              disabled={!formData.name || !formData.company || !formData.role || saving}
             >
-              {editingRelation ? '💾 Salva Modifiche' : '➕ Aggiungi Relazione'}
+              {saving ? 'Salvataggio...' : editingRelation ? '💾 Salva Modifiche' : '➕ Aggiungi Relazione'}
             </Button>
           </div>
         </div>
