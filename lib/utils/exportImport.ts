@@ -1,4 +1,4 @@
-import { Relationship } from '../types';
+import { type Relationship } from '@/lib/hooks/useRelationships';
 import { Timestamp } from 'firebase/firestore';
 
 export const exportToCSV = (relationships: Relationship[]) => {
