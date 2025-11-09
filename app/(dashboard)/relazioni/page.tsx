@@ -6,23 +6,37 @@ import { useRelationships, type Relationship } from '@/lib/hooks/useRelationship
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { useToast } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useRelationshipFilters } from '@/lib/hooks/useRelationshipFilters';
+import { useRelationshipForm } from '@/lib/hooks/useRelationshipForm';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
+import { usePagination } from '@/lib/hooks/usePagination';
+import { exportToCSV, exportToJSON } from '@/lib/utils/exportImport';
 
 // Modello Ferrazzi "Never Eat Alone"
 // Focus su RELAZIONI strategiche, non solo clienti
 
 export default function RelazioniPage() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const { relationships, loading, error, addRelationship, updateRelationship, deleteRelationship } = useRelationships();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStrength, setFilterStrength] = useState<string>('all');
-  const [filterImportance, setFilterImportance] = useState<string>('all');
+
+  // Custom hooks
+  const filters = useRelationshipFilters(relationships);
+  const form = useRelationshipForm();
+  const pagination = usePagination(filters.filteredRelationships, 20);
+
+  // UI State
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [viewingRelation, setViewingRelation] = useState<Relationship | null>(null);
   const [editingRelation, setEditingRelation] = useState<Relationship | null>(null);
-  const [formData, setFormData] = useState<Partial<Relationship>>({});
+  const [relationToDelete, setRelationToDelete] = useState<Relationship | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Debug: log quando i dati cambiano
   useEffect(() => {
@@ -34,23 +48,13 @@ export default function RelazioniPage() {
 
   const openAddModal = () => {
     setEditingRelation(null);
-    setFormData({
-      name: '',
-      company: '',
-      role: '',
-      strength: 'developing',
-      importance: 'medium',
-      category: 'decision_maker',
-      nextAction: '',
-      mutualBenefits: [''],
-      valueBalance: 'balanced',
-    });
+    form.reset();
     setIsModalOpen(true);
   };
 
   const openEditModal = (relation: Relationship) => {
     setEditingRelation(relation);
-    setFormData(relation);
+    form.setFormData(relation);
     setIsModalOpen(true);
   };
 
@@ -59,107 +63,84 @@ export default function RelazioniPage() {
     setIsDetailsModalOpen(true);
   };
 
-  const handleSave = async () => {
-    console.log('💾 handleSave called', { formData });
+  const openDeleteDialog = (relation: Relationship) => {
+    setRelationToDelete(relation);
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (!formData.name || !formData.company || !formData.role) {
-      console.error('❌ Validation failed:', {
-        name: formData.name,
-        company: formData.company,
-        role: formData.role
-      });
-      alert('Per favore compila i campi obbligatori: Nome, Azienda e Ruolo');
+  const handleSave = async () => {
+    // Validate using form hook
+    if (!form.validate()) {
+      showToast('Compila tutti i campi obbligatori', 'error');
       return;
     }
 
     setSaving(true);
-    console.log('🔄 Saving...', editingRelation ? 'UPDATE' : 'CREATE');
     try {
+      const dataToSave = {
+        ...form.formData,
+        mutualBenefits: form.formData.mutualBenefits?.filter(b => b.trim()) || [],
+      };
+
       if (editingRelation) {
-        // Update existing
-        await updateRelationship(editingRelation.id, {
-          name: formData.name,
-          company: formData.company,
-          role: formData.role,
-          strength: formData.strength || 'developing',
-          importance: formData.importance || 'medium',
-          category: formData.category || 'decision_maker',
-          nextAction: formData.nextAction || '',
-          mutualBenefits: formData.mutualBenefits?.filter(b => b.trim()) || [],
-          valueBalance: formData.valueBalance || 'balanced',
-        });
+        await updateRelationship(editingRelation.id, dataToSave);
+        showToast('✅ Relazione aggiornata con successo!', 'success');
       } else {
-        // Add new
         await addRelationship({
-          name: formData.name,
-          company: formData.company,
-          role: formData.role,
-          strength: formData.strength || 'developing',
-          importance: formData.importance || 'medium',
-          category: formData.category || 'decision_maker',
+          ...dataToSave,
           lastContact: new Date().toISOString(),
-          nextAction: formData.nextAction || '',
-          mutualBenefits: formData.mutualBenefits?.filter(b => b.trim()) || [],
-          valueBalance: formData.valueBalance || 'balanced',
           noteCount: 0,
         });
+        showToast('✅ Nuova relazione aggiunta!', 'success');
       }
-      console.log('✅ Save successful');
+
       setIsModalOpen(false);
-      setFormData({});
+      form.reset();
       setEditingRelation(null);
     } catch (error: any) {
-      console.error('❌ Error saving relationship:', error);
-      alert(`Errore nel salvataggio: ${error.message || 'Riprova'}`);
+      console.error('Error saving relationship:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Sei sicuro di voler eliminare questa relazione?')) {
-      setSaving(true);
-      try {
-        await deleteRelationship(id);
-        setIsModalOpen(false);
-      } catch (error) {
-        console.error('Error deleting relationship:', error);
-        alert('Errore durante l\'eliminazione. Riprova.');
-      } finally {
-        setSaving(false);
-      }
+  const handleDelete = async () => {
+    if (!relationToDelete) return;
+    setDeleting(true);
+    try {
+      await deleteRelationship(relationToDelete.id);
+      showToast('✅ Relazione eliminata con successo', 'success');
+      setIsDeleteDialogOpen(false);
+      setRelationToDelete(null);
+      if (isModalOpen) setIsModalOpen(false);
+      if (isDetailsModalOpen) setIsDetailsModalOpen(false);
+    } catch (error: any) {
+      console.error('Error deleting relationship:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
   const updateFormField = (field: keyof Relationship, value: any) => {
-    setFormData({ ...formData, [field]: value });
+    form.updateField(field, value);
   };
 
   const updateBenefit = (index: number, value: string) => {
-    const newBenefits = [...(formData.mutualBenefits || [''])];
+    const newBenefits = [...(form.formData.mutualBenefits || [''])];
     newBenefits[index] = value;
-    setFormData({ ...formData, mutualBenefits: newBenefits });
+    form.updateField('mutualBenefits', newBenefits);
   };
 
   const addBenefit = () => {
-    setFormData({
-      ...formData,
-      mutualBenefits: [...(formData.mutualBenefits || []), '']
-    });
+    form.updateField('mutualBenefits', [...(form.formData.mutualBenefits || []), '']);
   };
 
   const removeBenefit = (index: number) => {
-    const newBenefits = (formData.mutualBenefits || []).filter((_, i) => i !== index);
-    setFormData({ ...formData, mutualBenefits: newBenefits });
+    const newBenefits = (form.formData.mutualBenefits || []).filter((_, i) => i !== index);
+    form.updateField('mutualBenefits', newBenefits);
   };
-
-  const filteredRelationships = relationships.filter(rel => {
-    const matchesSearch = rel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rel.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStrength = filterStrength === 'all' || rel.strength === filterStrength;
-    const matchesImportance = filterImportance === 'all' || rel.importance === filterImportance;
-    return matchesSearch && matchesStrength && matchesImportance;
-  });
 
   const stats = {
     total: relationships.length,
@@ -333,15 +314,15 @@ export default function RelazioniPage() {
           <div className="md:col-span-2">
             <Input
               placeholder="🔍 Cerca per nome o azienda..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={filters.searchTerm}
+              onChange={(e) => filters.setSearchTerm(e.target.value)}
             />
           </div>
 
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-            value={filterStrength}
-            onChange={(e) => setFilterStrength(e.target.value)}
+            value={filters.filterStrength}
+            onChange={(e) => filters.setFilterStrength(e.target.value)}
           >
             <option value="all">💪 All Strengths</option>
             <option value="strong">💪 Strong</option>
@@ -352,8 +333,8 @@ export default function RelazioniPage() {
 
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-            value={filterImportance}
-            onChange={(e) => setFilterImportance(e.target.value)}
+            value={filters.filterImportance}
+            onChange={(e) => filters.setFilterImportance(e.target.value)}
           >
             <option value="all">⭐ All Importance</option>
             <option value="critical">⭐⭐⭐ Critical</option>
@@ -391,7 +372,7 @@ export default function RelazioniPage() {
       {/* Relationships Grid/List */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRelationships.map((rel) => {
+          {pagination.paginatedItems.map((rel) => {
             const balance = getBalanceIndicator(rel.valueBalance);
             return (
               <Card key={rel.id} className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -470,7 +451,7 @@ export default function RelazioniPage() {
       ) : (
         <Card>
           <div className="space-y-3">
-            {filteredRelationships.map((rel) => {
+            {pagination.paginatedItems.map((rel) => {
               const balance = getBalanceIndicator(rel.valueBalance);
               return (
                 <div
@@ -532,7 +513,7 @@ export default function RelazioniPage() {
       )}
 
       {/* Empty State */}
-      {filteredRelationships.length === 0 && (
+      {filters.filteredRelationships.length === 0 && (
         <Card className="text-center py-12">
           <div className="text-6xl mb-4">🤝</div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -560,20 +541,26 @@ export default function RelazioniPage() {
                 Nome *
               </label>
               <Input
-                value={formData.name || ''}
+                value={form.formData.name || ''}
                 onChange={(e) => updateFormField('name', e.target.value)}
                 placeholder="Es. Mario Rossi"
               />
+              {form.errors.name && (
+                <p className="text-xs text-red-600 mt-1">{form.errors.name}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Azienda *
               </label>
               <Input
-                value={formData.company || ''}
+                value={form.formData.company || ''}
                 onChange={(e) => updateFormField('company', e.target.value)}
                 placeholder="Es. Acme Corp"
               />
+              {form.errors.company && (
+                <p className="text-xs text-red-600 mt-1">{form.errors.company}</p>
+              )}
             </div>
           </div>
 
@@ -582,10 +569,13 @@ export default function RelazioniPage() {
               Ruolo *
             </label>
             <Input
-              value={formData.role || ''}
+              value={form.formData.role || ''}
               onChange={(e) => updateFormField('role', e.target.value)}
               placeholder="Es. CEO, Responsabile Acquisti"
             />
+            {form.errors.role && (
+              <p className="text-xs text-red-600 mt-1">{form.errors.role}</p>
+            )}
           </div>
 
           {/* Strength e Importance */}
@@ -596,7 +586,7 @@ export default function RelazioniPage() {
               </label>
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-                value={formData.strength || 'developing'}
+                value={form.formData.strength || 'developing'}
                 onChange={(e) => updateFormField('strength', e.target.value)}
               >
                 <option value="strong">💪 Strong - Relazione consolidata</option>
@@ -612,7 +602,7 @@ export default function RelazioniPage() {
               </label>
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-                value={formData.importance || 'medium'}
+                value={form.formData.importance || 'medium'}
                 onChange={(e) => updateFormField('importance', e.target.value)}
               >
                 <option value="critical">⭐⭐⭐ Critical - Essenziale</option>
@@ -631,7 +621,7 @@ export default function RelazioniPage() {
               </label>
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-                value={formData.category || 'decision_maker'}
+                value={form.formData.category || 'decision_maker'}
                 onChange={(e) => updateFormField('category', e.target.value)}
               >
                 <option value="decision_maker">👑 Decisore</option>
@@ -649,7 +639,7 @@ export default function RelazioniPage() {
               </label>
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-                value={formData.valueBalance || 'balanced'}
+                value={form.formData.valueBalance || 'balanced'}
                 onChange={(e) => updateFormField('valueBalance', e.target.value)}
               >
                 <option value="do_give_more">⬆️ Devo dare più valore</option>
@@ -665,7 +655,7 @@ export default function RelazioniPage() {
               ⏭️ Prossima Azione
             </label>
             <Input
-              value={formData.nextAction || ''}
+              value={form.formData.nextAction || ''}
               onChange={(e) => updateFormField('nextAction', e.target.value)}
               placeholder="Es. Chiamata per follow-up, Meeting per proposta"
             />
@@ -677,7 +667,7 @@ export default function RelazioniPage() {
               💚 Benefici Reciproci
             </label>
             <div className="space-y-2">
-              {(formData.mutualBenefits || ['']).map((benefit, index) => (
+              {(form.formData.mutualBenefits || ['']).map((benefit, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
                     value={benefit}
@@ -685,7 +675,7 @@ export default function RelazioniPage() {
                     placeholder="Es. Partnership strategica, Revenue share"
                     className="flex-1"
                   />
-                  {(formData.mutualBenefits?.length || 0) > 1 && (
+                  {(form.formData.mutualBenefits?.length || 0) > 1 && (
                     <Button
                       variant="secondary"
                       size="sm"
@@ -712,19 +702,27 @@ export default function RelazioniPage() {
             {editingRelation && (
               <Button
                 variant="secondary"
-                onClick={() => handleDelete(editingRelation.id)}
+                onClick={() => openDeleteDialog(editingRelation)}
                 className="bg-red-50 text-red-600 hover:bg-red-100"
+                disabled={saving || deleting}
               >
                 🗑️ Elimina
               </Button>
             )}
             <div className="flex-1" />
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsModalOpen(false);
+                form.reset();
+              }}
+              disabled={saving}
+            >
               Annulla
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!formData.name || !formData.company || !formData.role || saving}
+              disabled={!form.formData.name || !form.formData.company || !form.formData.role || saving}
             >
               {saving ? 'Salvataggio...' : editingRelation ? '💾 Salva Modifiche' : '➕ Aggiungi Relazione'}
             </Button>
@@ -842,6 +840,18 @@ export default function RelazioniPage() {
           </div>
         </div>
       </Card>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        title="Elimina Relazione"
+        message={`Sei sicuro di voler eliminare la relazione con ${relationToDelete?.name}? Questa azione non può essere annullata.`}
+        confirmText="Elimina"
+        type="danger"
+        loading={deleting}
+      />
     </div>
   );
 }
