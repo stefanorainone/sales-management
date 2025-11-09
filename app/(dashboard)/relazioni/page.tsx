@@ -86,8 +86,17 @@ export default function RelazioniPage() {
         await updateRelationship(editingRelation.id, dataToSave);
         showToast('✅ Relazione aggiornata con successo!', 'success');
       } else {
+        // Type assertion is safe here because validation ensures required fields are present
         await addRelationship({
-          ...dataToSave,
+          name: form.formData.name!,
+          company: form.formData.company!,
+          role: form.formData.role!,
+          strength: form.formData.strength || 'developing',
+          importance: form.formData.importance || 'medium',
+          category: form.formData.category || 'decision_maker',
+          valueBalance: form.formData.valueBalance || 'balanced',
+          nextAction: form.formData.nextAction || '',
+          mutualBenefits: form.formData.mutualBenefits?.filter((b: string) => b.trim()) || [],
           lastContact: new Date().toISOString(),
           noteCount: 0,
         });
