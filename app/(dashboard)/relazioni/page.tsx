@@ -400,7 +400,7 @@ export default function RelazioniPage() {
                 <div className="mb-3 bg-green-50 p-3 rounded-lg">
                   <div className="text-xs font-semibold text-green-700 mb-1">💚 Benefici Reciproci:</div>
                   <div className="space-y-1">
-                    {rel.mutualBenefits.map((benefit, idx) => (
+                    {rel.mutualBenefits.map((benefit: string, idx: number) => (
                       <div key={idx} className="text-xs text-green-600">• {benefit}</div>
                     ))}
                   </div>
@@ -667,7 +667,7 @@ export default function RelazioniPage() {
               💚 Benefici Reciproci
             </label>
             <div className="space-y-2">
-              {(form.formData.mutualBenefits || ['']).map((benefit, index) => (
+              {(form.formData.mutualBenefits || ['']).map((benefit: string, index: number) => (
                 <div key={index} className="flex gap-2">
                   <Input
                     value={benefit}
@@ -783,7 +783,7 @@ export default function RelazioniPage() {
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="text-sm font-semibold text-green-700 mb-2">💚 Benefici Reciproci:</div>
                 <ul className="space-y-1">
-                  {viewingRelation.mutualBenefits.map((benefit, idx) => (
+                  {viewingRelation.mutualBenefits.map((benefit: string, idx: number) => (
                     <li key={idx} className="text-sm text-green-600">• {benefit}</li>
                   ))}
                 </ul>
