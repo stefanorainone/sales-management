@@ -26,7 +26,7 @@ export const exportToCSV = (relationships: Relationship[]) => {
     rel.nextAction || '',
     (rel.mutualBenefits || []).join('; '),
     rel.lastContact
-      ? new Date(rel.lastContact.toMillis()).toLocaleDateString('it-IT')
+      ? new Date(rel.lastContact).toLocaleDateString('it-IT')
       : '',
   ]);
 
