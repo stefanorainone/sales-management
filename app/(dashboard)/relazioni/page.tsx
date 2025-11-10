@@ -20,7 +20,7 @@ import { exportToCSV, exportToJSON } from '@/lib/utils/exportImport';
 export default function RelazioniPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { relationships, loading, error, addRelationship, updateRelationship, deleteRelationship } = useRelationships();
+  const { relationships, loading, error, addRelationship, updateRelationship, deleteRelationship, completeAction } = useRelationships();
 
   // Custom hooks
   const filters = useRelationshipFilters(relationships);
@@ -37,6 +37,7 @@ export default function RelazioniPage() {
   const [relationToDelete, setRelationToDelete] = useState<Relationship | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [completingAction, setCompletingAction] = useState<string | null>(null);
 
   // Debug: log quando i dati cambiano
   useEffect(() => {
@@ -66,6 +67,24 @@ export default function RelazioniPage() {
   const openDeleteDialog = (relation: Relationship) => {
     setRelationToDelete(relation);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleCompleteAction = async (relationId: string, action: string) => {
+    if (!action) {
+      showToast('Nessuna azione da completare', 'error');
+      return;
+    }
+
+    setCompletingAction(relationId);
+    try {
+      await completeAction(relationId, action);
+      showToast('✅ Azione completata!', 'success');
+    } catch (error: any) {
+      console.error('Error completing action:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
+    } finally {
+      setCompletingAction(null);
+    }
   };
 
   const handleSave = async () => {
@@ -99,6 +118,7 @@ export default function RelazioniPage() {
           mutualBenefits: form.formData.mutualBenefits?.filter((b: string) => b.trim()) || [],
           lastContact: new Date().toISOString(),
           noteCount: 0,
+          actionsHistory: [],
         });
         showToast('✅ Nuova relazione aggiunta!', 'success');
       }
@@ -384,7 +404,11 @@ export default function RelazioniPage() {
           {pagination.paginatedItems.map((rel) => {
             const balance = getBalanceIndicator(rel.valueBalance);
             return (
-              <Card key={rel.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card
+                key={rel.id}
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => openEditModal(rel)}
+              >
                 {/* Header con temperatura */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -421,10 +445,28 @@ export default function RelazioniPage() {
                   <span className={`text-sm font-medium ${balance.color}`}>{balance.text}</span>
                 </div>
 
-                {/* Next Action */}
+                {/* Next Action with Quick Complete Button */}
                 <div className="mb-3 bg-blue-50 p-3 rounded-lg">
-                  <div className="text-xs font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
-                  <div className="text-xs text-blue-600">{rel.nextAction}</div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="text-xs font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
+                      <div className="text-xs text-blue-600">{rel.nextAction || 'Nessuna azione pianificata'}</div>
+                    </div>
+                    {rel.nextAction && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCompleteAction(rel.id, rel.nextAction);
+                        }}
+                        disabled={completingAction === rel.id}
+                        className="shrink-0"
+                      >
+                        {completingAction === rel.id ? '...' : '✓'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Footer */}
@@ -441,14 +483,20 @@ export default function RelazioniPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => openDetailsModal(rel)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDetailsModal(rel);
+                    }}
                   >
                     👁️ Dettagli
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => openEditModal(rel)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditModal(rel);
+                    }}
                   >
                     ✏️ Modifica
                   </Button>
@@ -466,6 +514,7 @@ export default function RelazioniPage() {
                 <div
                   key={rel.id}
                   className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  onClick={() => openEditModal(rel)}
                 >
                   {/* Strength */}
                   <div className={`px-3 py-2 rounded-full text-sm font-semibold border ${getStrengthColor(rel.strength)}`}>
@@ -493,23 +542,43 @@ export default function RelazioniPage() {
                     </div>
                   </div>
 
-                  {/* Next Action */}
-                  <div className="text-sm text-gray-600 max-w-xs">
-                    <span className="font-semibold">⏭️</span> {rel.nextAction}
+                  {/* Next Action with Quick Complete */}
+                  <div className="text-sm text-gray-600 max-w-xs flex items-center gap-2">
+                    <span className="font-semibold">⏭️</span>
+                    <span className="flex-1">{rel.nextAction || 'Nessuna azione'}</span>
+                    {rel.nextAction && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCompleteAction(rel.id, rel.nextAction);
+                        }}
+                        disabled={completingAction === rel.id}
+                      >
+                        {completingAction === rel.id ? '...' : '✓'}
+                      </Button>
+                    )}
                   </div>
 
                   <div className="flex gap-2">
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => openDetailsModal(rel)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDetailsModal(rel);
+                      }}
                     >
                       👁️
                     </Button>
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => openEditModal(rel)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(rel);
+                      }}
                     >
                       ✏️ Modifica
                     </Button>
@@ -804,6 +873,33 @@ export default function RelazioniPage() {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="text-sm font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
                 <div className="text-sm text-blue-600">{viewingRelation.nextAction}</div>
+              </div>
+            )}
+
+            {/* Storico Azioni Completate */}
+            {viewingRelation.actionsHistory && viewingRelation.actionsHistory.length > 0 && (
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <div className="text-sm font-semibold text-purple-700 mb-3">📋 Storico Azioni Completate:</div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {viewingRelation.actionsHistory
+                    .slice()
+                    .reverse()
+                    .map((action, idx) => (
+                      <div key={action.id} className="bg-white p-3 rounded border border-purple-200">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="text-sm text-purple-900 font-medium">{action.action}</div>
+                            {action.notes && (
+                              <div className="text-xs text-purple-600 mt-1">{action.notes}</div>
+                            )}
+                          </div>
+                          <div className="text-xs text-purple-500 whitespace-nowrap">
+                            {formatLastContact(action.completedAt)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
 

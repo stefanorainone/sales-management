@@ -16,6 +16,13 @@ import {
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/lib/contexts/AuthContext';
 
+export interface RelationshipAction {
+  id: string;
+  action: string;
+  completedAt: string;
+  notes?: string;
+}
+
 export interface Relationship {
   id: string;
   userId: string;
@@ -30,6 +37,7 @@ export interface Relationship {
   mutualBenefits: string[];
   valueBalance: 'do_give_more' | 'balanced' | 'do_receive_more';
   noteCount: number;
+  actionsHistory: RelationshipAction[];
   createdAt: string;
   updatedAt: string;
 }
@@ -118,6 +126,36 @@ export function useRelationships() {
     }
   };
 
+  const completeAction = async (relationshipId: string, action: string, notes?: string) => {
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      const relationshipRef = doc(db, 'relationships', relationshipId);
+      const relationship = relationships.find(r => r.id === relationshipId);
+
+      if (!relationship) throw new Error('Relationship not found');
+
+      const newAction: RelationshipAction = {
+        id: Date.now().toString(),
+        action,
+        completedAt: new Date().toISOString(),
+        notes,
+      };
+
+      const updatedHistory = [...(relationship.actionsHistory || []), newAction];
+
+      await updateDoc(relationshipRef, {
+        actionsHistory: updatedHistory,
+        lastContact: new Date().toISOString(),
+        nextAction: '', // Clear next action after completing
+        updatedAt: Timestamp.now(),
+      });
+    } catch (err: any) {
+      console.error('Error completing action:', err);
+      throw err;
+    }
+  };
+
   return {
     relationships,
     loading,
@@ -125,5 +163,6 @@ export function useRelationships() {
     addRelationship,
     updateRelationship,
     deleteRelationship,
+    completeAction,
   };
 }
