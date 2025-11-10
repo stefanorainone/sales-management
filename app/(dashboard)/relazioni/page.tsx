@@ -284,7 +284,7 @@ export default function RelazioniPage() {
             🤝 Relazioni Strategiche
           </h1>
           <p className="text-gray-600 mt-2">
-            Gestisci le tue relazioni professionali con il metodo Ferrazzi
+            Il tuo successo è la somma delle persone che conosci e di come le aiuti a crescere
           </p>
         </div>
         <Button onClick={openAddModal}>+ Nuova Relazione</Button>
