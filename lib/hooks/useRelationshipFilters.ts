@@ -21,8 +21,8 @@ export function useRelationshipFilters(relationships: Relationship[]) {
       return matchesSearch && matchesStrength && matchesImportance;
     });
 
-    // Sorting
-    filtered.sort((a, b) => {
+    // Sorting - Create a copy to avoid mutating the original array
+    const sorted = [...filtered].sort((a, b) => {
       let comparison = 0;
 
       switch (sortBy) {
@@ -44,7 +44,7 @@ export function useRelationshipFilters(relationships: Relationship[]) {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    return filtered;
+    return sorted;
   }, [relationships, searchTerm, filterStrength, filterImportance, sortBy, sortOrder]);
 
   return {
