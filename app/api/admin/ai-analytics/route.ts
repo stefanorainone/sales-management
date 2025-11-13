@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { adminDb } from '@/lib/firebase/admin';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Defer OpenAI initialization until runtime to avoid build-time errors
+let openai: OpenAI | null = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 interface AnalyticsContext {
   users: any[];
@@ -180,6 +184,10 @@ export async function POST(request: NextRequest) {
     const systemPrompt = buildSystemPrompt(context);
 
     console.log('📤 Sending to OpenAI...');
+
+    if (!openai) {
+      throw new Error('OpenAI client not initialized');
+    }
 
     // Call OpenAI
     const completion = await openai.chat.completions.create({
