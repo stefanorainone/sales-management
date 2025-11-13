@@ -819,7 +819,7 @@ export default function AdminAITasksPage() {
                                 <p className="text-sm text-gray-700 mb-2">{task.description}</p>
                                 {task.aiRationale && (
                                   <div className="bg-purple-100 p-3 rounded text-sm mb-2">
-                                    <strong className="text-gray-900">💡 AI Rationale:</strong> <span className="text-gray-800">{task.aiRationale}</span>
+                                    <strong className="text-gray-900">💡 Motivo:</strong> <span className="text-gray-800">{task.aiRationale}</span>
                                   </div>
                                 )}
                                 {task.objectives && task.objectives.length > 0 && (
@@ -853,19 +853,7 @@ export default function AdminAITasksPage() {
                                     )}
                                   </div>
                                 )}
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-4 pt-3 border-t border-gray-200">
-                                  <div className="flex flex-wrap gap-3 text-xs font-medium">
-                                    {task.confidence && (
-                                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md">
-                                        🎯 Confidence: {task.confidence}%
-                                      </span>
-                                    )}
-                                    {task.impactScore && (
-                                      <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md">
-                                        ⚡ Impact: {task.impactScore}%
-                                      </span>
-                                    )}
-                                  </div>
+                                <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 mt-4 pt-3 border-t border-gray-200">
                                   <div className="flex gap-2">
                                     <Button
                                       size="sm"

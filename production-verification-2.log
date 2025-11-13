@@ -1,0 +1,56 @@
+🚀 Testing PRODUCTION Relazioni Page
+
+📍 URL: https://sales-crm-412055180465.europe-west1.run.app/relazioni
+
+1️⃣  Navigating to login page...
+   [BROWSER] Failed to load resource: the server responded with a status of 404 ()
+   [BROWSER] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o
+2️⃣  Logging in...
+   ✅ Logged in
+
+3️⃣  Navigating to /relazioni...
+═══════════════════════════════════════
+          PAGE INSPECTION              
+═══════════════════════════════════════
+URL: https://sales-crm-412055180465.europe-west1.run.app/relazioni?_=1762700086164
+Title: Sales Management CRM
+Debug Panel: NOT FOUND
+Relationships: 3
+Open Modals: 0
+
+Buttons found on page:
+  1. "🚪"
+  2. "+ Nuova Relazione"
+  3. "📊 Griglia"
+  4. "📝 Lista"
+  5. "Vedi Dettagli"
+  6. "Vedi Dettagli"
+  7. "Vedi Dettagli"
+  8. "🤖"
+═══════════════════════════════════════
+
+4️⃣  Testing "Add Relationship" button...
+   ✅ "Nuova Relazione" button found
+   ❌ Modal did NOT open
+
+5️⃣  Testing "Details" button...
+   ✅ Details button found
+   ❌ Details modal did NOT open
+
+6️⃣  Testing "Edit" button...
+   ❌ Edit button NOT found
+
+7️⃣  Taking screenshot...
+   ✅ Screenshot saved as production-relazioni-test.png
+
+═══════════════════════════════════════
+            TEST SUMMARY               
+═══════════════════════════════════════
+✓ Page loaded: YES
+✓ Relationships found: 3
+✓ Add button: YES
+✓ Details button: YES
+✓ Edit button: NO
+═══════════════════════════════════════
+
+⏸️  Browser will remain open for 20 seconds for manual inspection...

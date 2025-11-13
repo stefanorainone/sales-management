@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useDeals } from '@/lib/hooks/useDeals';
-import { useActivities } from '@/lib/hooks/useActivities';
 import type { AICoachMessage } from '@/types';
 
 const QUICK_QUESTIONS = [
@@ -18,7 +17,6 @@ const QUICK_QUESTIONS = [
 export function AIChatWidget() {
   const { user } = useAuth();
   const { deals } = useDeals();
-  const { activities } = useActivities();
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<AICoachMessage[]>([
@@ -86,7 +84,7 @@ Cosa posso fare per te?`,
           question: messageText,
           context: {
             activePipeline: deals.slice(0, 5),
-            recentActivities: activities.slice(0, 5),
+            recentActivities: [],
           },
         }),
       });

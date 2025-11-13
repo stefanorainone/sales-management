@@ -34,17 +34,24 @@ export async function GET(request: Request) {
         break;
     }
 
-    // Fetch activities
+    // Fetch activities (filter by time period in memory to avoid index requirement)
     const activitiesSnapshot = await adminDb
       .collection('activities')
       .where('userId', '==', userId)
-      .where('createdAt', '>=', startDate)
       .get();
 
-    const activities = activitiesSnapshot.docs.map(doc => ({
+    const allActivities = activitiesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
+
+    // Filter by date in memory
+    const activities = allActivities.filter(activity => {
+      const createdAt = activity.createdAt?._seconds
+        ? new Date(activity.createdAt._seconds * 1000)
+        : new Date(activity.createdAt);
+      return createdAt >= startDate;
+    });
 
     // Fetch clients
     const clientsSnapshot = await adminDb
@@ -53,6 +60,36 @@ export async function GET(request: Request) {
       .get();
 
     const clients = clientsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Fetch tasks (for completion metrics, filter by time period in memory)
+    const tasksSnapshot = await adminDb
+      .collection('tasks')
+      .where('userId', '==', userId)
+      .get();
+
+    const allTasks = tasksSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Filter by date in memory
+    const tasks = allTasks.filter(task => {
+      const createdAt = task.createdAt?._seconds
+        ? new Date(task.createdAt._seconds * 1000)
+        : new Date(task.createdAt);
+      return createdAt >= startDate;
+    });
+
+    // Fetch relationships (for network health)
+    const relationshipsSnapshot = await adminDb
+      .collection('relationships')
+      .where('userId', '==', userId)
+      .get();
+
+    const relationships = relationshipsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
@@ -66,10 +103,20 @@ export async function GET(request: Request) {
     // Calculate performance data (for now just current user)
     const performanceData = calculatePerformanceData(activities, clients, userId);
 
+    // Calculate additional useful metrics
+    const taskMetrics = calculateTaskMetrics(tasks);
+    const relationshipMetrics = calculateRelationshipMetrics(relationships);
+    const relationshipActivityMetrics = calculateRelationshipActivityMetrics(relationships, startDate);
+    const dailyTimeInvestment = calculateDailyTimeInvestment(allTasks, startDate, now);
+
     return NextResponse.json({
       activityMetrics,
       conversionFunnel,
       performanceData,
+      taskMetrics,
+      relationshipMetrics,
+      relationshipActivityMetrics,
+      dailyTimeInvestment,
       timePeriod,
     });
   } catch (error: any) {
@@ -212,4 +259,225 @@ function calculatePerformanceData(activities: any[], clients: any[], userId: str
       winRate,
     },
   ];
+}
+
+function calculateTaskMetrics(tasks: any[]) {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.status === 'completed').length;
+  const pending = tasks.filter(t => t.status === 'pending').length;
+  const inProgress = tasks.filter(t => t.status === 'in_progress').length;
+  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  // Calculate average completion time (if available)
+  const completedWithTimes = tasks.filter(t =>
+    t.status === 'completed' && t.completedAt && t.createdAt
+  );
+
+  let avgCompletionHours = 0;
+  if (completedWithTimes.length > 0) {
+    const totalHours = completedWithTimes.reduce((sum, task) => {
+      const created = task.createdAt?._seconds
+        ? new Date(task.createdAt._seconds * 1000)
+        : new Date(task.createdAt);
+      const completed = task.completedAt?._seconds
+        ? new Date(task.completedAt._seconds * 1000)
+        : new Date(task.completedAt);
+      const hours = (completed.getTime() - created.getTime()) / (1000 * 60 * 60);
+      return sum + hours;
+    }, 0);
+    avgCompletionHours = Math.round(totalHours / completedWithTimes.length);
+  }
+
+  return {
+    total,
+    completed,
+    pending,
+    inProgress,
+    completionRate,
+    avgCompletionHours,
+  };
+}
+
+function calculateRelationshipMetrics(relationships: any[]) {
+  const total = relationships.length;
+
+  // Count by strength
+  const strongCount = relationships.filter(r => r.strength === 'strong').length;
+  const activeCount = relationships.filter(r => r.strength === 'active').length;
+  const developingCount = relationships.filter(r => r.strength === 'developing').length;
+  const weakCount = relationships.filter(r => r.strength === 'weak').length;
+  const prospectiveCount = relationships.filter(r => r.strength === 'prospective').length;
+
+  // Count by category
+  const decisionMakers = relationships.filter(r => r.category === 'decision_maker').length;
+  const champions = relationships.filter(r => r.category === 'champion').length;
+  const influencers = relationships.filter(r => r.category === 'influencer').length;
+  const advisors = relationships.filter(r => r.category === 'advisor').length;
+  const connectors = relationships.filter(r => r.category === 'connector').length;
+  const gatekeepers = relationships.filter(r => r.category === 'gatekeeper').length;
+
+  // Network health score (0-100)
+  // Strong relationships are worth more, prospective less
+  const healthScore = total > 0
+    ? Math.round(((strongCount * 5 + activeCount * 4 + developingCount * 3 + weakCount * 2 + prospectiveCount * 1) / (total * 5)) * 100)
+    : 0;
+
+  return {
+    total,
+    byStrength: {
+      strong: strongCount,
+      active: activeCount,
+      developing: developingCount,
+      weak: weakCount,
+      prospective: prospectiveCount,
+    },
+    byCategory: {
+      decision_maker: decisionMakers,
+      champion: champions,
+      influencer: influencers,
+      advisor: advisors,
+      connector: connectors,
+      gatekeeper: gatekeepers,
+    },
+    healthScore,
+  };
+}
+
+function calculateRelationshipActivityMetrics(relationships: any[], startDate: Date) {
+  // Analizza le attività completate per mantenere le relazioni
+  const metricsData: any[] = [];
+
+  relationships.forEach(rel => {
+    const actions = rel.actionsHistory || [];
+
+    // Filtra azioni nel periodo selezionato
+    const recentActions = actions.filter((action: any) => {
+      const actionDate = action.completedAt?._seconds
+        ? new Date(action.completedAt._seconds * 1000)
+        : new Date(action.completedAt);
+      return actionDate >= startDate;
+    });
+
+    if (recentActions.length > 0 || rel.strength === 'weak' || rel.strength === 'prospective') {
+      // Calcola giorni dall'ultimo contatto
+      let daysSinceLastContact = 0;
+      if (rel.lastContact) {
+        const lastContactDate = rel.lastContact?._seconds
+          ? new Date(rel.lastContact._seconds * 1000)
+          : new Date(rel.lastContact);
+        const diffTime = Math.abs(new Date().getTime() - lastContactDate.getTime());
+        daysSinceLastContact = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+
+      metricsData.push({
+        relationshipId: rel.id,
+        name: rel.name,
+        company: rel.company,
+        strength: rel.strength,
+        importance: rel.importance,
+        category: rel.category,
+        actionsInPeriod: recentActions.length,
+        totalActions: actions.length,
+        daysSinceLastContact,
+        lastAction: recentActions.length > 0
+          ? recentActions[recentActions.length - 1].action
+          : null,
+        nextAction: rel.nextAction || null,
+        needsAttention: daysSinceLastContact > 30 || rel.strength === 'weak' || rel.strength === 'prospective',
+      });
+    }
+  });
+
+  // Ordina per priorità (relazioni che necessitano attenzione)
+  metricsData.sort((a, b) => {
+    if (a.needsAttention && !b.needsAttention) return -1;
+    if (!a.needsAttention && b.needsAttention) return 1;
+    return b.daysSinceLastContact - a.daysSinceLastContact;
+  });
+
+  // Statistiche aggregate
+  const totalActionsInPeriod = metricsData.reduce((sum, m) => sum + m.actionsInPeriod, 0);
+  const relationshipsNeedingAttention = metricsData.filter(m => m.needsAttention).length;
+  const avgActionsPerRelationship = metricsData.length > 0
+    ? Math.round(totalActionsInPeriod / metricsData.length)
+    : 0;
+
+  // Top 10 relazioni più attive
+  const topActive = [...metricsData]
+    .sort((a, b) => b.actionsInPeriod - a.actionsInPeriod)
+    .slice(0, 10);
+
+  return {
+    summary: {
+      totalActionsInPeriod,
+      relationshipsNeedingAttention,
+      avgActionsPerRelationship,
+      totalTrackedRelationships: metricsData.length,
+    },
+    topActiveRelationships: topActive,
+    allRelationships: metricsData,
+  };
+}
+
+function calculateDailyTimeInvestment(tasks: any[], startDate: Date, endDate: Date) {
+  // Crea un map per aggregare il tempo per ogni giorno
+  const dailyTimeMap: Record<string, number> = {};
+
+  // Filtra task completati con actualDuration nel periodo
+  const completedTasks = tasks.filter(task => {
+    if (task.status !== 'completed' || !task.completedAt || !task.actualDuration) {
+      return false;
+    }
+
+    const completedAt = task.completedAt?._seconds
+      ? new Date(task.completedAt._seconds * 1000)
+      : new Date(task.completedAt);
+
+    return completedAt >= startDate && completedAt <= endDate;
+  });
+
+  // Aggrega tempo per giorno
+  completedTasks.forEach(task => {
+    const completedAt = task.completedAt?._seconds
+      ? new Date(task.completedAt._seconds * 1000)
+      : new Date(task.completedAt);
+
+    // Formato YYYY-MM-DD per il giorno
+    const dayKey = completedAt.toISOString().split('T')[0];
+
+    if (!dailyTimeMap[dayKey]) {
+      dailyTimeMap[dayKey] = 0;
+    }
+
+    dailyTimeMap[dayKey] += task.actualDuration || 0;
+  });
+
+  // Converti il map in array ordinato per data
+  const dailyData = Object.entries(dailyTimeMap)
+    .map(([date, minutes]) => ({
+      date,
+      minutes,
+      hours: Math.round((minutes / 60) * 10) / 10, // Arrotonda a 1 decimale
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Calcola statistiche
+  const totalMinutes = Object.values(dailyTimeMap).reduce((sum, min) => sum + min, 0);
+  const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
+  const avgMinutesPerDay = dailyData.length > 0
+    ? Math.round(totalMinutes / dailyData.length)
+    : 0;
+  const avgHoursPerDay = Math.round((avgMinutesPerDay / 60) * 10) / 10;
+
+  return {
+    dailyData,
+    summary: {
+      totalMinutes,
+      totalHours,
+      avgMinutesPerDay,
+      avgHoursPerDay,
+      daysWithActivity: dailyData.length,
+      totalCompletedTasks: completedTasks.length,
+    },
+  };
 }

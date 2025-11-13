@@ -20,7 +20,7 @@ import { exportToCSV, exportToJSON } from '@/lib/utils/exportImport';
 export default function RelazioniPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { relationships, loading, error, addRelationship, updateRelationship, deleteRelationship, completeAction } = useRelationships();
+  const { relationships, loading, error, addRelationship, updateRelationship, deleteRelationship, completeAction, addNote } = useRelationships();
 
   // Custom hooks
   const filters = useRelationshipFilters(relationships);
@@ -28,35 +28,78 @@ export default function RelazioniPage() {
   const pagination = usePagination(filters.filteredRelationships, 20);
 
   // UI State
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
   const [viewingRelation, setViewingRelation] = useState<Relationship | null>(null);
   const [editingRelation, setEditingRelation] = useState<Relationship | null>(null);
   const [relationToDelete, setRelationToDelete] = useState<Relationship | null>(null);
+  const [actionRelation, setActionRelation] = useState<Relationship | null>(null);
+  const [newActionText, setNewActionText] = useState('');
+  const [newNoteText, setNewNoteText] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [completingAction, setCompletingAction] = useState<string | null>(null);
+  const [completingAction, setCompletingAction] = useState(false);
+  const [addingNote, setAddingNote] = useState(false);
+  const [editingActionId, setEditingActionId] = useState<string | null>(null);
+  const [editingActionText, setEditingActionText] = useState('');
+  const [isDeleteActionDialogOpen, setIsDeleteActionDialogOpen] = useState(false);
+  const [actionToDelete, setActionToDelete] = useState<string | null>(null);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+  const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState(false);
 
-  // Debug: log quando i dati cambiano
+
+  // Update actionRelation and editingRelation when relationships change (for real-time updates)
   useEffect(() => {
-    console.log('👤 User:', user);
-    console.log('🔍 Relazioni caricate:', relationships);
-    console.log('📊 Numero relazioni:', relationships.length);
-    if (error) console.error('❌ Error:', error);
-  }, [user, relationships, error]);
+    if (actionRelation && isActionsModalOpen) {
+      const updated = relationships.find(r => r.id === actionRelation.id);
+      if (updated) {
+        setActionRelation(updated);
+      }
+    }
+    if (editingRelation && isModalOpen) {
+      const updated = relationships.find(r => r.id === editingRelation.id);
+      if (updated) {
+        setEditingRelation(updated);
+      }
+    }
+  }, [relationships, actionRelation?.id, isActionsModalOpen, editingRelation?.id, isModalOpen]);
 
   const openAddModal = () => {
     setEditingRelation(null);
     form.reset();
+    setIsFormDirty(false);
     setIsModalOpen(true);
   };
 
   const openEditModal = (relation: Relationship) => {
     setEditingRelation(relation);
     form.setFormData(relation);
+    setIsFormDirty(false);
     setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    if (isFormDirty) {
+      setIsUnsavedChangesDialogOpen(true);
+    } else {
+      setIsModalOpen(false);
+      form.reset();
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    setIsUnsavedChangesDialogOpen(false);
+    setIsModalOpen(false);
+    setIsFormDirty(false);
+    form.reset();
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    setIsUnsavedChangesDialogOpen(false);
   };
 
   const openDetailsModal = (relation: Relationship) => {
@@ -69,22 +112,126 @@ export default function RelazioniPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleCompleteAction = async (relationId: string, action: string) => {
-    if (!action) {
+  const openActionsModal = (relation: Relationship) => {
+    setActionRelation(relation);
+    setNewActionText(relation.nextAction || '');
+    setIsActionsModalOpen(true);
+  };
+
+  const handleCompleteCurrentAction = async () => {
+    if (!actionRelation?.nextAction) {
       showToast('Nessuna azione da completare', 'error');
       return;
     }
 
-    setCompletingAction(relationId);
+    setCompletingAction(true);
     try {
-      await completeAction(relationId, action);
+      await completeAction(actionRelation.id, actionRelation.nextAction);
       showToast('✅ Azione completata!', 'success');
+      // Modal will auto-update because relationships updates via onSnapshot
     } catch (error: any) {
       console.error('Error completing action:', error);
       showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
     } finally {
-      setCompletingAction(null);
+      setCompletingAction(false);
     }
+  };
+
+  const handleSaveNewAction = async () => {
+    if (!actionRelation || !newActionText.trim()) {
+      showToast('Inserisci una prossima azione', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updateRelationship(actionRelation.id, {
+        nextAction: newActionText.trim(),
+      });
+      showToast('✅ Prossima azione aggiornata!', 'success');
+      setIsActionsModalOpen(false);
+      setNewActionText('');
+    } catch (error: any) {
+      console.error('Error updating action:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddNote = async (relationId: string) => {
+    if (!newNoteText.trim()) {
+      showToast('Inserisci il testo della nota', 'error');
+      return;
+    }
+
+    setAddingNote(true);
+    try {
+      await addNote(relationId, newNoteText.trim());
+      showToast('✅ Nota aggiunta!', 'success');
+      setNewNoteText('');
+    } catch (error: any) {
+      console.error('Error adding note:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
+    } finally {
+      setAddingNote(false);
+    }
+  };
+
+  const openDeleteActionDialog = (actionId: string) => {
+    setActionToDelete(actionId);
+    setIsDeleteActionDialogOpen(true);
+  };
+
+  const handleConfirmDeleteAction = async () => {
+    if (!actionRelation || !actionToDelete) return;
+
+    try {
+      const updatedHistory = actionRelation.actionsHistory.filter(a => a.id !== actionToDelete);
+      await updateRelationship(actionRelation.id, {
+        actionsHistory: updatedHistory,
+      });
+      showToast('✅ Azione eliminata!', 'success');
+      setIsDeleteActionDialogOpen(false);
+      setActionToDelete(null);
+    } catch (error: any) {
+      console.error('Error deleting action:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
+    }
+  };
+
+  const handleStartEditAction = (action: any) => {
+    setEditingActionId(action.id);
+    setEditingActionText(action.action);
+    setEditingActionType(action.type || 'call');
+  };
+
+  const handleSaveEditAction = async (actionId: string) => {
+    if (!actionRelation || !editingActionText.trim()) {
+      showToast('Inserisci il testo dell\'azione', 'error');
+      return;
+    }
+
+    try {
+      const updatedHistory = actionRelation.actionsHistory.map(a =>
+        a.id === actionId ? { ...a, action: editingActionText.trim() } : a
+      );
+      await updateRelationship(actionRelation.id, {
+        actionsHistory: updatedHistory,
+      });
+      showToast('✅ Azione modificata!', 'success');
+      setEditingActionId(null);
+      setEditingActionText('');
+      setEditingActionType('call');
+    } catch (error: any) {
+      console.error('Error editing action:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
+    }
+  };
+
+  const handleCancelEditAction = () => {
+    setEditingActionId(null);
+    setEditingActionText('');
   };
 
   const handleSave = async () => {
@@ -98,7 +245,8 @@ export default function RelazioniPage() {
     try {
       const dataToSave = {
         ...form.formData,
-        mutualBenefits: form.formData.mutualBenefits?.filter((b: string) => b.trim()) || [],
+        whatICanGive: form.formData.whatICanGive?.filter((b: string) => b.trim()) || [],
+        whatICanReceive: form.formData.whatICanReceive?.filter((b: string) => b.trim()) || [],
       };
 
       if (editingRelation) {
@@ -115,7 +263,8 @@ export default function RelazioniPage() {
           category: form.formData.category || 'decision_maker',
           valueBalance: form.formData.valueBalance || 'balanced',
           nextAction: form.formData.nextAction || '',
-          mutualBenefits: form.formData.mutualBenefits?.filter((b: string) => b.trim()) || [],
+          whatICanGive: form.formData.whatICanGive?.filter((b: string) => b.trim()) || [],
+          whatICanReceive: form.formData.whatICanReceive?.filter((b: string) => b.trim()) || [],
           lastContact: new Date().toISOString(),
           noteCount: 0,
           actionsHistory: [],
@@ -126,6 +275,7 @@ export default function RelazioniPage() {
       setIsModalOpen(false);
       form.reset();
       setEditingRelation(null);
+      setIsFormDirty(false);
     } catch (error: any) {
       console.error('Error saving relationship:', error);
       showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
@@ -154,21 +304,7 @@ export default function RelazioniPage() {
 
   const updateFormField = (field: keyof Relationship, value: any) => {
     form.updateField(field, value);
-  };
-
-  const updateBenefit = (index: number, value: string) => {
-    const newBenefits = [...(form.formData.mutualBenefits || [''])];
-    newBenefits[index] = value;
-    form.updateField('mutualBenefits', newBenefits);
-  };
-
-  const addBenefit = () => {
-    form.updateField('mutualBenefits', [...(form.formData.mutualBenefits || []), '']);
-  };
-
-  const removeBenefit = (index: number) => {
-    const newBenefits = (form.formData.mutualBenefits || []).filter((_: string, i: number) => i !== index);
-    form.updateField('mutualBenefits', newBenefits);
+    setIsFormDirty(true);
   };
 
   const stats = {
@@ -177,6 +313,43 @@ export default function RelazioniPage() {
     critical: relationships.filter(r => r.importance === 'critical').length,
     needsAction: relationships.filter(r => r.valueBalance === 'do_give_more').length,
   };
+
+  // Citazioni motivazionali sulle relazioni - una diversa ogni giorno
+  const relationshipQuotes = [
+    {
+      text: "Il vero potere risiede nel dare generosamente, nel costruire relazioni autentiche e nel creare valore per gli altri prima di chiedere qualcosa in cambio.",
+      author: "Keith Ferrazzi, Never Eat Alone"
+    },
+    {
+      text: "Le relazioni più forti si costruiscono quando aiutiamo gli altri a raggiungere i loro obiettivi, non i nostri.",
+      author: "Zig Ziglar"
+    },
+    {
+      text: "Il networking non è raccogliere contatti, è piantare semi di relazioni che cresceranno nel tempo.",
+      author: "Keith Ferrazzi"
+    },
+    {
+      text: "Le persone dimenticheranno cosa hai detto, dimenticheranno cosa hai fatto, ma non dimenticheranno mai come le hai fatte sentire.",
+      author: "Maya Angelou"
+    },
+    {
+      text: "Il successo arriva quando investi nelle relazioni, non solo nelle transazioni.",
+      author: "Simon Sinek"
+    },
+    {
+      text: "La qualità delle tue relazioni determina la qualità della tua vita.",
+      author: "Tony Robbins"
+    },
+    {
+      text: "Non costruire una rete di contatti. Costruisci una rete di relazioni autentiche.",
+      author: "Seth Godin"
+    }
+  ];
+
+  // Seleziona citazione basata sul giorno dell'anno
+  const today = new Date();
+  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+  const dailyQuote = relationshipQuotes[dayOfYear % relationshipQuotes.length];
 
   const getStrengthColor = (strength: string) => {
     switch (strength) {
@@ -242,7 +415,7 @@ export default function RelazioniPage() {
 
   const getBalanceIndicator = (balance: string) => {
     switch (balance) {
-      case 'do_give_more': return { icon: '⬆️', text: 'Devo dare valore', color: 'text-orange-600' };
+      case 'do_give_more': return { icon: '⬆️', text: 'Sto dando più valore', color: 'text-orange-600' };
       case 'balanced': return { icon: '⚖️', text: 'Bilanciato', color: 'text-green-600' };
       case 'do_receive_more': return { icon: '⬇️', text: 'Sto ricevendo', color: 'text-blue-600' };
       default: return { icon: '', text: '', color: '' };
@@ -271,32 +444,6 @@ export default function RelazioniPage() {
 
   return (
     <div className="space-y-6">
-      {/* DEBUG PANEL - Rimuovere in produzione */}
-      {process.env.NODE_ENV === 'development' && (
-        <Card className="bg-yellow-50 border-yellow-200">
-          <div className="text-sm space-y-2">
-            <div className="font-bold text-yellow-800">🐛 Debug Info:</div>
-            <div><strong>User ID:</strong> {user?.id || 'No user'}</div>
-            <div><strong>User Email:</strong> {user?.email || 'N/A'}</div>
-            <div><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</div>
-            <div><strong>Relationships count:</strong> {relationships.length}</div>
-            <div><strong>Error:</strong> {error || 'None'}</div>
-            {relationships.length > 0 && (
-              <div className="mt-2">
-                <strong>IDs delle relazioni:</strong>
-                <ul className="list-disc ml-5">
-                  {relationships.map(r => (
-                    <li key={r.id} className="text-xs">
-                      {r.id} - {r.name} (userId: {r.userId})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -331,7 +478,7 @@ export default function RelazioniPage() {
         </Card>
 
         <Card padding={false} className="p-4 border-l-4 border-orange-500">
-          <div className="text-sm text-gray-600">Devo Dare Valore</div>
+          <div className="text-sm text-gray-600">Sto Dando Valore</div>
           <div className="text-2xl font-bold text-orange-600 mt-1">{stats.needsAction}</div>
           <div className="text-xs text-gray-500 mt-1">Azioni da fare per loro</div>
         </Card>
@@ -342,7 +489,7 @@ export default function RelazioniPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <Input
-              placeholder="🔍 Cerca per nome o azienda..."
+              placeholder="🔍 Cerca per nome, azienda o ruolo..."
               value={filters.searchTerm}
               onChange={(e) => filters.setSearchTerm(e.target.value)}
             />
@@ -353,7 +500,7 @@ export default function RelazioniPage() {
             value={filters.filterStrength}
             onChange={(e) => filters.setFilterStrength(e.target.value)}
           >
-            <option value="all">💪 All Strengths</option>
+            <option value="all">💪 Tutte le Forze</option>
             <option value="strong">💪 Strong</option>
             <option value="active">✓ Active</option>
             <option value="developing">⟳ Developing</option>
@@ -365,12 +512,43 @@ export default function RelazioniPage() {
             value={filters.filterImportance}
             onChange={(e) => filters.setFilterImportance(e.target.value)}
           >
-            <option value="all">⭐ All Importance</option>
+            <option value="all">⭐ Tutte le Importanze</option>
             <option value="critical">⭐⭐⭐ Critical</option>
             <option value="high">⭐⭐ High</option>
             <option value="medium">⭐ Medium</option>
             <option value="low">○ Low</option>
           </select>
+        </div>
+
+        {/* Sorting Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+            value={filters.sortBy}
+            onChange={(e) => filters.setSortBy(e.target.value as any)}
+          >
+            <option value="name">📛 Ordina per Nome</option>
+            <option value="company">🏢 Ordina per Azienda</option>
+            <option value="role">💼 Ordina per Ruolo</option>
+            <option value="lastContact">📅 Ordina per Ultimo Contatto</option>
+            <option value="lastAction">⏱️ Ordina per Ultima Azione</option>
+            <option value="importance">⭐ Ordina per Importanza</option>
+            <option value="strength">💪 Ordina per Forza Relazione</option>
+            <option value="category">🎯 Ordina per Categoria</option>
+          </select>
+
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+            value={filters.sortOrder}
+            onChange={(e) => filters.setSortOrder(e.target.value as 'asc' | 'desc')}
+          >
+            <option value="asc">⬆️ Crescente (A-Z, Vecchio-Nuovo)</option>
+            <option value="desc">⬇️ Decrescente (Z-A, Nuovo-Vecchio)</option>
+          </select>
+
+          <div className="text-sm text-gray-600 flex items-center px-4 py-2 bg-gray-50 rounded-lg">
+            📊 {filters.filteredRelationships.length} relazioni trovate
+          </div>
         </div>
 
         {/* View Toggle */}
@@ -406,9 +584,12 @@ export default function RelazioniPage() {
             return (
               <Card
                 key={rel.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => openEditModal(rel)}
+                className="hover:shadow-lg transition-shadow"
               >
+                <div
+                  className="cursor-pointer"
+                  onClick={() => openEditModal(rel)}
+                >
                 {/* Header con temperatura */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -429,15 +610,29 @@ export default function RelazioniPage() {
                   <span className="text-sm">{getImportanceIcon(rel.importance)}</span>
                 </div>
 
-                {/* Mutual Benefits */}
-                <div className="mb-3 bg-green-50 p-3 rounded-lg">
-                  <div className="text-xs font-semibold text-green-700 mb-1">💚 Benefici Reciproci:</div>
-                  <div className="space-y-1">
-                    {rel.mutualBenefits.map((benefit: string, idx: number) => (
-                      <div key={idx} className="text-xs text-green-600">• {benefit}</div>
-                    ))}
+                {/* What I Can Give */}
+                {rel.whatICanGive && rel.whatICanGive.length > 0 && rel.whatICanGive.some((item: string) => item.trim()) && (
+                  <div className="mb-3 bg-green-50 p-3 rounded-lg">
+                    <div className="text-xs font-semibold text-green-700 mb-1">💚 Cosa Posso Dare:</div>
+                    <div className="space-y-1">
+                      {rel.whatICanGive.filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                        <div key={idx} className="text-xs text-green-600">• {item}</div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* What I Can Receive */}
+                {rel.whatICanReceive && rel.whatICanReceive.length > 0 && rel.whatICanReceive.some((item: string) => item.trim()) && (
+                  <div className="mb-3 bg-blue-50 p-3 rounded-lg">
+                    <div className="text-xs font-semibold text-blue-700 mb-1">💙 Cosa Posso Ricevere:</div>
+                    <div className="space-y-1">
+                      {rel.whatICanReceive.filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                        <div key={idx} className="text-xs text-blue-600">• {item}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Value Balance */}
                 <div className="mb-3 flex items-center gap-2">
@@ -445,28 +640,21 @@ export default function RelazioniPage() {
                   <span className={`text-sm font-medium ${balance.color}`}>{balance.text}</span>
                 </div>
 
-                {/* Next Action with Quick Complete Button */}
-                <div className="mb-3 bg-blue-50 p-3 rounded-lg">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <div className="text-xs font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
-                      <div className="text-xs text-blue-600">{rel.nextAction || 'Nessuna azione pianificata'}</div>
+                {/* Next Action - Clickable */}
+                <div
+                  className="mb-3 bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openActionsModal(rel);
+                  }}
+                >
+                  <div className="text-xs font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
+                  <div className="text-xs text-blue-600">{rel.nextAction || 'Clicca per pianificare...'}</div>
+                  {rel.actionsHistory && rel.actionsHistory.length > 0 && (
+                    <div className="text-xs text-blue-500 mt-1">
+                      📋 {rel.actionsHistory.length} azioni completate
                     </div>
-                    {rel.nextAction && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCompleteAction(rel.id, rel.nextAction);
-                        }}
-                        disabled={completingAction === rel.id}
-                        className="shrink-0"
-                      >
-                        {completingAction === rel.id ? '...' : '✓'}
-                      </Button>
-                    )}
-                  </div>
+                  )}
                 </div>
 
                 {/* Footer */}
@@ -478,28 +666,11 @@ export default function RelazioniPage() {
                     📝 {rel.noteCount} note
                   </div>
                 </div>
+                </div>
 
-                <div className="grid grid-cols-2 gap-2 mt-3">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openDetailsModal(rel);
-                    }}
-                  >
-                    👁️ Dettagli
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEditModal(rel);
-                    }}
-                  >
-                    ✏️ Modifica
-                  </Button>
+                {/* Hint text */}
+                <div className="mt-3 text-xs text-center text-gray-400 italic">
+                  Clicca per modificare • Clicca "Prossima Azione" per gestire attività
                 </div>
               </Card>
             );
@@ -542,46 +713,20 @@ export default function RelazioniPage() {
                     </div>
                   </div>
 
-                  {/* Next Action with Quick Complete */}
-                  <div className="text-sm text-gray-600 max-w-xs flex items-center gap-2">
-                    <span className="font-semibold">⏭️</span>
-                    <span className="flex-1">{rel.nextAction || 'Nessuna azione'}</span>
-                    {rel.nextAction && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCompleteAction(rel.id, rel.nextAction);
-                        }}
-                        disabled={completingAction === rel.id}
-                      >
-                        {completingAction === rel.id ? '...' : '✓'}
-                      </Button>
+                  {/* Next Action - Clickable */}
+                  <div
+                    className="text-sm text-gray-600 max-w-xs px-3 py-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openActionsModal(rel);
+                    }}
+                  >
+                    <span className="font-semibold">⏭️</span> {rel.nextAction || 'Pianifica azione...'}
+                    {rel.actionsHistory && rel.actionsHistory.length > 0 && (
+                      <span className="text-xs text-blue-500 ml-2">
+                        ({rel.actionsHistory.length})
+                      </span>
                     )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDetailsModal(rel);
-                      }}
-                    >
-                      👁️
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(rel);
-                      }}
-                    >
-                      ✏️ Modifica
-                    </Button>
                   </div>
                 </div>
               );
@@ -607,16 +752,16 @@ export default function RelazioniPage() {
       {/* Modal per Aggiungere/Modificare */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
         title={editingRelation ? '✏️ Modifica Relazione' : '➕ Nuova Relazione'}
         size="lg"
       >
         <div className="space-y-4">
-          {/* Nome, Azienda, Ruolo */}
+          {/* Nome, Ruolo, Azienda */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome *
+                Nome e Cognome *
               </label>
               <Input
                 value={form.formData.name || ''}
@@ -629,30 +774,30 @@ export default function RelazioniPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Azienda *
+                Ruolo *
               </label>
               <Input
-                value={form.formData.company || ''}
-                onChange={(e) => updateFormField('company', e.target.value)}
-                placeholder="Es. Acme Corp"
+                value={form.formData.role || ''}
+                onChange={(e) => updateFormField('role', e.target.value)}
+                placeholder="Es. CEO, Responsabile Acquisti"
               />
-              {form.errors.company && (
-                <p className="text-xs text-red-600 mt-1">{form.errors.company}</p>
+              {form.errors.role && (
+                <p className="text-xs text-red-600 mt-1">{form.errors.role}</p>
               )}
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ruolo *
+              Azienda *
             </label>
             <Input
-              value={form.formData.role || ''}
-              onChange={(e) => updateFormField('role', e.target.value)}
-              placeholder="Es. CEO, Responsabile Acquisti"
+              value={form.formData.company || ''}
+              onChange={(e) => updateFormField('company', e.target.value)}
+              placeholder="Es. Acme Corp"
             />
-            {form.errors.role && (
-              <p className="text-xs text-red-600 mt-1">{form.errors.role}</p>
+            {form.errors.company && (
+              <p className="text-xs text-red-600 mt-1">{form.errors.company}</p>
             )}
           </div>
 
@@ -671,6 +816,7 @@ export default function RelazioniPage() {
                 <option value="active">✓ Active - Regolarmente in contatto</option>
                 <option value="developing">⟳ Developing - In sviluppo</option>
                 <option value="weak">○ Weak - Da rafforzare</option>
+                <option value="prospective">🎯 Prospective - Relazione da costruire</option>
               </select>
             </div>
 
@@ -720,7 +866,7 @@ export default function RelazioniPage() {
                 value={form.formData.valueBalance || 'balanced'}
                 onChange={(e) => updateFormField('valueBalance', e.target.value)}
               >
-                <option value="do_give_more">⬆️ Devo dare più valore</option>
+                <option value="do_give_more">⬆️ Sto dando più valore</option>
                 <option value="balanced">⚖️ Bilanciato</option>
                 <option value="do_receive_more">⬇️ Sto ricevendo più valore</option>
               </select>
@@ -739,25 +885,25 @@ export default function RelazioniPage() {
             />
           </div>
 
-          {/* Benefici Reciproci */}
+          {/* Cosa Posso Dare */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              💚 Benefici Reciproci
+              💚 Cosa Posso Dare
             </label>
             <div className="space-y-2">
-              {(form.formData.mutualBenefits || ['']).map((benefit: string, index: number) => (
+              {(form.formData.whatICanGive || ['']).map((item: string, index: number) => (
                 <div key={index} className="flex gap-2">
                   <Input
-                    value={benefit}
-                    onChange={(e) => updateBenefit(index, e.target.value)}
-                    placeholder="Es. Partnership strategica, Revenue share"
+                    value={item}
+                    onChange={(e) => form.updateGive(index, e.target.value)}
+                    placeholder="Es. Introduzioni, Consulenza strategica, Partnership"
                     className="flex-1"
                   />
-                  {(form.formData.mutualBenefits?.length || 0) > 1 && (
+                  {(form.formData.whatICanGive?.length || 0) > 1 && (
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => removeBenefit(index)}
+                      onClick={() => form.removeGive(index)}
                     >
                       ✕
                     </Button>
@@ -767,13 +913,119 @@ export default function RelazioniPage() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={addBenefit}
+                onClick={form.addGive}
                 className="w-full"
               >
-                + Aggiungi Beneficio
+                + Aggiungi Valore che Posso Dare
               </Button>
             </div>
           </div>
+
+          {/* Cosa Posso Ricevere */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              💙 Cosa Posso Ricevere
+            </label>
+            <div className="space-y-2">
+              {(form.formData.whatICanReceive || ['']).map((item: string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={item}
+                    onChange={(e) => form.updateReceive(index, e.target.value)}
+                    placeholder="Es. Referral, Opportunità commerciali, Insights di mercato"
+                    className="flex-1"
+                  />
+                  {(form.formData.whatICanReceive?.length || 0) > 1 && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => form.removeReceive(index)}
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={form.addReceive}
+                className="w-full"
+              >
+                + Aggiungi Valore che Posso Ricevere
+              </Button>
+            </div>
+          </div>
+
+          {/* Notes Section - Only show if editing existing relationship */}
+          {editingRelation && (
+            <div className="border-t pt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                💬 Note e Commenti
+              </label>
+
+              {/* Add New Note */}
+              <div className="mb-4 bg-gray-50 p-3 rounded-lg">
+                <div className="flex gap-2">
+                  <Input
+                    value={newNoteText}
+                    onChange={(e) => setNewNoteText(e.target.value)}
+                    placeholder="Aggiungi una nota o commento..."
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAddNote(editingRelation.id);
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={() => handleAddNote(editingRelation.id)}
+                    disabled={!newNoteText.trim() || addingNote}
+                    size="sm"
+                  >
+                    {addingNote ? '...' : '➕'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Notes List */}
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {editingRelation.notes && editingRelation.notes.length > 0 ? (
+                  [...editingRelation.notes]
+                    .reverse()
+                    .map((note) => (
+                      <div key={note.id} className="bg-white border border-gray-200 p-3 rounded-lg">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-gray-700">
+                              {note.createdByName}
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded font-semibold ${
+                                note.createdByRole === 'admin'
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-blue-100 text-blue-700'
+                              }`}
+                            >
+                              {note.createdByRole === 'admin' ? 'ADMIN' : 'VENDITORE'}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500 whitespace-nowrap">
+                            {formatLastContact(note.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{note.content}</p>
+                      </div>
+                    ))
+                ) : (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    Nessuna nota ancora. Aggiungi la prima!
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="flex gap-3 pt-4 border-t">
@@ -790,10 +1042,7 @@ export default function RelazioniPage() {
             <div className="flex-1" />
             <Button
               variant="secondary"
-              onClick={() => {
-                setIsModalOpen(false);
-                form.reset();
-              }}
+              onClick={handleCloseModal}
               disabled={saving}
             >
               Annulla
@@ -856,13 +1105,25 @@ export default function RelazioniPage() {
               </div>
             </div>
 
-            {/* Benefici Reciproci */}
-            {viewingRelation.mutualBenefits && viewingRelation.mutualBenefits.length > 0 && (
+            {/* Cosa Posso Dare */}
+            {viewingRelation.whatICanGive && viewingRelation.whatICanGive.length > 0 && viewingRelation.whatICanGive.some((item: string) => item.trim()) && (
               <div className="bg-green-50 p-4 rounded-lg">
-                <div className="text-sm font-semibold text-green-700 mb-2">💚 Benefici Reciproci:</div>
+                <div className="text-sm font-semibold text-green-700 mb-2">💚 Cosa Posso Dare:</div>
                 <ul className="space-y-1">
-                  {viewingRelation.mutualBenefits.map((benefit: string, idx: number) => (
-                    <li key={idx} className="text-sm text-green-600">• {benefit}</li>
+                  {viewingRelation.whatICanGive.filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                    <li key={idx} className="text-sm text-green-600">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Cosa Posso Ricevere */}
+            {viewingRelation.whatICanReceive && viewingRelation.whatICanReceive.length > 0 && viewingRelation.whatICanReceive.some((item: string) => item.trim()) && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-sm font-semibold text-blue-700 mb-2">💙 Cosa Posso Ricevere:</div>
+                <ul className="space-y-1">
+                  {viewingRelation.whatICanReceive.filter((item: string) => item.trim()).map((item: string, idx: number) => (
+                    <li key={idx} className="text-sm text-blue-600">• {item}</li>
                   ))}
                 </ul>
               </div>
@@ -932,21 +1193,222 @@ export default function RelazioniPage() {
         )}
       </Modal>
 
-      {/* Ferrazzi Quote */}
+      {/* Modal Gestione Azioni */}
+      <Modal
+        isOpen={isActionsModalOpen}
+        onClose={() => {
+          setIsActionsModalOpen(false);
+          setNewActionText('');
+        }}
+        title="⏭️ Gestione Azioni"
+        size="lg"
+      >
+        {actionRelation && (
+          <div className="space-y-4">
+            {/* Info Relazione */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h3 className="font-bold text-gray-900">{actionRelation.name}</h3>
+              <p className="text-sm text-gray-600">{actionRelation.company}</p>
+            </div>
+
+            {/* Prossima Azione Corrente */}
+            {actionRelation.nextAction && (
+              <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-sm font-semibold text-blue-700 mb-1">Prossima Azione:</div>
+                    <div className="text-sm text-blue-900">{actionRelation.nextAction}</div>
+                  </div>
+                  <Button
+                    onClick={handleCompleteCurrentAction}
+                    disabled={completingAction}
+                    size="sm"
+                    className="w-full"
+                  >
+                    {completingAction ? '...' : '✓ Completa Azione'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Nuova Prossima Azione */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {actionRelation.nextAction ? 'Modifica Prossima Azione:' : 'Pianifica Prossima Azione:'}
+              </label>
+              <Input
+                value={newActionText}
+                onChange={(e) => setNewActionText(e.target.value)}
+                placeholder="Es. Chiamata follow-up venerdì alle 15:00"
+                className="mb-2"
+              />
+              <Button
+                onClick={handleSaveNewAction}
+                disabled={!newActionText.trim() || saving}
+                size="sm"
+                className="w-full"
+              >
+                {saving ? 'Salvataggio...' : '💾 Salva Prossima Azione'}
+              </Button>
+            </div>
+
+            {/* Storico Azioni Completate */}
+            {actionRelation.actionsHistory && actionRelation.actionsHistory.length > 0 && (
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <div className="text-sm font-semibold text-purple-700 mb-3">📋 Storico Azioni Completate:</div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {actionRelation.actionsHistory
+                    .slice()
+                    .reverse()
+                    .map((action) => (
+                      <div key={action.id} className="bg-white p-3 rounded border border-purple-200">
+                        {editingActionId === action.id ? (
+                          <div className="space-y-2">
+                            <Input
+                              value={editingActionText}
+                              onChange={(e) => setEditingActionText(e.target.value)}
+                              placeholder="Modifica azione..."
+                              className="text-sm"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleSaveEditAction(action.id)}
+                                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                              >
+                                ✓ Salva
+                              </button>
+                              <button
+                                onClick={handleCancelEditAction}
+                                className="px-2 py-1 text-xs bg-gray-400 text-white rounded hover:bg-gray-500"
+                              >
+                                ✕ Annulla
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <div className="text-sm text-purple-900 font-medium">{action.action}</div>
+                              {action.notes && (
+                                <div className="text-xs text-purple-600 mt-1">{action.notes}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="text-xs text-purple-500 whitespace-nowrap">
+                                {formatLastContact(action.completedAt)}
+                              </div>
+                              <button
+                                onClick={() => handleStartEditAction(action)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="Modifica"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => openDeleteActionDialog(action.id)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                title="Elimina"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {actionRelation.actionsHistory?.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">📋</div>
+                <p className="text-sm">Nessuna azione completata ancora</p>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsActionsModalOpen(false);
+                  setNewActionText('');
+                }}
+                className="flex-1"
+              >
+                Chiudi
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Daily Motivational Quote */}
       <Card className="bg-gradient-to-r from-primary/10 to-purple-100 border-l-4 border-primary">
         <div className="flex items-start gap-4">
           <div className="text-4xl">💡</div>
           <div>
             <p className="text-gray-700 italic mb-2">
-              "Il successo nella vita è una funzione del numero di conversazioni scomode
-              che sei disposto ad avere."
+              "{dailyQuote.text}"
             </p>
-            <p className="text-sm text-gray-600 font-semibold">— Keith Ferrazzi, Never Eat Alone</p>
+            <p className="text-sm text-gray-600 font-semibold">— {dailyQuote.author}</p>
           </div>
         </div>
       </Card>
 
-      {/* Confirm Delete Dialog */}
+      {/* Confirm Delete Action Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteActionDialogOpen}
+        onClose={() => {
+          setIsDeleteActionDialogOpen(false);
+          setActionToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteAction}
+        title="Elimina Azione"
+        message="Sei sicuro di voler eliminare questa azione completata? Questa azione non può essere annullata."
+        confirmText="Elimina"
+        type="danger"
+      />
+
+      {/* Unsaved Changes Dialog */}
+      <Modal
+        isOpen={isUnsavedChangesDialogOpen}
+        onClose={() => setIsUnsavedChangesDialogOpen(false)}
+        title="⚠️ Modifiche non salvate"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            Hai apportato delle modifiche che non sono state salvate. Cosa vuoi fare?
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={handleSaveAndClose}
+              disabled={saving}
+              className="w-full"
+            >
+              {saving ? 'Salvataggio...' : '💾 Salva e Chiudi'}
+            </Button>
+            <Button
+              onClick={handleDiscardChanges}
+              variant="secondary"
+              className="w-full bg-red-50 text-red-600 hover:bg-red-100"
+            >
+              🗑️ Scarta Modifiche
+            </Button>
+            <Button
+              onClick={() => setIsUnsavedChangesDialogOpen(false)}
+              variant="secondary"
+              className="w-full"
+            >
+              ✕ Annulla
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm Delete Relationship Dialog */}
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}

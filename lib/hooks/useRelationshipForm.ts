@@ -8,7 +8,8 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
       importance: 'medium',
       category: 'decision_maker',
       valueBalance: 'balanced',
-      mutualBenefits: [''],
+      whatICanGive: [''],
+      whatICanReceive: [''],
     }
   );
 
@@ -26,24 +27,45 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
     }
   };
 
-  const updateBenefit = (index: number, value: string) => {
-    const newBenefits = [...(formData.mutualBenefits || [''])];
-    newBenefits[index] = value;
-    setFormData((prev) => ({ ...prev, mutualBenefits: newBenefits }));
+  const updateGive = (index: number, value: string) => {
+    const newItems = [...(formData.whatICanGive || [''])];
+    newItems[index] = value;
+    setFormData((prev) => ({ ...prev, whatICanGive: newItems }));
   };
 
-  const addBenefit = () => {
+  const addGive = () => {
     setFormData((prev) => ({
       ...prev,
-      mutualBenefits: [...(prev.mutualBenefits || ['']), ''],
+      whatICanGive: [...(prev.whatICanGive || ['']), ''],
     }));
   };
 
-  const removeBenefit = (index: number) => {
-    const newBenefits = (formData.mutualBenefits || ['']).filter((_, i) => i !== index);
+  const removeGive = (index: number) => {
+    const newItems = (formData.whatICanGive || ['']).filter((_, i) => i !== index);
     setFormData((prev) => ({
       ...prev,
-      mutualBenefits: newBenefits.length > 0 ? newBenefits : [''],
+      whatICanGive: newItems.length > 0 ? newItems : [''],
+    }));
+  };
+
+  const updateReceive = (index: number, value: string) => {
+    const newItems = [...(formData.whatICanReceive || [''])];
+    newItems[index] = value;
+    setFormData((prev) => ({ ...prev, whatICanReceive: newItems }));
+  };
+
+  const addReceive = () => {
+    setFormData((prev) => ({
+      ...prev,
+      whatICanReceive: [...(prev.whatICanReceive || ['']), ''],
+    }));
+  };
+
+  const removeReceive = (index: number) => {
+    const newItems = (formData.whatICanReceive || ['']).filter((_, i) => i !== index);
+    setFormData((prev) => ({
+      ...prev,
+      whatICanReceive: newItems.length > 0 ? newItems : [''],
     }));
   };
 
@@ -71,7 +93,8 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
         importance: 'medium',
         category: 'decision_maker',
         valueBalance: 'balanced',
-        mutualBenefits: [''],
+        whatICanGive: [''],
+        whatICanReceive: [''],
       }
     );
     setErrors({});
@@ -81,9 +104,12 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
     formData,
     errors,
     updateField,
-    updateBenefit,
-    addBenefit,
-    removeBenefit,
+    updateGive,
+    addGive,
+    removeGive,
+    updateReceive,
+    addReceive,
+    removeReceive,
     validate,
     reset,
     setFormData,

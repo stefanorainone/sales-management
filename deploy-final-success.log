@@ -1,0 +1,235 @@
+Creating temporary archive of 261 file(s) totalling 17.4 MiB before compression.
+Some files were not included in the source upload.
+
+Check the gcloud log [/Users/dev/.config/gcloud/logs/2025.11.09/21.31.11.446447.log] to see which files and the contents of the
+default gcloudignore file used (see `$ gcloud topic gcloudignore` to learn
+more).
+
+Uploading tarball of [.] to [gs://sales-management-01_cloudbuild/source/1762720271.599799-2fa4316c99e140909e169d2a7718099c.tgz]
+Created [https://cloudbuild.googleapis.com/v1/projects/sales-management-01/locations/global/builds/fe6fe85b-ec95-4f4d-9de8-b58fb93d9565].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds/fe6fe85b-ec95-4f4d-9de8-b58fb93d9565?project=412055180465 ].
+Waiting for build to complete. Polling interval: 1 second(s).
+
+BUILD FAILURE: Build step failure: build step 0 "gcr.io/cloud-builders/docker" failed: step exited with non-zero status: 1
+ERROR: (gcloud.builds.submit) build fe6fe85b-ec95-4f4d-9de8-b58fb93d9565 completed with status "FAILURE"
+----------------------------- REMOTE BUILD OUTPUT ------------------------------
+starting build "fe6fe85b-ec95-4f4d-9de8-b58fb93d9565"
+
+FETCHSOURCE
+Fetching storage object: gs://sales-management-01_cloudbuild/source/1762720271.599799-2fa4316c99e140909e169d2a7718099c.tgz#1762720280375222
+Copying gs://sales-management-01_cloudbuild/source/1762720271.599799-2fa4316c99e140909e169d2a7718099c.tgz#1762720280375222...
+/ [0 files][    0.0 B/ 15.0 MiB]                                                / [1 files][ 15.0 MiB/ 15.0 MiB]                                                
+Operation completed over 1 objects/15.0 MiB.
+BUILD
+Already have image (with digest): gcr.io/cloud-builders/docker
+Sending build context to Docker daemon  11.19MB
+Step 1/24 : FROM node:18-alpine AS base
+18-alpine: Pulling from library/node
+f18232174bc9: Pulling fs layer
+dd71dde834b5: Pulling fs layer
+1e5a4c89cee5: Pulling fs layer
+25ff2da83641: Pulling fs layer
+25ff2da83641: Verifying Checksum
+25ff2da83641: Download complete
+1e5a4c89cee5: Verifying Checksum
+1e5a4c89cee5: Download complete
+f18232174bc9: Verifying Checksum
+f18232174bc9: Download complete
+f18232174bc9: Pull complete
+dd71dde834b5: Verifying Checksum
+dd71dde834b5: Download complete
+dd71dde834b5: Pull complete
+1e5a4c89cee5: Pull complete
+25ff2da83641: Pull complete
+Digest: sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+Status: Downloaded newer image for node:18-alpine
+ ---> ee77c6cd7c18
+Step 2/24 : FROM base AS deps
+ ---> ee77c6cd7c18
+Step 3/24 : RUN apk add --no-cache libc6-compat
+ ---> Running in ad26b63e1c76
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+(1/3) Installing musl-obstack (1.2.3-r2)
+(2/3) Installing libucontext (1.3.2-r0)
+(3/3) Installing gcompat (1.1.0-r4)
+OK: 10 MiB in 20 packages
+Removing intermediate container ad26b63e1c76
+ ---> c30010235d60
+Step 4/24 : WORKDIR /app
+ ---> Running in ff6b4669eb6f
+Removing intermediate container ff6b4669eb6f
+ ---> 9604469bef4b
+Step 5/24 : COPY package.json package-lock.json* ./
+ ---> 9650824de1cd
+Step 6/24 : RUN npm ci
+ ---> Running in b2df7adad861
+[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/ai@2.4.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app@0.14.4',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app-check@0.11.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app-check-compat@0.4.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/app-compat@0.5.4',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/auth@1.11.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/auth-compat@0.6.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/component@0.7.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/database@1.1.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/database-compat@2.1.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/firestore@4.9.2',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/firestore-compat@0.4.2',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/functions@0.13.1',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/functions-compat@0.4.1',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/logger@0.5.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/storage@0.14.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/storage-compat@0.4.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m[91mnpm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@firebase/util@1.13.0',
+npm warn EBADENGINE   required: { node: '>=20.0.0' },
+npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+npm warn EBADENGINE }
+[0m
+added 354 packages, and audited 355 packages in 28s
+
+44 packages are looking for funding
+  run `npm fund` for details
+
+1 moderate severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[91mnpm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+[0mRemoving intermediate container b2df7adad861
+ ---> f413a42afd4c
+Step 7/24 : FROM base AS builder
+ ---> ee77c6cd7c18
+Step 8/24 : WORKDIR /app
+ ---> Running in 2b607c1586d1
+Removing intermediate container 2b607c1586d1
+ ---> 1e30e01e4761
+Step 9/24 : COPY --from=deps /app/node_modules ./node_modules
+ ---> b9e69f8f4210
+Step 10/24 : COPY . .
+ ---> 868817ce5128
+Step 11/24 : RUN npm run build
+ ---> Running in 5e939504c2e2
+
+> sales-managment@1.0.0 build
+> next build
+
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+   ▲ Next.js 15.5.5
+   - Environments: .env.production
+   - Experiments (use with caution):
+     · serverActions
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 27.7s
+   Linting and checking validity of types ...
+[91mFailed to compile.
+
+[0m[91m./lib/hooks/useRelationshipFilters.ts:36:40
+Type error: Property 'toMillis' does not exist on type 'string'.
+
+[0m [90m 34 |[39m           [36mbreak[39m[33m;[39m
+ [90m 35 |[39m         [36mcase[39m [32m'lastContact'[39m[33m:[39m
+[31m[1m>[22m[39m[90m 36 |[39m           comparison [33m=[39m (a[33m.[39mlastContact[33m?[39m[33m.[39mtoMillis() [33m||[39m [35m0[39m) [33m-[39m (b[33m.[39mlastContact[33m?[39m[33m.[39mtoMillis() [33m||[39m [35m0[39m)[33m;[39m
+ [90m    |[39m                                        [31m[1m^[22m[39m
+ [90m 37 |[39m           [36mbreak[39m[33m;[39m
+ [90m 38 |[39m         [36mcase[39m [32m'importance'[39m[33m:[39m
+ [90m 39 |[39m           [36mconst[39m importanceOrder [33m=[39m { critical[33m:[39m [35m4[39m[33m,[39m high[33m:[39m [35m3[39m[33m,[39m medium[33m:[39m [35m2[39m[33m,[39m low[33m:[39m [35m1[39m }[33m;[39m[0m
+[0m[91mNext.js build worker exited with code: 1 and signal: null
+[0m[91mnpm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+The command '/bin/sh -c npm run build' returned a non-zero code: 1
+ERROR
+ERROR: build step 0 "gcr.io/cloud-builders/docker" failed: step exited with non-zero status: 1
+[0m
+--------------------------------------------------------------------------------
+Deploying container to Cloud Run service [[1msales-crm[m] in project [[1msales-management-01[m] region [[1meurope-west1[m]
+Deploying...
+Setting IAM Policy................done
+Creating Revision.........................................................done
+Routing traffic.....done
+Done.
+Service [[1msales-crm[m] revision [[1msales-crm-00056-dwt[m] has been deployed and is serving [1m100[m percent of traffic.
+Service URL: [1mhttps://sales-crm-412055180465.europe-west1.run.app[m

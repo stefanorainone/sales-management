@@ -60,6 +60,7 @@ interface GenerateTasksParams {
   recentActivities: Activity[];
   completedTasks?: AITask[];
   date: string; // YYYY-MM-DD
+  relationships?: any[]; // Strategic relationships for context
 }
 
 interface GenerateBriefingParams extends GenerateTasksParams {
@@ -177,6 +178,30 @@ ${JSON.stringify(params.recentActivities, null, 2)}
 
 COMPLETED TASKS TODAY:
 ${JSON.stringify(params.completedTasks || [], null, 2)}
+
+STRATEGIC RELATIONSHIPS NETWORK (Keith Ferrazzi Model):
+${params.relationships && params.relationships.length > 0 ? JSON.stringify(params.relationships.map(r => ({
+  name: r.name,
+  company: r.company,
+  role: r.role,
+  strength: r.strength, // strong/active/developing/weak/prospective
+  importance: r.importance, // critical/high/medium/low
+  category: r.category, // decision_maker/influencer/champion/gatekeeper/advisor/connector
+  lastContact: r.lastContact,
+  nextAction: r.nextAction,
+  whatICanGive: r.whatICanGive,
+  whatICanReceive: r.whatICanReceive,
+  valueBalance: r.valueBalance, // do_give_more/balanced/do_receive_more
+  recentActions: r.actionsHistory?.slice(-3) || [] // Last 3 actions
+})), null, 2) : 'No relationships tracked yet'}
+
+IMPORTANTE - USA LE RELAZIONI PER:
+- Identificare chi può aiutare con specifici deal o clienti
+- Suggerire di riattivare relazioni "weak" o "developing" che sono strategiche
+- Proporre di costruire relazioni "prospective" con decision maker chiave
+- Consigliare di dare valore prima di chiedere (se valueBalance = "do_receive_more")
+- Sfruttare "connectors" per introduzioni a nuovi prospect
+- Coinvolgere "champions" per accelerare deal in stallo
 ${customInstructions ? `\n${customInstructions}\n` : ''}
 Generate 4-8 high-priority tasks for tomorrow that will maximize sales success. For each task, provide:
 1. Type (call, email, meeting, demo, follow_up, research, admin)
@@ -204,6 +229,11 @@ Generate 4-8 high-priority tasks for tomorrow that will maximize sales success. 
    - Specifiche tecniche (quali strumenti usare, cosa avere pronto, timing preciso)
    - Cosa dire esattamente nelle situazioni chiave
    - Come gestire diverse reazioni del cliente
+   - **SFRUTTA LE RELAZIONI STRATEGICHE**: Se il task riguarda un cliente/deal, consulta le relazioni e suggerisci:
+     * Chi chiamare per consigli (advisor/champion con relazione strong)
+     * Chi può fare introduzioni (connector)
+     * Chi dare valore prima di chiedere aiuto (se valueBalance dice "do_receive_more")
+     * Relazioni "weak" o "prospective" da riattivare/costruire che possono aiutare
 
    Example per una chiamata:
    ["1. PREPARAZIONE AMBIENTE (5min): Trova stanza tranquilla e silenziosa, chiudi porta, prepara acqua, carica telefono, apri CRM su computer, prepara blocco note e penna per appunti rapidi",
@@ -289,7 +319,10 @@ Return ONLY a valid JSON array of tasks. No additional text.`;
       throw new Error('Unexpected response type from OpenAI');
     }
 
-    const tasks = JSON.parse(content);
+    // Remove markdown code fence if present
+    const cleanContent = content.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+
+    const tasks = JSON.parse(cleanContent);
     return tasks.map((task: any, index: number) => ({
       ...task,
       id: `task-${Date.now()}-${index}`,
@@ -460,7 +493,10 @@ Return ONLY a valid JSON array of insights. Each insight should have:
       throw new Error('Unexpected response type');
     }
 
-    const insights = JSON.parse(content);
+    // Remove markdown code fence if present
+    const cleanContent = content.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+
+    const insights = JSON.parse(cleanContent);
     return insights.map((insight: any, index: number) => ({
       ...insight,
       id: `insight-${Date.now()}-${index}`,
@@ -520,7 +556,10 @@ Return valid JSON with: { analysis, suggestedNextSteps, dealUpdates, newTaskSugg
       throw new Error('Unexpected response type');
     }
 
-    return JSON.parse(content);
+    // Remove markdown code fence if present
+    const cleanContent = content.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+
+    return JSON.parse(cleanContent);
   } catch (error) {
     console.error('Error analyzing notes:', error);
     return {

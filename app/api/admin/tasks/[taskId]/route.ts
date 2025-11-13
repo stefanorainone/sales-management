@@ -98,6 +98,8 @@ async function updateTask(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
+    const currentTaskData = taskDoc.data();
+
     // Aggiorna il task
     await adminDb!.collection('tasks').doc(taskId).update({
       ...updates,
@@ -106,6 +108,27 @@ async function updateTask(
     });
 
     console.log(`✅ Task updated: ${taskId}`);
+
+    // Track task completion as activity
+    if (updates.status === 'completed' && currentTaskData?.status !== 'completed') {
+      console.log('🔄 Task completed, creating activity...');
+
+      await adminDb!.collection('activities').add({
+        userId: currentTaskData.userId,
+        type: 'task',
+        title: currentTaskData.title || 'Task completato',
+        description: currentTaskData.description || '',
+        status: 'completed',
+        taskId: taskId,
+        priority: currentTaskData.priority,
+        scheduledAt: currentTaskData.scheduledAt || new Date(),
+        completedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      console.log('✅ Activity "task" created for completed task');
+    }
 
     // Rileggi il task aggiornato per restituirlo
     const updatedTaskDoc = await adminDb!.collection('tasks').doc(taskId).get();

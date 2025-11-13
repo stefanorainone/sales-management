@@ -105,17 +105,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-gray-700 mb-2">
-            <strong>Account Admin:</strong>
-          </p>
-          <p className="text-xs text-gray-600">
-            Email: admin@vr.com<br />
-            Password: Admin123!
-          </p>
-        </div>
-
-        <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="mt-6 p-3 bg-gray-50 border border-gray-200 rounded-lg">
           <p className="text-xs text-gray-600 text-center">
             Per creare nuovi account contattare l'amministratore
           </p>

@@ -14,17 +14,18 @@ interface NavItem {
 const sellerNavItems: NavItem[] = [
   { name: 'I Miei Task', href: '/today', icon: '🎯' },
   { name: 'Relazioni', href: '/relazioni', icon: '🤝' },
-  { name: 'Attività', href: '/activities', icon: '✅' },
   { name: 'Analytics', href: '/analytics', icon: '📈' },
-  { name: 'Training', href: '/training', icon: '🎓' },
 ];
 
 const adminOnlyItems: NavItem[] = [
+  { name: 'Admin Relazioni', href: '/admin-relazioni', icon: '👨‍💼' },
   { name: 'Admin', href: '/admin', icon: '⚙️' },
 ];
 
 const adminNavItems: NavItem[] = [
   { name: 'Command Center', href: '/admin/dashboard', icon: '🎯' },
+  { name: 'Admin Relazioni', href: '/admin-relazioni', icon: '👨‍💼' },
+  { name: 'AI Analytics', href: '/admin/ai-analytics', icon: '🤖' },
   { name: 'Gestione Task', href: '/admin/tasks', icon: '📋' },
   { name: 'AI Task Manager', href: '/admin/ai-tasks', icon: '🤖' },
   { name: 'Gestione Utenti', href: '/admin/users', icon: '👥' },
@@ -50,15 +51,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // If admin, show seller items + admin items + admin nav items, otherwise just seller items
   const isAdmin = user?.role === 'admin';
-  const isAdminPage = pathname.startsWith('/admin');
+  const isAdminPage = pathname.startsWith('/admin') || pathname === '/admin-relazioni';
 
   // Se siamo in una pagina admin, mostra solo le voci admin
   // Altrimenti mostra le voci seller (anche per admin)
   let navItems = sellerNavItems;
   if (isAdmin) {
     if (isAdminPage) {
+      // In modalità admin: mostra SOLO voci admin
       navItems = [...adminNavItems];
     } else {
+      // In modalità seller: mostra voci seller + link per passare ad admin
       navItems = [...sellerNavItems, ...adminOnlyItems];
     }
   }

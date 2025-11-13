@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Badge, Button, Modal, Select } from '@/components/ui';
+import { Card, Badge, Button, Modal, Select, InlineEdit } from '@/components/ui';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { auth } from '@/lib/firebase/config';
@@ -20,8 +20,6 @@ export default function AdminTasksPage() {
   const [selectedSeller, setSelectedSeller] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<AITask | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState<AITask | null>(null);
@@ -74,43 +72,34 @@ export default function AdminTasksPage() {
     }
   };
 
-  const handleEditTask = (task: AITask) => {
-    setEditingTask(task);
-    setIsEditModalOpen(true);
-  };
-
   const handleViewTask = (task: AITask) => {
     setViewingTask(task);
     setIsViewModalOpen(true);
   };
 
-  const handleUpdateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingTask) return;
-
+  const handleUpdateTaskField = async (taskId: string, field: string, value: string | string[]) => {
     try {
       const token = await auth.currentUser?.getIdToken();
       if (!token) throw new Error('Not authenticated');
 
-      const response = await fetch(`/api/admin/tasks/${editingTask.id}`, {
+      const updatePayload: any = { [field]: value };
+
+      const response = await fetch(`/api/admin/tasks/${taskId}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editingTask),
+        body: JSON.stringify(updatePayload),
       });
 
       if (!response.ok) throw new Error('Failed to update task');
 
       const data = await response.json();
-      setTasks(prev => prev.map(t => t.id === editingTask.id ? data.task : t));
-      setIsEditModalOpen(false);
-      setEditingTask(null);
-      alert('✅ Task aggiornato con successo');
+      setTasks(prev => prev.map(t => t.id === taskId ? data.task : t));
     } catch (error) {
       console.error('Error updating task:', error);
-      alert('❌ Errore nell\'aggiornamento del task');
+      throw error; // Re-throw to let InlineEdit handle the error
     }
   };
 
@@ -343,58 +332,152 @@ export default function AdminTasksPage() {
                 key={task.id}
                 className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition"
               >
-                <div className="flex-shrink-0">
-                  {getTypeBadge(task.type)}
+                <div className="flex-shrink-0 pt-1">
+                  <InlineEdit
+                    value={task.type}
+                    onSave={(value) => handleUpdateTaskField(task.id, 'type', value)}
+                    type="select"
+                    options={[
+                      { value: 'call', label: '📞 Chiamata' },
+                      { value: 'email', label: '✉️ Email' },
+                      { value: 'meeting', label: '🤝 Meeting' },
+                      { value: 'demo', label: '🎯 Demo' },
+                      { value: 'follow_up', label: '🔄 Follow-up' },
+                      { value: 'research', label: '🔍 Ricerca' },
+                      { value: 'admin', label: '📋 Admin' },
+                    ]}
+                    displayFormatter={(value) => getTypeBadge(String(value))}
+                  />
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">
-                        {task.title}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        {getPriorityBadge(task.priority)}
-                        {getStatusBadge(task.status)}
-                        <Badge variant="gray" size="sm">
-                          👤 {(task as any).sellerName}
-                        </Badge>
-                        <span className="text-xs text-gray-500">
-                          📅 {new Date(task.scheduledAt).toLocaleString('it-IT', {
+                <div className="flex-1 min-w-0 space-y-3">
+                  {/* Title */}
+                  <div>
+                    <InlineEdit
+                      value={task.title}
+                      onSave={(value) => handleUpdateTaskField(task.id, 'title', value)}
+                      className="font-semibold text-gray-900 text-base"
+                      placeholder="Task title"
+                    />
+                  </div>
+
+                  {/* Priority, Status, and Scheduled Date */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <InlineEdit
+                      value={task.priority}
+                      onSave={(value) => handleUpdateTaskField(task.id, 'priority', value)}
+                      type="select"
+                      options={[
+                        { value: 'low', label: '⚪ Bassa' },
+                        { value: 'medium', label: '🟢 Media' },
+                        { value: 'high', label: '🟡 Alta' },
+                        { value: 'critical', label: '🔴 Critica' },
+                      ]}
+                      displayFormatter={(value) => getPriorityBadge(String(value))}
+                    />
+                    <InlineEdit
+                      value={task.status}
+                      onSave={(value) => handleUpdateTaskField(task.id, 'status', value)}
+                      type="select"
+                      options={[
+                        { value: 'pending', label: '⏳ Da fare' },
+                        { value: 'in_progress', label: '🔄 In corso' },
+                        { value: 'completed', label: '✅ Completato' },
+                        { value: 'snoozed', label: '😴 Posticipato' },
+                      ]}
+                      displayFormatter={(value) => getStatusBadge(String(value))}
+                    />
+                    <Badge variant="gray" size="sm">
+                      👤 {(task as any).sellerName}
+                    </Badge>
+                    <div className="text-xs text-gray-500">
+                      📅{' '}
+                      <InlineEdit
+                        value={task.scheduledAt}
+                        onSave={(value) => handleUpdateTaskField(task.id, 'scheduledAt', value)}
+                        type="datetime"
+                        displayFormatter={(value) =>
+                          new Date(String(value)).toLocaleString('it-IT', {
                             day: '2-digit',
                             month: 'short',
                             hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                      </div>
+                            minute: '2-digit',
+                          })
+                        }
+                      />
                     </div>
                   </div>
 
-                  {task.description && (
-                    <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                  )}
+                  {/* Description */}
+                  <div className="text-sm text-gray-600">
+                    <InlineEdit
+                      value={task.description || ''}
+                      onSave={(value) => handleUpdateTaskField(task.id, 'description', value)}
+                      type="textarea"
+                      placeholder="Click to add description"
+                      rows={2}
+                    />
+                  </div>
 
+                  {/* AI Rationale - Read only */}
                   {task.aiRationale && (
-                    <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs text-gray-700 mb-2">
-                      <span className="font-semibold">AI Rationale:</span> {task.aiRationale}
+                    <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs text-gray-700">
+                      <span className="font-semibold">Motivo:</span> {task.aiRationale}
                     </div>
                   )}
 
-                  {(task.clientName || task.dealTitle) && (
-                    <div className="flex flex-wrap gap-3 text-xs text-gray-600">
-                      {task.clientName && (
-                        <span>👤 Cliente: <span className="font-medium">{task.clientName}</span></span>
-                      )}
-                      {task.dealTitle && (
-                        <span>🎯 Deal: <span className="font-medium">{task.dealTitle}</span></span>
-                      )}
+                  {/* Client and Deal */}
+                  <div className="flex flex-wrap gap-4 text-xs text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <span>👤 Cliente:</span>
+                      <InlineEdit
+                        value={task.clientName || ''}
+                        onSave={(value) => handleUpdateTaskField(task.id, 'clientName', value)}
+                        placeholder="N/A"
+                        className="font-medium"
+                      />
                     </div>
-                  )}
+                    <div className="flex items-center gap-1">
+                      <span>🎯 Deal:</span>
+                      <InlineEdit
+                        value={task.dealTitle || ''}
+                        onSave={(value) => handleUpdateTaskField(task.id, 'dealTitle', value)}
+                        placeholder="N/A"
+                        className="font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Objectives */}
+                  <div className="text-xs">
+                    <div className="font-semibold text-gray-700 mb-1">Obiettivi:</div>
+                    <InlineEdit
+                      value={task.objectives || []}
+                      onSave={(value) => {
+                        const objectives = Array.isArray(value) ? value : String(value).split('\n').filter(o => o.trim());
+                        return handleUpdateTaskField(task.id, 'objectives', objectives);
+                      }}
+                      type="textarea"
+                      multiline={true}
+                      placeholder="Click to add objectives (one per line)"
+                      rows={3}
+                      displayFormatter={(value) => {
+                        const objectives = Array.isArray(value) ? value : [];
+                        if (objectives.length === 0) return null;
+                        return (
+                          <ul className="list-disc list-inside space-y-1">
+                            {objectives.map((obj, idx) => (
+                              <li key={idx}>{obj}</li>
+                            ))}
+                          </ul>
+                        );
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex-shrink-0 flex gap-2">
-                  {task.status === 'completed' ? (
+                  {task.status === 'completed' && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -403,15 +486,6 @@ export default function AdminTasksPage() {
                       title="Visualizza risultati"
                     >
                       👁️
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEditTask(task)}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    >
-                      ✏️
                     </Button>
                   )}
                   <Button
@@ -587,168 +661,6 @@ export default function AdminTasksPage() {
           </div>
         </form>
       </Modal>
-
-      {/* Edit Task Modal */}
-      {editingTask && (
-        <Modal
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setEditingTask(null);
-          }}
-          title="Modifica Task"
-        >
-          <form onSubmit={handleUpdateTask} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Titolo *
-              </label>
-              <input
-                type="text"
-                value={editingTask.title}
-                onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                placeholder="Es: Chiamare Mario Rossi per follow-up"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descrizione
-              </label>
-              <textarea
-                value={editingTask.description || ''}
-                onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                placeholder="Descrizione dettagliata del task..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo Task
-                </label>
-                <Select
-                  value={editingTask.type}
-                  onChange={(e) => setEditingTask({ ...editingTask, type: e.target.value as any })}
-                >
-                  <option value="call">📞 Chiamata</option>
-                  <option value="email">✉️ Email</option>
-                  <option value="meeting">🤝 Meeting</option>
-                  <option value="demo">🎯 Demo</option>
-                  <option value="follow_up">🔄 Follow-up</option>
-                  <option value="research">🔍 Ricerca</option>
-                  <option value="admin">📋 Admin</option>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Priorità
-                </label>
-                <Select
-                  value={editingTask.priority}
-                  onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as any })}
-                >
-                  <option value="low">⚪ Bassa</option>
-                  <option value="medium">🟢 Media</option>
-                  <option value="high">🟡 Alta</option>
-                  <option value="critical">🔴 Critica</option>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stato
-              </label>
-              <Select
-                value={editingTask.status}
-                onChange={(e) => setEditingTask({ ...editingTask, status: e.target.value as any })}
-              >
-                <option value="pending">⏳ Da fare</option>
-                <option value="in_progress">🔄 In corso</option>
-                <option value="completed">✅ Completato</option>
-                <option value="snoozed">😴 Posticipato</option>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data/Ora *
-              </label>
-              <input
-                type="datetime-local"
-                value={editingTask.scheduledAt ? new Date(editingTask.scheduledAt).toISOString().slice(0, 16) : ''}
-                onChange={(e) => setEditingTask({ ...editingTask, scheduledAt: new Date(e.target.value).toISOString() })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cliente (opzionale)
-                </label>
-                <input
-                  type="text"
-                  value={editingTask.clientName || ''}
-                  onChange={(e) => setEditingTask({ ...editingTask, clientName: e.target.value })}
-                  placeholder="Nome cliente"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Deal (opzionale)
-                </label>
-                <input
-                  type="text"
-                  value={editingTask.dealTitle || ''}
-                  onChange={(e) => setEditingTask({ ...editingTask, dealTitle: e.target.value })}
-                  placeholder="Titolo deal"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Obiettivi (uno per riga)
-              </label>
-              <textarea
-                value={editingTask.objectives?.join('\n') || ''}
-                onChange={(e) => setEditingTask({ ...editingTask, objectives: e.target.value.split('\n').filter(o => o.trim()) })}
-                placeholder="Es:&#10;Qualificare interesse&#10;Fissare meeting&#10;Inviare proposta"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4 border-t border-gray-200">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setEditingTask(null);
-                }}
-                className="flex-1"
-              >
-                Annulla
-              </Button>
-              <Button type="submit" className="flex-1">
-                💾 Salva Modifiche
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
 
       {/* View Completed Task Modal */}
       {viewingTask && (

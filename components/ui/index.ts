@@ -14,3 +14,6 @@ export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
 export { Modal } from './Modal';
+
+export { InlineEdit } from './InlineEdit';
+export type { InlineEditProps } from './InlineEdit';

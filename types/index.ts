@@ -143,7 +143,8 @@ export interface Relationship {
   // Obiettivi e Allineamento
   theirGoals?: string[]; // cosa vogliono raggiungere loro
   ourGoals?: string[]; // cosa vogliamo raggiungere noi con questa relazione
-  mutualBenefits?: string[]; // benefici reciproci
+  whatICanGive?: string[]; // cosa posso dare alla relazione
+  whatICanReceive?: string[]; // cosa posso ricevere dalla relazione
 
   // Scambio di Valore (oltre il business)
   valueExchange?: ValueExchangeTracker;
@@ -364,7 +365,9 @@ export interface AITask {
   startedAt?: string;
   completedAt?: string;
   outcome?: 'success' | 'partial' | 'failed' | 'no_answer';
+  results?: string; // Concrete results obtained from the task
   notes?: string; // Seller notes after completion
+  additionalNotes?: string; // Additional comments or observations
   aiAnalysis?: string; // AI analysis of notes
   attachments?: string[]; // URLs to uploaded documents/files
 

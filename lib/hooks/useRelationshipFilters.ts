@@ -5,7 +5,7 @@ export function useRelationshipFilters(relationships: Relationship[]) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStrength, setFilterStrength] = useState('all');
   const [filterImportance, setFilterImportance] = useState('all');
-  const [sortBy, setSortBy] = useState<'name' | 'company' | 'lastContact' | 'importance'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'company' | 'role' | 'lastContact' | 'lastAction' | 'importance' | 'strength' | 'category'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const filteredAndSortedRelationships = useMemo(() => {
@@ -32,12 +32,40 @@ export function useRelationshipFilters(relationships: Relationship[]) {
         case 'company':
           comparison = a.company.localeCompare(b.company);
           break;
+        case 'role':
+          comparison = (a.role || '').localeCompare(b.role || '');
+          break;
         case 'lastContact':
           comparison = new Date(a.lastContact || 0).getTime() - new Date(b.lastContact || 0).getTime();
+          break;
+        case 'lastAction':
+          // Sort by most recent action in actionsHistory
+          const aLastAction = a.actionsHistory && a.actionsHistory.length > 0
+            ? new Date(a.actionsHistory[a.actionsHistory.length - 1].completedAt).getTime()
+            : 0;
+          const bLastAction = b.actionsHistory && b.actionsHistory.length > 0
+            ? new Date(b.actionsHistory[b.actionsHistory.length - 1].completedAt).getTime()
+            : 0;
+          comparison = aLastAction - bLastAction;
           break;
         case 'importance':
           const importanceOrder = { critical: 4, high: 3, medium: 2, low: 1 };
           comparison = (importanceOrder[a.importance] || 0) - (importanceOrder[b.importance] || 0);
+          break;
+        case 'strength':
+          const strengthOrder = { strong: 5, active: 4, developing: 3, weak: 2, prospective: 1 };
+          comparison = (strengthOrder[a.strength] || 0) - (strengthOrder[b.strength] || 0);
+          break;
+        case 'category':
+          const categoryOrder = {
+            decision_maker: 6,
+            champion: 5,
+            influencer: 4,
+            advisor: 3,
+            connector: 2,
+            gatekeeper: 1
+          };
+          comparison = (categoryOrder[a.category] || 0) - (categoryOrder[b.category] || 0);
           break;
       }
 

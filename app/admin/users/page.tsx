@@ -23,7 +23,11 @@ export default function UsersManagementPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [generatingTasks, setGeneratingTasks] = useState<string | null>(null);
+
+  // Edit state
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -99,33 +103,97 @@ export default function UsersManagementPage() {
     }
   };
 
-  const handleGenerateTasksForSeller = async (sellerId: string, sellerName: string) => {
-    if (!confirm(`Generare task AI per ${sellerName}?`)) {
-      return;
-    }
 
-    setGeneratingTasks(sellerId);
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setDisplayName(user.displayName);
+    setEmail(user.email);
+    setRole(user.role);
+    setTeam(user.team);
+    setPassword(''); // Reset password field
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
     setError('');
     setSuccess('');
+    setUpdating(true);
 
     try {
-      const response = await fetch('/api/ai/generate-tasks', {
-        method: 'POST',
+      const response = await fetch('/api/admin/update-user', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sellerId }),
+        body: JSON.stringify({
+          userId: editingUser.id,
+          displayName,
+          email,
+          role,
+          team,
+          ...(password ? { password } : {}), // Only include password if provided
+          requestingUserId: currentUser?.id,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate tasks');
+        throw new Error(data.error || 'Failed to update user');
       }
 
-      setSuccess(`✅ Generati ${data.tasksGenerated} task per ${sellerName}!`);
+      setSuccess(`✅ Utente ${displayName} aggiornato con successo!`);
+      setEditingUser(null);
+
+      // Reset form
+      setEmail('');
+      setPassword('');
+      setDisplayName('');
+      setRole('seller');
+      setTeam('sales');
+
+      // Reload users
+      await loadUsers();
     } catch (err: any) {
-      setError(`Errore: ${err.message}`);
+      setError(err.message || 'Errore nell\'aggiornamento utente');
     } finally {
-      setGeneratingTasks(null);
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`⚠️ Sei sicuro di voler eliminare l'utente ${userName}?\n\nQuesta azione non può essere annullata e rimuoverà anche tutti i dati associati all'utente.`)) {
+      return;
+    }
+
+    setDeleting(userId);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch('/api/admin/delete-user', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          requestingUserId: currentUser?.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete user');
+      }
+
+      setSuccess(`✅ Utente ${userName} eliminato con successo!`);
+
+      // Reload users
+      await loadUsers();
+    } catch (err: any) {
+      setError(err.message || 'Errore nell\'eliminazione utente');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -266,6 +334,108 @@ export default function UsersManagementPage() {
         </Card>
       )}
 
+      {/* Edit User Modal */}
+      {editingUser && (
+        <Card>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">✏️ Modifica Utente</h2>
+          <form onSubmit={handleUpdateUser} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nome Completo *
+                </label>
+                <Input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Mario Rossi"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="mario.rossi@azienda.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nuova Password <span className="text-gray-500 font-normal">(lascia vuoto per non modificare)</span>
+                </label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimo 6 caratteri"
+                  minLength={6}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ruolo *
+                </label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                >
+                  <option value="seller">Venditore</option>
+                  <option value="team_leader">Team Leader</option>
+                  <option value="admin">Amministratore</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Team
+                </label>
+                <Input
+                  type="text"
+                  value={team}
+                  onChange={(e) => setTeam(e.target.value)}
+                  placeholder="Sales, Marketing, etc."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={updating}
+                className="flex-1"
+              >
+                {updating ? 'Aggiornamento in corso...' : 'Aggiorna Utente'}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setEditingUser(null);
+                  setEmail('');
+                  setPassword('');
+                  setDisplayName('');
+                  setRole('seller');
+                  setTeam('sales');
+                }}
+              >
+                Annulla
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
       {/* Users List */}
       <Card>
         <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -319,16 +489,28 @@ export default function UsersManagementPage() {
                       {new Date(user.createdAt).toLocaleDateString('it-IT')}
                     </td>
                     <td className="py-3 px-4">
-                      {(user.role === 'seller' || user.role === 'team_leader') && (
+                      <div className="flex flex-wrap gap-2">
+                        {/* Edit Button */}
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => handleGenerateTasksForSeller(user.id, user.displayName)}
-                          disabled={generatingTasks === user.id}
+                          onClick={() => handleEditUser(user)}
+                          disabled={deleting === user.id}
                         >
-                          {generatingTasks === user.id ? '⏳ Generando...' : '🤖 Genera Task AI'}
+                          ✏️ Modifica
                         </Button>
-                      )}
+
+                        {/* Delete Button */}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleDeleteUser(user.id, user.displayName)}
+                          disabled={deleting === user.id}
+                          className="bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
+                        >
+                          {deleting === user.id ? '⏳ Eliminando...' : '🗑️ Elimina'}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

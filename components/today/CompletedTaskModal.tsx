@@ -12,6 +12,8 @@ interface CompletedTaskModalProps {
 }
 
 export function CompletedTaskModal({ task, isOpen, onClose, onSave }: CompletedTaskModalProps) {
+  const [results, setResults] = useState('');
+  const [additionalNotes, setAdditionalNotes] = useState('');
   const [notes, setNotes] = useState('');
   const [outcome, setOutcome] = useState<'success' | 'partial' | 'failed' | 'no_answer'>('success');
   const [actualDuration, setActualDuration] = useState('');
@@ -21,6 +23,8 @@ export function CompletedTaskModal({ task, isOpen, onClose, onSave }: CompletedT
 
   useEffect(() => {
     if (task) {
+      setResults(task.results || '');
+      setAdditionalNotes(task.additionalNotes || '');
       setNotes(task.notes || '');
       setOutcome(task.outcome || 'success');
       setActualDuration(task.actualDuration?.toString() || '');
@@ -84,6 +88,8 @@ export function CompletedTaskModal({ task, isOpen, onClose, onSave }: CompletedT
     }
 
     onSave(task.id, {
+      results,
+      additionalNotes,
       notes,
       outcome,
       actualDuration: parseInt(actualDuration),
@@ -199,15 +205,15 @@ export function CompletedTaskModal({ task, isOpen, onClose, onSave }: CompletedT
             />
           </div>
 
-          {/* Notes */}
+          {/* Results Obtained */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Note</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Risultati ottenuti</label>
             <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Descrivi come è andata, punti chiave discussi, obiezioni, prossimi step..."
+              value={results}
+              onChange={(e) => setResults(e.target.value)}
+              placeholder="Descrivi i risultati concreti ottenuti: accordi presi, informazioni raccolte, feedback ricevuti..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
-              rows={6}
+              rows={4}
             />
           </div>
 
@@ -235,9 +241,11 @@ export function CompletedTaskModal({ task, isOpen, onClose, onSave }: CompletedT
             </div>
           )}
 
-          {/* New File Upload */}
+          {/* New File Upload - OPTIONAL */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Aggiungi nuovi allegati</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              📎 Allega file o documento <span className="text-gray-500 font-normal">(opzionale)</span>
+            </label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors">
               <input
                 type="file"
@@ -289,6 +297,20 @@ export function CompletedTaskModal({ task, isOpen, onClose, onSave }: CompletedT
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Additional Notes */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Commenti / Note aggiuntive <span className="text-gray-500 font-normal">(opzionale)</span>
+            </label>
+            <textarea
+              value={additionalNotes}
+              onChange={(e) => setAdditionalNotes(e.target.value)}
+              placeholder="Aggiungi commenti, osservazioni o note aggiuntive su questo task..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+              rows={3}
+            />
           </div>
         </div>
 

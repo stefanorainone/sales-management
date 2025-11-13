@@ -343,11 +343,62 @@ export function useDeals() {
 
     // Normal Firebase flow
     try {
+      // Find the deal being updated
+      const currentDeal = deals.find(d => d.id === dealId);
+
       const dealRef = doc(db, 'deals', dealId);
       await updateDoc(dealRef, {
         ...updates,
         updatedAt: Timestamp.now(),
       });
+
+      // Track stage changes as activities
+      if (currentDeal && updates.stage && updates.stage !== currentDeal.stage) {
+        console.log('🔄 Deal stage changed, creating activity...', {
+          from: currentDeal.stage,
+          to: updates.stage,
+          dealTitle: currentDeal.title,
+        });
+
+        // Create activity for proposal sent
+        if (updates.stage === 'proposal_sent') {
+          await addDoc(collection(db, 'activities'), {
+            userId: user.id,
+            type: 'proposal',
+            title: `Proposta inviata - ${currentDeal.clientName}`,
+            description: `Proposta inviata per: ${currentDeal.title}`,
+            status: 'completed',
+            dealId: dealId,
+            dealTitle: currentDeal.title,
+            clientName: currentDeal.clientName,
+            scheduledAt: Timestamp.now(),
+            completedAt: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+          });
+          console.log('✅ Activity "proposal" created');
+        }
+
+        // Create activity for deal won (contract signed)
+        if (updates.stage === 'active' || updates.stage === 'won') {
+          await addDoc(collection(db, 'activities'), {
+            userId: user.id,
+            type: 'contract',
+            title: `Contratto firmato - ${currentDeal.clientName}`,
+            description: `Contratto firmato per: ${currentDeal.title}`,
+            status: 'completed',
+            dealId: dealId,
+            dealTitle: currentDeal.title,
+            clientName: currentDeal.clientName,
+            contractValue: updates.contractValue || currentDeal.contractValue,
+            scheduledAt: Timestamp.now(),
+            completedAt: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+          });
+          console.log('✅ Activity "contract" created');
+        }
+      }
     } catch (err: any) {
       console.error('Error updating deal:', err);
       throw err;

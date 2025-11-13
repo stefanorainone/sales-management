@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { auth } from '@/lib/firebase/config';
 import { TaskCard } from '@/components/ai/TaskCard';
 import { TaskExecutionModal } from '@/components/ai/TaskExecutionModal';
 import { CompletedTaskModal } from '@/components/today/CompletedTaskModal';
@@ -36,23 +37,38 @@ export default function TodayPage() {
     try {
       const today = new Date().toISOString().split('T')[0];
 
+      // Get Firebase auth token
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('No auth token available');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/ai/briefing', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           userId: user?.id,
           userName: user?.displayName || 'Venditore',
-          deals: [],
-          clients: [],
-          recentActivities: [],
           date: today,
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Briefing API error:', errorData);
+        setLoading(false);
+        return;
+      }
+
       const data = await response.json();
       setBriefing(data);
-      setTasks(data.tasks);
-      setInsights(data.insights);
+      setTasks(data.tasks || []);
+      setInsights(data.insights || []);
     } catch (error) {
       console.error('Error loading briefing:', error);
     } finally {
