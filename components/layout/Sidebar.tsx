@@ -18,13 +18,11 @@ const sellerNavItems: NavItem[] = [
 ];
 
 const adminOnlyItems: NavItem[] = [
-  { name: 'Admin Relazioni', href: '/admin-relazioni', icon: '👨‍💼' },
   { name: 'Admin', href: '/admin', icon: '⚙️' },
 ];
 
 const adminNavItems: NavItem[] = [
   { name: 'Command Center', href: '/admin/dashboard', icon: '🎯' },
-  { name: 'Admin Relazioni', href: '/admin-relazioni', icon: '👨‍💼' },
   { name: 'AI Analytics', href: '/admin/ai-analytics', icon: '🤖' },
   { name: 'Gestione Task', href: '/admin/tasks', icon: '📋' },
   { name: 'AI Task Manager', href: '/admin/ai-tasks', icon: '🤖' },
@@ -51,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // If admin, show seller items + admin items + admin nav items, otherwise just seller items
   const isAdmin = user?.role === 'admin';
-  const isAdminPage = pathname.startsWith('/admin') || pathname === '/admin-relazioni';
+  const isAdminPage = pathname.startsWith('/admin');
 
   // Se siamo in una pagina admin, mostra solo le voci admin
   // Altrimenti mostra le voci seller (anche per admin)
