@@ -26,14 +26,20 @@ async function createAdminUser() {
 
     console.log('✅ Firebase Admin SDK inizializzato\n');
 
-    // Admin user details
-    const adminEmail = 'admin@vr.com';
-    const adminPassword = 'Admin123!';
-    const adminName = 'Amministratore VR';
+    // Admin user details from environment variables
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@vr.com';
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminName = process.env.ADMIN_NAME || 'Amministratore VR';
+
+    if (!adminPassword) {
+      console.error('❌ ADMIN_PASSWORD environment variable is required');
+      console.log('   Set it in .env.local: ADMIN_PASSWORD=your_secure_password');
+      process.exit(1);
+    }
 
     console.log('👤 Creazione utente admin...');
     console.log(`   Email: ${adminEmail}`);
-    console.log(`   Password: ${adminPassword}`);
+    console.log(`   Password: ********`);
     console.log(`   Nome: ${adminName}\n`);
 
     // Check if user already exists
@@ -74,7 +80,7 @@ async function createAdminUser() {
     console.log('🎉 UTENTE ADMIN CREATO CON SUCCESSO!\n');
     console.log('📋 Credenziali per il login:');
     console.log('   Email: ' + adminEmail);
-    console.log('   Password: ' + adminPassword);
+    console.log('   Password: ******** (check your environment variables)');
     console.log('\n🔗 Accedi all\'app: https://sales-management-pzxuyg66lq-ew.a.run.app/login\n');
 
     process.exit(0);

@@ -110,7 +110,7 @@ async function updateTask(
     console.log(`✅ Task updated: ${taskId}`);
 
     // Track task completion as activity
-    if (updates.status === 'completed' && currentTaskData?.status !== 'completed') {
+    if (updates.status === 'completed' && currentTaskData?.status !== 'completed' && currentTaskData) {
       console.log('🔄 Task completed, creating activity...');
 
       await adminDb!.collection('activities').add({

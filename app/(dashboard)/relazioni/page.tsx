@@ -203,7 +203,6 @@ export default function RelazioniPage() {
   const handleStartEditAction = (action: any) => {
     setEditingActionId(action.id);
     setEditingActionText(action.action);
-    setEditingActionType(action.type || 'call');
   };
 
   const handleSaveEditAction = async (actionId: string) => {
@@ -222,7 +221,6 @@ export default function RelazioniPage() {
       showToast('✅ Azione modificata!', 'success');
       setEditingActionId(null);
       setEditingActionText('');
-      setEditingActionType('call');
     } catch (error: any) {
       console.error('Error editing action:', error);
       showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
@@ -268,6 +266,7 @@ export default function RelazioniPage() {
           lastContact: new Date().toISOString(),
           noteCount: 0,
           actionsHistory: [],
+          notes: [],
         });
         showToast('✅ Nuova relazione aggiunta!', 'success');
       }

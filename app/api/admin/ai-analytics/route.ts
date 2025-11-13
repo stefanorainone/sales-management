@@ -18,6 +18,10 @@ interface AnalyticsContext {
 async function buildAnalyticsContext(): Promise<AnalyticsContext> {
   console.log('📊 Building analytics context...');
 
+  if (!adminDb) {
+    throw new Error('Firebase Admin DB not initialized');
+  }
+
   // Fetch all users
   const usersSnapshot = await adminDb.collection('users').get();
   const users = usersSnapshot.docs.map(doc => ({

@@ -11,7 +11,8 @@ export const exportToCSV = (relationships: Relationship[]) => {
     'Categoria',
     'Bilancio Valore',
     'Prossima Azione',
-    'Benefici Reciproci',
+    'Cosa Posso Dare',
+    'Cosa Posso Ricevere',
     'Ultimo Contatto',
   ];
 
@@ -24,7 +25,8 @@ export const exportToCSV = (relationships: Relationship[]) => {
     rel.category || '',
     rel.valueBalance || '',
     rel.nextAction || '',
-    (rel.mutualBenefits || []).join('; '),
+    (rel.whatICanGive || []).join('; '),
+    (rel.whatICanReceive || []).join('; '),
     rel.lastContact
       ? new Date(rel.lastContact).toLocaleDateString('it-IT')
       : '',
@@ -105,7 +107,8 @@ export const parseCSVImport = (csvText: string): Partial<Relationship>[] => {
       category,
       valueBalance,
       nextAction,
-      benefitsStr,
+      whatICanGiveStr,
+      whatICanReceiveStr,
     ] = fields.map((f) => f.replace(/^"|"$/g, '').replace(/""/g, '"'));
 
     return {
@@ -117,7 +120,8 @@ export const parseCSVImport = (csvText: string): Partial<Relationship>[] => {
       category: category as any,
       valueBalance: valueBalance as any,
       nextAction,
-      mutualBenefits: benefitsStr ? benefitsStr.split(';').map((b) => b.trim()) : [],
+      whatICanGive: whatICanGiveStr ? whatICanGiveStr.split(';').map((b) => b.trim()) : [],
+      whatICanReceive: whatICanReceiveStr ? whatICanReceiveStr.split(';').map((b) => b.trim()) : [],
     };
   });
 };
@@ -136,7 +140,8 @@ export const parseJSONImport = (jsonText: string): Partial<Relationship>[] => {
       category: item.category,
       valueBalance: item.valueBalance,
       nextAction: item.nextAction,
-      mutualBenefits: item.mutualBenefits || [],
+      whatICanGive: item.whatICanGive || [],
+      whatICanReceive: item.whatICanReceive || [],
     }));
   } catch (error) {
     console.error('Error parsing JSON:', error);

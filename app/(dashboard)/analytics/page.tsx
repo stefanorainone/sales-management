@@ -222,11 +222,11 @@ export default function AnalyticsPage() {
                             rel.strength === 'strong' ? 'success' :
                             rel.strength === 'active' ? 'primary' :
                             rel.strength === 'developing' ? 'warning' :
-                            'secondary'
+                            'gray'
                           }>
                             {rel.strength}
                           </Badge>
-                          <Badge size="sm" variant="secondary">{rel.category}</Badge>
+                          <Badge size="sm" variant="gray">{rel.category}</Badge>
                         </div>
                       </div>
                     </div>

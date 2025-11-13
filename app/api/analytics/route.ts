@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     const allActivities = activitiesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as any[];
 
     // Filter by date in memory
     const activities = allActivities.filter(activity => {
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
     const allTasks = tasksSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as any[];
 
     // Filter by date in memory
     const tasks = allTasks.filter(task => {
