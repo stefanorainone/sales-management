@@ -2,8 +2,8 @@
 
 # Deploy to Cloud Run with all environment variables using Artifact Registry
 
-# Build and push to Artifact Registry
-gcloud builds submit --tag europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest
+# Build and push to Artifact Registry using cloudbuild.yaml
+gcloud builds submit --config cloudbuild.yaml
 
 # Deploy to Cloud Run
 gcloud run deploy sales-crm \

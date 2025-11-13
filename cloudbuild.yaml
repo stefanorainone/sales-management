@@ -1,0 +1,23 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDB-wExH0S2A5XctlplM43JWG7p1RTETjQ'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=sales-management-01.firebaseapp.com'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_PROJECT_ID=sales-management-01'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=sales-management-01.firebasestorage.app'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=412055180465'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_APP_ID=1:412055180465:web:80018d70f26b94ba9dfe90'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_DEMO_MODE=false'
+      - '-t'
+      - 'europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest'
+      - '.'
+images:
+  - 'europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest'
