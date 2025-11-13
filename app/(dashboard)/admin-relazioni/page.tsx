@@ -99,7 +99,6 @@ export default function AdminRelazioniPage() {
           category: form.formData.category || 'decision_maker',
           valueBalance: form.formData.valueBalance || 'balanced',
           nextAction: form.formData.nextAction || '',
-          mutualBenefits: form.formData.mutualBenefits?.filter((b: string) => b.trim()) || [],
         });
         showToast('✅ Relazione aggiornata!', 'success');
         setIsEditModalOpen(false);
