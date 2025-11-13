@@ -23,6 +23,7 @@ const adminOnlyItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
   { name: 'Command Center', href: '/admin/dashboard', icon: '🎯' },
+  { name: 'Admin Relazioni', href: '/admin/relazioni', icon: '👨‍💼' },
   { name: 'AI Analytics', href: '/admin/ai-analytics', icon: '🤖' },
   { name: 'Gestione Task', href: '/admin/tasks', icon: '📋' },
   { name: 'AI Task Manager', href: '/admin/ai-tasks', icon: '🤖' },
