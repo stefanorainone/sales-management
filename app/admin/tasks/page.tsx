@@ -23,6 +23,9 @@ export default function AdminTasksPage() {
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState<AITask | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<AITask | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form state for new task
   const [newTask, setNewTask] = useState({
@@ -75,6 +78,53 @@ export default function AdminTasksPage() {
   const handleViewTask = (task: AITask) => {
     setViewingTask(task);
     setIsViewModalOpen(true);
+  };
+
+  const handleEditTask = (task: AITask) => {
+    setEditingTask({...task});
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveTask = async () => {
+    if (!editingTask) return;
+
+    try {
+      setSaving(true);
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const response = await fetch(`/api/admin/tasks/${editingTask.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editingTask.title,
+          description: editingTask.description,
+          type: editingTask.type,
+          priority: editingTask.priority,
+          status: editingTask.status,
+          scheduledAt: editingTask.scheduledAt,
+          clientName: editingTask.clientName,
+          dealTitle: editingTask.dealTitle,
+          objectives: editingTask.objectives,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update task');
+
+      const data = await response.json();
+      setTasks(prev => prev.map(t => t.id === editingTask.id ? data.task : t));
+      setIsEditModalOpen(false);
+      setEditingTask(null);
+      alert('✅ Task aggiornato con successo');
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('❌ Errore nell\'aggiornamento del task');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleUpdateTaskField = async (taskId: string, field: string, value: string | string[]) => {
@@ -477,6 +527,15 @@ export default function AdminTasksPage() {
                 </div>
 
                 <div className="flex-shrink-0 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleEditTask(task)}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    title="Modifica task"
+                  >
+                    ✏️
+                  </Button>
                   {task.status === 'completed' && (
                     <Button
                       size="sm"
@@ -810,6 +869,182 @@ export default function AdminTasksPage() {
                 variant="secondary"
               >
                 Chiudi
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingTask(null);
+          }}
+          title="✏️ Modifica Task"
+          size="lg"
+        >
+          <div className="space-y-4">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Titolo *
+              </label>
+              <input
+                type="text"
+                value={editingTask.title}
+                onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Descrizione
+              </label>
+              <textarea
+                value={editingTask.description || ''}
+                onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                rows={3}
+              />
+            </div>
+
+            {/* Type, Priority, Status */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo
+                </label>
+                <select
+                  value={editingTask.type}
+                  onChange={(e) => setEditingTask({ ...editingTask, type: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                >
+                  <option value="call">📞 Chiamata</option>
+                  <option value="email">✉️ Email</option>
+                  <option value="meeting">🤝 Meeting</option>
+                  <option value="demo">🎯 Demo</option>
+                  <option value="follow_up">🔄 Follow-up</option>
+                  <option value="research">🔍 Ricerca</option>
+                  <option value="admin">📋 Admin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Priorità
+                </label>
+                <select
+                  value={editingTask.priority}
+                  onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                >
+                  <option value="low">⚪ Bassa</option>
+                  <option value="medium">🟢 Media</option>
+                  <option value="high">🟡 Alta</option>
+                  <option value="critical">🔴 Critica</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Stato
+                </label>
+                <select
+                  value={editingTask.status}
+                  onChange={(e) => setEditingTask({ ...editingTask, status: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                >
+                  <option value="pending">⏳ Da fare</option>
+                  <option value="in_progress">🔄 In corso</option>
+                  <option value="completed">✅ Completato</option>
+                  <option value="snoozed">😴 Posticipato</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Scheduled Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data/Ora Programmata *
+              </label>
+              <input
+                type="datetime-local"
+                value={editingTask.scheduledAt?.slice(0, 16) || ''}
+                onChange={(e) => setEditingTask({ ...editingTask, scheduledAt: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                required
+              />
+            </div>
+
+            {/* Client and Deal */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cliente
+                </label>
+                <input
+                  type="text"
+                  value={editingTask.clientName || ''}
+                  onChange={(e) => setEditingTask({ ...editingTask, clientName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                  placeholder="Nome cliente"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deal
+                </label>
+                <input
+                  type="text"
+                  value={editingTask.dealTitle || ''}
+                  onChange={(e) => setEditingTask({ ...editingTask, dealTitle: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                  placeholder="Titolo deal"
+                />
+              </div>
+            </div>
+
+            {/* Objectives */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Obiettivi (uno per riga)
+              </label>
+              <textarea
+                value={Array.isArray(editingTask.objectives) ? editingTask.objectives.join('\n') : ''}
+                onChange={(e) => setEditingTask({ ...editingTask, objectives: e.target.value.split('\n').filter(o => o.trim()) as any })}
+                placeholder="Es:&#10;Qualificare interesse&#10;Fissare meeting&#10;Inviare proposta"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                rows={3}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingTask(null);
+                }}
+                className="flex-1"
+                disabled={saving}
+              >
+                Annulla
+              </Button>
+              <Button
+                onClick={handleSaveTask}
+                className="flex-1"
+                disabled={saving}
+              >
+                {saving ? '⏳ Salvataggio...' : '💾 Salva Modifiche'}
               </Button>
             </div>
           </div>
