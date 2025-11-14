@@ -48,20 +48,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Rate limiting check - max 10 briefings per hour per user
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentBriefingsSnapshot = await adminDb!.collection('briefings')
-      .where('userId', '==', userId)
-      .where('createdAt', '>', oneHourAgo)
-      .get();
-
-    if (recentBriefingsSnapshot.size >= 10) {
-      console.warn(`Rate limit exceeded for user ${userId}: ${recentBriefingsSnapshot.size} briefings in last hour`);
-      return NextResponse.json(
-        { error: 'Too Many Requests - You can generate max 10 briefings per hour' },
-        { status: 429 }
-      );
-    }
+    // 5. Rate limiting check - DISABLED (requires Firestore composite index)
+    // TODO: Create composite index for briefings collection: userId (asc) + createdAt (asc)
+    // const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // const recentBriefingsSnapshot = await adminDb!.collection('briefings')
+    //   .where('userId', '==', userId)
+    //   .where('createdAt', '>', oneHourAgo)
+    //   .get();
+    //
+    // if (recentBriefingsSnapshot.size >= 10) {
+    //   console.warn(`Rate limit exceeded for user ${userId}: ${recentBriefingsSnapshot.size} briefings in last hour`);
+    //   return NextResponse.json(
+    //     { error: 'Too Many Requests - You can generate max 10 briefings per hour' },
+    //     { status: 429 }
+    //   );
+    // }
 
     // First, load relationships from Firestore
     console.log('[Briefing API] Loading relationships for userId:', userId);
