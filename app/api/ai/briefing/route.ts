@@ -125,7 +125,8 @@ export async function POST(request: NextRequest) {
 
     const tasksSnapshot = await Promise.race([tasksPromise, timeoutPromise]) as FirebaseFirestore.QuerySnapshot;
 
-    console.log('[Briefing API] Found', tasksSnapshot.size, 'tasks in Firestore');
+    console.log('[Briefing API] Found', tasksSnapshot.size, 'tasks in Firestore for userId:', userId);
+    console.log('[Briefing API] Tasks query: userId ==', userId, '&& status == pending');
 
     // Convert Firestore tasks to the format expected by the frontend
     const existingTasks = tasksSnapshot.docs.map(doc => {
@@ -175,6 +176,15 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('[Briefing API] Converted tasks:', existingTasks.length);
+    if (existingTasks.length > 0) {
+      console.log('[Briefing API] First task sample:', {
+        id: existingTasks[0].id,
+        userId: existingTasks[0].userId,
+        title: existingTasks[0].title,
+        status: existingTasks[0].status,
+        scheduledAt: existingTasks[0].scheduledAt,
+      });
+    }
 
     // Return existing tasks - NO automatic generation
     // Tasks are now created manually by admin in Task Management page
