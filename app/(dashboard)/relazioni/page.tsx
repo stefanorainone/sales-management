@@ -13,6 +13,7 @@ import { useRelationshipForm } from '@/lib/hooks/useRelationshipForm';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { exportToCSV, exportToJSON } from '@/lib/utils/exportImport';
+import { AIRelationshipSuggestions } from '@/components/relazioni/AIRelationshipSuggestions';
 
 // Modello Ferrazzi "Never Eat Alone"
 // Focus su RELAZIONI strategiche, non solo clienti
@@ -455,6 +456,9 @@ export default function RelazioniPage() {
         </div>
         <Button onClick={openAddModal} className="w-full sm:w-auto">+ Nuova Relazione</Button>
       </div>
+
+      {/* AI Suggestions Widget */}
+      <AIRelationshipSuggestions relationships={relationships} />
 
       {/* Stats Cards - Ferrazzi Focus */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
