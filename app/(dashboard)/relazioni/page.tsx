@@ -685,50 +685,49 @@ export default function RelazioniPage() {
         </div>
       ) : (
         <Card>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {pagination.paginatedItems.map((rel) => {
               const balance = getBalanceIndicator(rel.valueBalance);
               return (
                 <div
                   key={rel.id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="flex flex-col gap-2 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => openEditModal(rel)}
                 >
-                  <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1">
-                    {/* Strength */}
-                    <div className={`px-2 sm:px-3 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold border ${getStrengthColor(rel.strength)}`}>
-                      {getStrengthIcon(rel.strength)}
-                    </div>
-
-                    {/* Info */}
+                  {/* Header: Nome, Strength e Importanza */}
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                        <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{rel.name}</h3>
-                        <span className="text-xs sm:text-sm text-gray-600 truncate">{rel.role}</span>
-                        <span className="text-xs sm:text-sm text-gray-500 truncate">{rel.company}</span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                          {getCategoryLabel(rel.category)}
-                        </span>
-                        <span className="text-xs">{getImportanceIcon(rel.importance)}</span>
-                        <span className={`text-xs font-medium ${balance.color}`}>
-                          {balance.icon} {balance.text}
-                        </span>
-                        <span className="text-xs text-gray-500">📅 {formatLastContact(rel.lastContact)}</span>
-                      </div>
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base">{rel.name}</h3>
+                      <div className="text-xs text-gray-600 mt-0.5">{rel.role} • {rel.company}</div>
                     </div>
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                      <div className={`px-2 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${getStrengthColor(rel.strength)}`}>
+                        {getStrengthIcon(rel.strength)}
+                      </div>
+                      <span className="text-xs">{getImportanceIcon(rel.importance)}</span>
+                    </div>
+                  </div>
+
+                  {/* Metadata row */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded whitespace-nowrap">
+                      {getCategoryLabel(rel.category)}
+                    </span>
+                    <span className={`text-xs font-medium ${balance.color} whitespace-nowrap`}>
+                      {balance.icon} {balance.text}
+                    </span>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">📅 {formatLastContact(rel.lastContact)}</span>
                   </div>
 
                   {/* Next Action - Clickable */}
                   <div
-                    className="text-xs sm:text-sm text-gray-600 w-full sm:w-auto sm:max-w-xs px-3 py-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors cursor-pointer"
+                    className="text-xs text-gray-600 px-3 py-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       openActionsModal(rel);
                     }}
                   >
-                    <span className="font-semibold">⏭️</span> {rel.nextAction || 'Pianifica azione...'}
+                    <span className="font-semibold">⏭️</span> <span className="line-clamp-1">{rel.nextAction || 'Pianifica azione...'}</span>
                     {rel.actionsHistory && rel.actionsHistory.length > 0 && (
                       <span className="text-xs text-blue-500 ml-2">
                         ({rel.actionsHistory.length})
