@@ -442,142 +442,149 @@ export default function RelazioniPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
             🤝 Relazioni Strategiche
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
             Il tuo successo è la somma delle persone che conosci e di come le aiuti a crescere
           </p>
         </div>
-        <Button onClick={openAddModal}>+ Nuova Relazione</Button>
+        <Button onClick={openAddModal} className="w-full sm:w-auto">+ Nuova Relazione</Button>
       </div>
 
       {/* Stats Cards - Ferrazzi Focus */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card padding={false} className="p-4 border-l-4 border-primary">
-          <div className="text-sm text-gray-600">Relazioni Totali</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-primary">
+          <div className="text-xs sm:text-sm text-gray-600">Relazioni Totali</div>
+          <div className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
           <div className="text-xs text-gray-500 mt-1">Rete professionale attiva</div>
         </Card>
 
-        <Card padding={false} className="p-4 border-l-4 border-green-500">
-          <div className="text-sm text-gray-600">Strong Relationships</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">{stats.strong}</div>
-          <div className="text-xs text-gray-500 mt-1">Ready for opportunities</div>
+        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-green-500">
+          <div className="text-xs sm:text-sm text-gray-600">Strong Relationships</div>
+          <div className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{stats.strong}</div>
+          <div className="text-xs text-gray-500 mt-1 hidden sm:block">Ready for opportunities</div>
         </Card>
 
-        <Card padding={false} className="p-4 border-l-4 border-yellow-500">
-          <div className="text-sm text-gray-600">Importanza Critica</div>
-          <div className="text-2xl font-bold text-yellow-600 mt-1">{stats.critical}</div>
-          <div className="text-xs text-gray-500 mt-1">Per obiettivi chiave</div>
+        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-yellow-500">
+          <div className="text-xs sm:text-sm text-gray-600">Importanza Critica</div>
+          <div className="text-xl sm:text-2xl font-bold text-yellow-600 mt-1">{stats.critical}</div>
+          <div className="text-xs text-gray-500 mt-1 hidden sm:block">Per obiettivi chiave</div>
         </Card>
 
-        <Card padding={false} className="p-4 border-l-4 border-orange-500">
-          <div className="text-sm text-gray-600">Sto Dando Valore</div>
-          <div className="text-2xl font-bold text-orange-600 mt-1">{stats.needsAction}</div>
-          <div className="text-xs text-gray-500 mt-1">Azioni da fare per loro</div>
+        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-orange-500">
+          <div className="text-xs sm:text-sm text-gray-600">Sto Dando Valore</div>
+          <div className="text-xl sm:text-2xl font-bold text-orange-600 mt-1">{stats.needsAction}</div>
+          <div className="text-xs text-gray-500 mt-1 hidden sm:block">Azioni da fare per loro</div>
         </Card>
       </div>
 
       {/* Filters */}
       <Card>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
+        <div className="space-y-3 sm:space-y-4">
+          {/* Search Bar */}
+          <div className="w-full">
             <Input
               placeholder="🔍 Cerca per nome, azienda o ruolo..."
               value={filters.searchTerm}
               onChange={(e) => filters.setSearchTerm(e.target.value)}
+              className="text-sm sm:text-base"
             />
           </div>
 
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-            value={filters.filterStrength}
-            onChange={(e) => filters.setFilterStrength(e.target.value)}
-          >
-            <option value="all">💪 Tutte le Forze</option>
-            <option value="strong">💪 Strong</option>
-            <option value="active">✓ Active</option>
-            <option value="developing">⟳ Developing</option>
-            <option value="weak">○ Weak</option>
-          </select>
+          {/* Filters Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <select
+              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+              value={filters.filterStrength}
+              onChange={(e) => filters.setFilterStrength(e.target.value)}
+            >
+              <option value="all">💪 Tutte le Forze</option>
+              <option value="strong">💪 Strong</option>
+              <option value="active">✓ Active</option>
+              <option value="developing">⟳ Developing</option>
+              <option value="weak">○ Weak</option>
+            </select>
 
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-            value={filters.filterImportance}
-            onChange={(e) => filters.setFilterImportance(e.target.value)}
-          >
-            <option value="all">⭐ Tutte le Importanze</option>
-            <option value="critical">⭐⭐⭐ Critical</option>
-            <option value="high">⭐⭐ High</option>
-            <option value="medium">⭐ Medium</option>
-            <option value="low">○ Low</option>
-          </select>
-        </div>
-
-        {/* Sorting Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-            value={filters.sortBy}
-            onChange={(e) => filters.setSortBy(e.target.value as any)}
-          >
-            <option value="name">📛 Ordina per Nome</option>
-            <option value="company">🏢 Ordina per Azienda</option>
-            <option value="role">💼 Ordina per Ruolo</option>
-            <option value="lastContact">📅 Ordina per Ultimo Contatto</option>
-            <option value="lastAction">⏱️ Ordina per Ultima Azione</option>
-            <option value="importance">⭐ Ordina per Importanza</option>
-            <option value="strength">💪 Ordina per Forza Relazione</option>
-            <option value="category">🎯 Ordina per Categoria</option>
-          </select>
-
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-            value={filters.sortOrder}
-            onChange={(e) => filters.setSortOrder(e.target.value as 'asc' | 'desc')}
-          >
-            <option value="asc">⬆️ Crescente (A-Z, Vecchio-Nuovo)</option>
-            <option value="desc">⬇️ Decrescente (Z-A, Nuovo-Vecchio)</option>
-          </select>
-
-          <div className="text-sm text-gray-600 flex items-center px-4 py-2 bg-gray-50 rounded-lg">
-            📊 {filters.filteredRelationships.length} relazioni trovate
+            <select
+              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+              value={filters.filterImportance}
+              onChange={(e) => filters.setFilterImportance(e.target.value)}
+            >
+              <option value="all">⭐ Tutte le Importanze</option>
+              <option value="critical">⭐⭐⭐ Critical</option>
+              <option value="high">⭐⭐ High</option>
+              <option value="medium">⭐ Medium</option>
+              <option value="low">○ Low</option>
+            </select>
           </div>
-        </div>
 
-        {/* View Toggle */}
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              viewMode === 'grid'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            📊 Griglia
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              viewMode === 'list'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            📝 Lista
-          </button>
+          {/* Sorting Controls */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <select
+              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+              value={filters.sortBy}
+              onChange={(e) => filters.setSortBy(e.target.value as any)}
+            >
+              <option value="name">📛 Nome</option>
+              <option value="company">🏢 Azienda</option>
+              <option value="role">💼 Ruolo</option>
+              <option value="lastContact">📅 Ultimo Contatto</option>
+              <option value="lastAction">⏱️ Ultima Azione</option>
+              <option value="importance">⭐ Importanza</option>
+              <option value="strength">💪 Forza</option>
+              <option value="category">🎯 Categoria</option>
+            </select>
+
+            <select
+              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+              value={filters.sortOrder}
+              onChange={(e) => filters.setSortOrder(e.target.value as 'asc' | 'desc')}
+            >
+              <option value="asc">⬆️ Crescente</option>
+              <option value="desc">⬇️ Decrescente</option>
+            </select>
+          </div>
+
+          {/* Results Count and View Toggle */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="text-xs sm:text-sm text-gray-600 flex items-center justify-center sm:justify-start px-3 py-2 bg-gray-50 rounded-lg">
+              📊 {filters.filteredRelationships.length} relazioni trovate
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm ${
+                  viewMode === 'grid'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📊 Griglia
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm ${
+                  viewMode === 'list'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📝 Lista
+              </button>
+            </div>
+          </div>
         </div>
       </Card>
 
       {/* Relationships Grid/List */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {pagination.paginatedItems.map((rel) => {
             const balance = getBalanceIndicator(rel.valueBalance);
             return (
@@ -590,32 +597,32 @@ export default function RelazioniPage() {
                   onClick={() => openEditModal(rel)}
                 >
                 {/* Header con temperatura */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-900">{rel.name}</h3>
-                    <p className="text-sm text-gray-600">{rel.role}</p>
-                    <p className="text-xs text-gray-500">{rel.company}</p>
+                <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate">{rel.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">{rel.role}</p>
+                    <p className="text-xs text-gray-500 truncate">{rel.company}</p>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStrengthColor(rel.strength)}`}>
-                    {getStrengthIcon(rel.strength)} {getStrengthLabel(rel.strength)}
+                  <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${getStrengthColor(rel.strength)}`}>
+                    {getStrengthIcon(rel.strength)} <span className="hidden sm:inline">{getStrengthLabel(rel.strength)}</span>
                   </div>
                 </div>
 
                 {/* Category e Importanza */}
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <span className="text-xs sm:text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded truncate">
                     {getCategoryLabel(rel.category)}
                   </span>
-                  <span className="text-sm">{getImportanceIcon(rel.importance)}</span>
+                  <span className="text-xs sm:text-sm">{getImportanceIcon(rel.importance)}</span>
                 </div>
 
                 {/* What I Can Give */}
                 {rel.whatICanGive && rel.whatICanGive.length > 0 && rel.whatICanGive.some((item: string) => item.trim()) && (
-                  <div className="mb-3 bg-green-50 p-3 rounded-lg">
+                  <div className="mb-2 sm:mb-3 bg-green-50 p-2 sm:p-3 rounded-lg">
                     <div className="text-xs font-semibold text-green-700 mb-1">💚 Cosa Posso Dare:</div>
-                    <div className="space-y-1">
+                    <div className="space-y-0.5 sm:space-y-1">
                       {rel.whatICanGive.filter((item: string) => item.trim()).map((item: string, idx: number) => (
-                        <div key={idx} className="text-xs text-green-600">• {item}</div>
+                        <div key={idx} className="text-xs text-green-600 line-clamp-2">• {item}</div>
                       ))}
                     </div>
                   </div>
@@ -623,32 +630,32 @@ export default function RelazioniPage() {
 
                 {/* What I Can Receive */}
                 {rel.whatICanReceive && rel.whatICanReceive.length > 0 && rel.whatICanReceive.some((item: string) => item.trim()) && (
-                  <div className="mb-3 bg-blue-50 p-3 rounded-lg">
+                  <div className="mb-2 sm:mb-3 bg-blue-50 p-2 sm:p-3 rounded-lg">
                     <div className="text-xs font-semibold text-blue-700 mb-1">💙 Cosa Posso Ricevere:</div>
-                    <div className="space-y-1">
+                    <div className="space-y-0.5 sm:space-y-1">
                       {rel.whatICanReceive.filter((item: string) => item.trim()).map((item: string, idx: number) => (
-                        <div key={idx} className="text-xs text-blue-600">• {item}</div>
+                        <div key={idx} className="text-xs text-blue-600 line-clamp-2">• {item}</div>
                       ))}
                     </div>
                   </div>
                 )}
 
                 {/* Value Balance */}
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="text-lg">{balance.icon}</span>
-                  <span className={`text-sm font-medium ${balance.color}`}>{balance.text}</span>
+                <div className="mb-2 sm:mb-3 flex items-center gap-2">
+                  <span className="text-base sm:text-lg">{balance.icon}</span>
+                  <span className={`text-xs sm:text-sm font-medium ${balance.color}`}>{balance.text}</span>
                 </div>
 
                 {/* Next Action - Clickable */}
                 <div
-                  className="mb-3 bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                  className="mb-2 sm:mb-3 bg-blue-50 p-2 sm:p-3 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     openActionsModal(rel);
                   }}
                 >
                   <div className="text-xs font-semibold text-blue-700 mb-1">⏭️ Prossima Azione:</div>
-                  <div className="text-xs text-blue-600">{rel.nextAction || 'Clicca per pianificare...'}</div>
+                  <div className="text-xs text-blue-600 line-clamp-2">{rel.nextAction || 'Clicca per pianificare...'}</div>
                   {rel.actionsHistory && rel.actionsHistory.length > 0 && (
                     <div className="text-xs text-blue-500 mt-1">
                       📋 {rel.actionsHistory.length} azioni completate
@@ -657,19 +664,20 @@ export default function RelazioniPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                  <div className="text-xs text-gray-500">
+                <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-200">
+                  <div className="text-xs text-gray-500 truncate">
                     📅 {formatLastContact(rel.lastContact)}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 whitespace-nowrap">
                     📝 {rel.noteCount} note
                   </div>
                 </div>
                 </div>
 
                 {/* Hint text */}
-                <div className="mt-3 text-xs text-center text-gray-400 italic">
-                  Clicca per modificare • Clicca "Prossima Azione" per gestire attività
+                <div className="mt-2 sm:mt-3 text-xs text-center text-gray-400 italic">
+                  <span className="hidden sm:inline">Clicca per modificare • Clicca "Prossima Azione" per gestire attività</span>
+                  <span className="sm:hidden">Tap per modificare</span>
                 </div>
               </Card>
             );
@@ -683,38 +691,38 @@ export default function RelazioniPage() {
               return (
                 <div
                   key={rel.id}
-                  className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
                   onClick={() => openEditModal(rel)}
                 >
-                  {/* Strength */}
-                  <div className={`px-3 py-2 rounded-full text-sm font-semibold border ${getStrengthColor(rel.strength)}`}>
-                    {getStrengthIcon(rel.strength)}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-gray-900">{rel.name}</h3>
-                      <span className="text-sm text-gray-500">•</span>
-                      <span className="text-sm text-gray-600">{rel.role}</span>
-                      <span className="text-sm text-gray-500">•</span>
-                      <span className="text-sm text-gray-500">{rel.company}</span>
+                  <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1">
+                    {/* Strength */}
+                    <div className={`px-2 sm:px-3 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold border ${getStrengthColor(rel.strength)}`}>
+                      {getStrengthIcon(rel.strength)}
                     </div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                        {getCategoryLabel(rel.category)}
-                      </span>
-                      <span className="text-xs">{getImportanceIcon(rel.importance)}</span>
-                      <span className={`text-xs font-medium ${balance.color}`}>
-                        {balance.icon} {balance.text}
-                      </span>
-                      <span className="text-xs text-gray-500">• {formatLastContact(rel.lastContact)}</span>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{rel.name}</h3>
+                        <span className="text-xs sm:text-sm text-gray-600 truncate">{rel.role}</span>
+                        <span className="text-xs sm:text-sm text-gray-500 truncate">{rel.company}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                          {getCategoryLabel(rel.category)}
+                        </span>
+                        <span className="text-xs">{getImportanceIcon(rel.importance)}</span>
+                        <span className={`text-xs font-medium ${balance.color}`}>
+                          {balance.icon} {balance.text}
+                        </span>
+                        <span className="text-xs text-gray-500">📅 {formatLastContact(rel.lastContact)}</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Next Action - Clickable */}
                   <div
-                    className="text-sm text-gray-600 max-w-xs px-3 py-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors cursor-pointer"
+                    className="text-xs sm:text-sm text-gray-600 w-full sm:w-auto sm:max-w-xs px-3 py-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       openActionsModal(rel);
@@ -886,7 +894,7 @@ export default function RelazioniPage() {
 
           {/* Cosa Posso Dare */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               💚 Cosa Posso Dare
             </label>
             <div className="space-y-2">
@@ -895,14 +903,15 @@ export default function RelazioniPage() {
                   <Input
                     value={item}
                     onChange={(e) => form.updateGive(index, e.target.value)}
-                    placeholder="Es. Introduzioni, Consulenza strategica, Partnership"
-                    className="flex-1"
+                    placeholder="Es. Introduzioni, Consulenza strategica"
+                    className="flex-1 text-sm"
                   />
                   {(form.formData.whatICanGive?.length || 0) > 1 && (
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={() => form.removeGive(index)}
+                      className="px-3"
                     >
                       ✕
                     </Button>
@@ -913,16 +922,16 @@ export default function RelazioniPage() {
                 variant="secondary"
                 size="sm"
                 onClick={form.addGive}
-                className="w-full"
+                className="w-full text-xs sm:text-sm"
               >
-                + Aggiungi Valore che Posso Dare
+                + Aggiungi Valore
               </Button>
             </div>
           </div>
 
           {/* Cosa Posso Ricevere */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               💙 Cosa Posso Ricevere
             </label>
             <div className="space-y-2">
@@ -931,14 +940,15 @@ export default function RelazioniPage() {
                   <Input
                     value={item}
                     onChange={(e) => form.updateReceive(index, e.target.value)}
-                    placeholder="Es. Referral, Opportunità commerciali, Insights di mercato"
-                    className="flex-1"
+                    placeholder="Es. Referral, Opportunità commerciali"
+                    className="flex-1 text-sm"
                   />
                   {(form.formData.whatICanReceive?.length || 0) > 1 && (
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={() => form.removeReceive(index)}
+                      className="px-3"
                     >
                       ✕
                     </Button>
@@ -949,9 +959,9 @@ export default function RelazioniPage() {
                 variant="secondary"
                 size="sm"
                 onClick={form.addReceive}
-                className="w-full"
+                className="w-full text-xs sm:text-sm"
               >
-                + Aggiungi Valore che Posso Ricevere
+                + Aggiungi Valore
               </Button>
             </div>
           </div>
@@ -959,18 +969,18 @@ export default function RelazioniPage() {
           {/* Notes Section - Only show if editing existing relationship */}
           {editingRelation && (
             <div className="border-t pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                 💬 Note e Commenti
               </label>
 
               {/* Add New Note */}
-              <div className="mb-4 bg-gray-50 p-3 rounded-lg">
+              <div className="mb-3 sm:mb-4 bg-gray-50 p-2 sm:p-3 rounded-lg">
                 <div className="flex gap-2">
                   <Input
                     value={newNoteText}
                     onChange={(e) => setNewNoteText(e.target.value)}
-                    placeholder="Aggiungi una nota o commento..."
-                    className="flex-1"
+                    placeholder="Aggiungi una nota..."
+                    className="flex-1 text-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -982,6 +992,7 @@ export default function RelazioniPage() {
                     onClick={() => handleAddNote(editingRelation.id)}
                     disabled={!newNoteText.trim() || addingNote}
                     size="sm"
+                    className="px-3"
                   >
                     {addingNote ? '...' : '➕'}
                   </Button>
@@ -989,19 +1000,19 @@ export default function RelazioniPage() {
               </div>
 
               {/* Notes List */}
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto">
                 {editingRelation.notes && editingRelation.notes.length > 0 ? (
                   [...editingRelation.notes]
                     .reverse()
                     .map((note) => (
-                      <div key={note.id} className="bg-white border border-gray-200 p-3 rounded-lg">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2">
+                      <div key={note.id} className="bg-white border border-gray-200 p-2 sm:p-3 rounded-lg">
+                        <div className="flex items-start justify-between gap-2 mb-1 sm:mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                             <span className="text-xs font-semibold text-gray-700">
                               {note.createdByName}
                             </span>
                             <span
-                              className={`text-xs px-2 py-0.5 rounded font-semibold ${
+                              className={`text-xs px-2 py-0.5 rounded font-semibold w-fit ${
                                 note.createdByRole === 'admin'
                                   ? 'bg-red-100 text-red-700'
                                   : 'bg-blue-100 text-blue-700'
@@ -1014,11 +1025,11 @@ export default function RelazioniPage() {
                             {formatLastContact(note.createdAt)}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700">{note.content}</p>
+                        <p className="text-xs sm:text-sm text-gray-700 break-words">{note.content}</p>
                       </div>
                     ))
                 ) : (
-                  <div className="text-center py-4 text-gray-500 text-sm">
+                  <div className="text-center py-4 text-gray-500 text-xs sm:text-sm">
                     Nessuna nota ancora. Aggiungi la prima!
                   </div>
                 )}
@@ -1027,30 +1038,32 @@ export default function RelazioniPage() {
           )}
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t">
             {editingRelation && (
               <Button
                 variant="secondary"
                 onClick={() => openDeleteDialog(editingRelation)}
-                className="bg-red-50 text-red-600 hover:bg-red-100"
+                className="bg-red-50 text-red-600 hover:bg-red-100 w-full sm:w-auto text-sm"
                 disabled={saving || deleting}
               >
                 🗑️ Elimina
               </Button>
             )}
-            <div className="flex-1" />
+            <div className="hidden sm:block flex-1" />
             <Button
               variant="secondary"
               onClick={handleCloseModal}
               disabled={saving}
+              className="w-full sm:w-auto order-last sm:order-none text-sm"
             >
               Annulla
             </Button>
             <Button
               onClick={handleSave}
               disabled={!form.formData.name || !form.formData.company || !form.formData.role || saving}
+              className="w-full sm:w-auto text-sm"
             >
-              {saving ? 'Salvataggio...' : editingRelation ? '💾 Salva Modifiche' : '➕ Aggiungi Relazione'}
+              {saving ? 'Salvataggio...' : editingRelation ? '💾 Salva' : '➕ Aggiungi'}
             </Button>
           </div>
         </div>
@@ -1170,10 +1183,10 @@ export default function RelazioniPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t">
               <Button
                 variant="secondary"
-                className="flex-1"
+                className="w-full sm:flex-1 text-sm"
                 onClick={() => {
                   setIsDetailsModalOpen(false);
                   openEditModal(viewingRelation);
@@ -1184,6 +1197,7 @@ export default function RelazioniPage() {
               <Button
                 variant="secondary"
                 onClick={() => setIsDetailsModalOpen(false)}
+                className="w-full sm:w-auto text-sm"
               >
                 Chiudi
               </Button>
@@ -1327,14 +1341,14 @@ export default function RelazioniPage() {
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-2 sm:gap-3 pt-4 border-t">
               <Button
                 variant="secondary"
                 onClick={() => {
                   setIsActionsModalOpen(false);
                   setNewActionText('');
                 }}
-                className="flex-1"
+                className="w-full text-sm"
               >
                 Chiudi
               </Button>
@@ -1345,13 +1359,13 @@ export default function RelazioniPage() {
 
       {/* Daily Motivational Quote */}
       <Card className="bg-gradient-to-r from-primary/10 to-purple-100 border-l-4 border-primary">
-        <div className="flex items-start gap-4">
-          <div className="text-4xl">💡</div>
-          <div>
-            <p className="text-gray-700 italic mb-2">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="text-2xl sm:text-4xl">💡</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm text-gray-700 italic mb-2">
               "{dailyQuote.text}"
             </p>
-            <p className="text-sm text-gray-600 font-semibold">— {dailyQuote.author}</p>
+            <p className="text-xs sm:text-sm text-gray-600 font-semibold">— {dailyQuote.author}</p>
           </div>
         </div>
       </Card>
