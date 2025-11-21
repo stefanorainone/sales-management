@@ -97,32 +97,29 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={
-        <div className="flex items-start gap-3">
-          <div className="text-3xl">📋</div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-gray-900 break-words">
-              {task.title}
-            </h2>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <Badge variant={getPriorityColor(task.priority) as any} size="sm">
-                {getPriorityLabel(task.priority)}
-              </Badge>
-              <Badge variant="primary" size="sm">
-                {getTypeLabel(task.type)}
-              </Badge>
-              {task.outcome && (
-                <Badge variant={getOutcomeColor(task.outcome) as any} size="sm">
-                  {getOutcomeLabel(task.outcome)}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
-      }
+      title="📋 Dettagli Task"
       size="xl"
     >
       <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+        {/* Task Header */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h2 className="text-xl font-bold text-gray-900 break-words mb-3">
+            {task.title}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={getPriorityColor(task.priority) as any} size="sm">
+              {getPriorityLabel(task.priority)}
+            </Badge>
+            <Badge variant="primary" size="sm">
+              {getTypeLabel(task.type)}
+            </Badge>
+            {task.outcome && (
+              <Badge variant={getOutcomeColor(task.outcome) as any} size="sm">
+                {getOutcomeLabel(task.outcome)}
+              </Badge>
+            )}
+          </div>
+        </div>
         {/* Task Info */}
         <div className="bg-gray-50 rounded-lg p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
