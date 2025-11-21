@@ -55,7 +55,16 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
       }
 
       const data = await response.json();
-      setSuggestions(data.suggestions);
+
+      // Check if AI returned valid suggestions
+      if (data.suggestions &&
+          (data.suggestions.main.length > 0 || data.suggestions.bonus.length > 0)) {
+        setSuggestions(data.suggestions);
+      } else {
+        // AI returned empty or invalid suggestions, use manual fallback
+        console.log('AI returned empty suggestions, using manual fallback');
+        generateManualSuggestions();
+      }
     } catch (error) {
       console.error('Error generating suggestions:', error);
       // Fallback to manual suggestions if AI fails
@@ -69,80 +78,136 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
     const main: TaskSuggestion[] = [];
     const bonus: TaskSuggestion[] = [];
 
-    // Task prioritari
-    relationships.forEach((rel, idx) => {
-      if (main.length < 3) {
-        // Contatto non recente
-        const lastContactDate = new Date(rel.lastContact);
-        const daysSinceContact = Math.floor((Date.now() - lastContactDate.getTime()) / (1000 * 60 * 60 * 24));
+    // Helper per aggiungere task generici se non raggiungiamo il numero
+    const genericMainTasks = [
+      { task: 'Rivedere strategia relazioni mensile', motivo: 'Analizzare quali relazioni stanno dando più valore e dove investire tempo.', priorita: 'alta' as const },
+      { task: 'Organizzare evento networking', motivo: 'Creare occasioni per far incontrare le tue relazioni e rafforzare il network.', priorita: 'alta' as const },
+      { task: 'Aggiornare CRM con ultime note', motivo: 'Mantenere traccia dettagliata delle conversazioni per follow-up più efficaci.', priorita: 'alta' as const },
+    ];
 
-        if (daysSinceContact > 30 && rel.importance === 'critical') {
-          main.push({
-            id: `main-${rel.id}`,
-            relazione: rel.name,
-            relazioneId: rel.id,
-            task: `Contattare ${rel.name} per un follow-up`,
-            motivo: `Relazione critica non contattata da ${daysSinceContact} giorni. Rischio di perdere il contatto.`,
-            priorita: 'alta'
-          });
-        } else if (rel.valueBalance === 'do_give_more' && rel.strength !== 'weak') {
-          main.push({
-            id: `main-${rel.id}`,
-            relazione: rel.name,
-            relazioneId: rel.id,
-            task: `Offrire valore a ${rel.name}`,
-            motivo: `Stai dando più di quanto ricevi. Importante rafforzare il reciproco scambio di valore.`,
-            priorita: 'alta'
-          });
-        } else if (!rel.nextAction && rel.importance !== 'low') {
-          main.push({
-            id: `main-${rel.id}`,
-            relazione: rel.name,
-            relazioneId: rel.id,
-            task: `Pianificare prossima azione con ${rel.name}`,
-            motivo: `Nessuna prossima azione definita. Importante mantenere la relazione attiva.`,
-            priorita: 'alta'
-          });
-        }
+    const genericBonusTasks = [
+      { task: 'Condividere articolo/risorsa utile', motivo: 'Dare valore proattivamente condividendo contenuti rilevanti per le loro sfide.', priorita: 'media' as const },
+      { task: 'Pianificare coffee virtuale informale', motivo: 'Rafforzare relazioni con conversazioni autentiche senza agenda specifica.', priorita: 'media' as const },
+      { task: 'Congratularsi per successi recenti', motivo: 'Mostrare interesse genuino celebrando i loro traguardi professionali.', priorita: 'bassa' as const },
+      { task: 'Richiedere feedback su tua attività', motivo: 'Coinvolgere le relazioni chiedendo consigli, li fa sentire valorizzati.', priorita: 'bassa' as const },
+      { task: 'Fare introduzione strategica', motivo: 'Creare valore connettendo persone del tuo network che potrebbero aiutarsi.', priorita: 'bassa' as const },
+    ];
+
+    // Task prioritari
+    relationships.forEach((rel) => {
+      if (main.length >= 3) return;
+
+      const lastContactDate = new Date(rel.lastContact);
+      const daysSinceContact = Math.floor((Date.now() - lastContactDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysSinceContact > 21 && rel.importance !== 'low') {
+        main.push({
+          id: `main-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Contattare ${rel.name} per check-in`,
+          motivo: `Non contattato da ${daysSinceContact} giorni. Mantenere la relazione attiva con touch point regolari.`,
+          priorita: 'alta'
+        });
+      } else if (rel.valueBalance === 'do_give_more') {
+        main.push({
+          id: `main-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Offrire valore a ${rel.name}`,
+          motivo: `Bilanciamento valore: stai dando di più. Continuare a dare valore rafforza la relazione.`,
+          priorita: 'alta'
+        });
+      } else if (!rel.nextAction) {
+        main.push({
+          id: `main-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Definire prossima azione con ${rel.name}`,
+          motivo: `Nessuna prossima azione pianificata. Avere un next step chiaro mantiene momentum.`,
+          priorita: 'alta'
+        });
+      } else if (rel.strength === 'weak' && rel.importance !== 'low') {
+        main.push({
+          id: `main-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Rafforzare relazione con ${rel.name}`,
+          motivo: `Relazione debole ma importante. Investire tempo ora per svilupparla.`,
+          priorita: 'alta'
+        });
       }
     });
+
+    // Completa con task generici se necessario
+    while (main.length < 3 && genericMainTasks.length > 0) {
+      const genericTask = genericMainTasks.shift()!;
+      const randomRel = relationships[Math.floor(Math.random() * relationships.length)];
+      main.push({
+        id: `main-generic-${main.length}`,
+        relazione: randomRel?.name || 'Generale',
+        relazioneId: randomRel?.id || 'general',
+        ...genericTask
+      });
+    }
 
     // Task bonus
-    relationships.forEach((rel, idx) => {
-      if (bonus.length < 5) {
-        const lastContactDate = new Date(rel.lastContact);
-        const daysSinceContact = Math.floor((Date.now() - lastContactDate.getTime()) / (1000 * 60 * 60 * 24));
+    relationships.forEach((rel) => {
+      if (bonus.length >= 5) return;
 
-        if (daysSinceContact > 14 && daysSinceContact < 30) {
-          bonus.push({
-            id: `bonus-${rel.id}`,
-            relazione: rel.name,
-            relazioneId: rel.id,
-            task: `Check-in informale con ${rel.name}`,
-            motivo: `Mantenere la relazione calda con contatti regolari ogni 2-3 settimane.`,
-            priorita: 'media'
-          });
-        } else if (rel.strength === 'developing' && rel.category === 'decision_maker') {
-          bonus.push({
-            id: `bonus-${rel.id}`,
-            relazione: rel.name,
-            relazioneId: rel.id,
-            task: `Approfondire relazione con ${rel.name}`,
-            motivo: `Decisore chiave in fase di sviluppo. Importante investire tempo ora.`,
-            priorita: 'media'
-          });
-        } else if (rel.category === 'connector' && rel.noteCount < 2) {
-          bonus.push({
-            id: `bonus-${rel.id}`,
-            relazione: rel.name,
-            relazioneId: rel.id,
-            task: `Richiedere introduzioni a ${rel.name}`,
-            motivo: `Connettore con potenziale di network. Chiedere presentazioni strategiche.`,
-            priorita: 'bassa'
-          });
-        }
+      const lastContactDate = new Date(rel.lastContact);
+      const daysSinceContact = Math.floor((Date.now() - lastContactDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysSinceContact > 7 && daysSinceContact < 21) {
+        bonus.push({
+          id: `bonus-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Check-in informale con ${rel.name}`,
+          motivo: `Contatto recente ma mantenere momentum con touch point ogni 1-2 settimane.`,
+          priorita: 'media'
+        });
+      } else if (rel.strength === 'developing' && rel.category !== 'other') {
+        bonus.push({
+          id: `bonus-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Approfondire relazione con ${rel.name}`,
+          motivo: `Relazione in sviluppo. Questo è il momento migliore per investire tempo.`,
+          priorita: 'media'
+        });
+      } else if (rel.category === 'connector') {
+        bonus.push({
+          id: `bonus-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Richiedere intro a ${rel.name}`,
+          motivo: `Connettore nel tuo network. Chiedere presentazioni strategiche a persone chiave.`,
+          priorita: 'bassa'
+        });
+      } else if (rel.category === 'decision_maker') {
+        bonus.push({
+          id: `bonus-${rel.id}`,
+          relazione: rel.name,
+          relazioneId: rel.id,
+          task: `Proporre collaborazione a ${rel.name}`,
+          motivo: `Decision maker. Esplorare opportunità di collaborazione o partnership.`,
+          priorita: 'media'
+        });
       }
     });
+
+    // Completa con task generici se necessario
+    while (bonus.length < 5 && genericBonusTasks.length > 0) {
+      const genericTask = genericBonusTasks.shift()!;
+      const randomRel = relationships[Math.floor(Math.random() * relationships.length)];
+      bonus.push({
+        id: `bonus-generic-${bonus.length}`,
+        relazione: randomRel?.name || 'Generale',
+        relazioneId: randomRel?.id || 'general',
+        ...genericTask
+      });
+    }
 
     setSuggestions({ main, bonus });
   };
@@ -263,13 +328,6 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {suggestions.main.length === 0 && suggestions.bonus.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">✨</div>
-                  <p className="text-sm text-gray-600">Tutte le tue relazioni sono ben gestite!</p>
                 </div>
               )}
 
