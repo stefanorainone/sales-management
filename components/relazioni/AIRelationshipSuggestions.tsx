@@ -236,7 +236,30 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
     }
   };
 
-  if (relationships.length === 0) return null;
+  // Show widget even if no relationships exist
+  if (relationships.length === 0) {
+    return (
+      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
+        <div className="flex items-start justify-between mb-3 sm:mb-4">
+          <div className="flex-1">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+              <span className="text-xl sm:text-2xl">🤖</span>
+              <span>Suggerimenti AI per le tue Relazioni</span>
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              Task intelligenti basati sulle tue relazioni esistenti
+            </p>
+          </div>
+        </div>
+        <div className="text-center py-8">
+          <div className="text-4xl mb-3">🤝</div>
+          <p className="text-sm text-gray-600">
+            Aggiungi delle relazioni per ricevere suggerimenti AI personalizzati!
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
