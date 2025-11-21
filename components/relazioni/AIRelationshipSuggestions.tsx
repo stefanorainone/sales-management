@@ -239,22 +239,22 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
   // Show widget even if no relationships exist
   if (relationships.length === 0) {
     return (
-      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
-        <div className="flex items-start justify-between mb-3 sm:mb-4">
+      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 sm:border-2">
+        <div className="flex items-start justify-between mb-2 sm:mb-3">
           <div className="flex-1">
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
-              <span className="text-xl sm:text-2xl">🤖</span>
-              <span>Suggerimenti AI per le tue Relazioni</span>
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">🤖</span>
+              <span className="leading-tight">Suggerimenti AI</span>
             </h3>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              Task intelligenti basati sulle tue relazioni esistenti
+            <p className="text-xs text-gray-600 mt-0.5 sm:mt-1">
+              Task intelligenti per le tue relazioni
             </p>
           </div>
         </div>
-        <div className="text-center py-8">
-          <div className="text-4xl mb-3">🤝</div>
-          <p className="text-sm text-gray-600">
-            Aggiungi delle relazioni per ricevere suggerimenti AI personalizzati!
+        <div className="text-center py-6 sm:py-8">
+          <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">🤝</div>
+          <p className="text-xs sm:text-sm text-gray-600">
+            Aggiungi relazioni per ricevere suggerimenti AI!
           </p>
         </div>
       </Card>
@@ -262,20 +262,20 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
   }
 
   return (
-    <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
-      <div className="flex items-start justify-between mb-3 sm:mb-4">
+    <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 sm:border-2">
+      <div className="flex items-start justify-between mb-2 sm:mb-3">
         <div className="flex-1">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
-            <span className="text-xl sm:text-2xl">🤖</span>
-            <span>Suggerimenti AI per le tue Relazioni</span>
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
+            <span className="text-lg sm:text-xl">🤖</span>
+            <span className="leading-tight">Suggerimenti AI</span>
           </h3>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            Task intelligenti basati sulle tue relazioni esistenti
+          <p className="text-xs text-gray-600 mt-0.5 sm:mt-1">
+            Task intelligenti per le tue relazioni
           </p>
         </div>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-500 hover:text-gray-700 p-2 text-xl"
+          className="text-gray-500 hover:text-gray-700 p-1 sm:p-2 text-lg sm:text-xl flex-shrink-0"
         >
           {collapsed ? '▼' : '▲'}
         </button>
@@ -284,36 +284,36 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
       {!collapsed && (
         <>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">Generazione suggerimenti AI...</p>
+            <div className="text-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+              <p className="text-xs sm:text-sm text-gray-600">Generazione suggerimenti...</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2.5 sm:space-y-3">
               {/* Task Prioritari */}
               {suggestions.main.length > 0 && (
                 <div>
-                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <span>⭐</span>
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2 flex items-center gap-1.5">
+                    <span className="text-sm sm:text-base">⭐</span>
                     <span>Task Prioritari</span>
-                    <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">{suggestions.main.length}</span>
+                    <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">{suggestions.main.length}</span>
                   </h4>
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="space-y-1.5 sm:space-y-2">
                     {suggestions.main.map((task) => (
                       <div
                         key={task.id}
-                        className="bg-white border-2 border-purple-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
+                        className="bg-white border border-purple-200 sm:border-2 rounded-lg p-2 sm:p-3 hover:shadow-md transition-shadow"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                          <div className="flex-1">
-                            <div className="font-semibold text-gray-900 text-sm sm:text-base">{task.task}</div>
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-2 mb-1.5">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight">{task.task}</div>
                             <div className="text-xs text-gray-500 mt-0.5">Per: {task.relazione}</div>
                           </div>
-                          <div className={`px-2 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${getPriorityColor(task.priorita)}`}>
+                          <div className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-semibold border whitespace-nowrap flex-shrink-0 ${getPriorityColor(task.priorita)}`}>
                             {getPriorityIcon(task.priorita)} {task.priorita.toUpperCase()}
                           </div>
                         </div>
-                        <div className="text-xs sm:text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                        <div className="text-xs text-gray-700 bg-gray-50 p-1.5 sm:p-2 rounded leading-snug">
                           <span className="font-semibold">Motivo:</span> {task.motivo}
                         </div>
                       </div>
@@ -325,27 +325,27 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
               {/* Task Bonus */}
               {suggestions.bonus.length > 0 && (
                 <div>
-                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <span>💡</span>
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2 flex items-center gap-1.5">
+                    <span className="text-sm sm:text-base">💡</span>
                     <span>Task Bonus</span>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{suggestions.bonus.length}</span>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{suggestions.bonus.length}</span>
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {suggestions.bonus.map((task) => (
                       <div
                         key={task.id}
-                        className="bg-white border border-gray-200 rounded-lg p-2 sm:p-3 hover:shadow transition-shadow"
+                        className="bg-white border border-gray-200 rounded-lg p-2 sm:p-2.5 hover:shadow transition-shadow"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-1">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900 text-xs sm:text-sm">{task.task}</div>
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 mb-1">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 text-xs leading-tight">{task.task}</div>
                             <div className="text-xs text-gray-500 mt-0.5">Per: {task.relazione}</div>
                           </div>
-                          <div className={`px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap ${getPriorityColor(task.priorita)}`}>
+                          <div className={`px-1.5 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap flex-shrink-0 ${getPriorityColor(task.priorita)}`}>
                             {getPriorityIcon(task.priorita)} {task.priorita.toUpperCase()}
                           </div>
                         </div>
-                        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                        <div className="text-xs text-gray-600 bg-gray-50 p-1.5 rounded leading-snug">
                           {task.motivo}
                         </div>
                       </div>
@@ -354,15 +354,15 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
                 </div>
               )}
 
-              <div className="pt-3 border-t flex justify-end">
+              <div className="pt-2 sm:pt-3 border-t flex justify-end">
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={generateSuggestions}
                   disabled={loading}
-                  className="text-xs sm:text-sm"
+                  className="text-xs py-1 sm:py-1.5"
                 >
-                  🔄 Rigenera Suggerimenti
+                  🔄 Rigenera
                 </Button>
               </div>
             </div>
