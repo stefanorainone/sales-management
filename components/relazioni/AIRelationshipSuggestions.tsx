@@ -167,7 +167,7 @@ export function AIRelationshipSuggestions({ relationships }: AIRelationshipSugge
           motivo: `Contatto recente ma mantenere momentum con touch point ogni 1-2 settimane.`,
           priorita: 'media'
         });
-      } else if (rel.strength === 'developing' && rel.category !== 'other') {
+      } else if (rel.strength === 'developing') {
         bonus.push({
           id: `bonus-${rel.id}`,
           relazione: rel.name,
