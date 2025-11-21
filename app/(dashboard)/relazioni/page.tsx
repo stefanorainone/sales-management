@@ -444,6 +444,9 @@ export default function RelazioniPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* AI Suggestions Widget - FIRST THING */}
+      <AIRelationshipSuggestions relationships={relationships} />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
@@ -457,34 +460,33 @@ export default function RelazioniPage() {
         <Button onClick={openAddModal} className="w-full sm:w-auto">+ Nuova Relazione</Button>
       </div>
 
-      {/* AI Suggestions Widget */}
-      <AIRelationshipSuggestions relationships={relationships} />
+      {/* Stats Cards - Compact Horizontal Row */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 min-w-max sm:grid sm:grid-cols-4 sm:gap-3">
+          <Card padding={false} className="p-2 sm:p-4 border-l-4 border-primary min-w-[140px] sm:min-w-0">
+            <div className="text-xs text-gray-600 whitespace-nowrap">Relazioni Totali</div>
+            <div className="text-lg sm:text-2xl font-bold text-gray-900 mt-0.5">{stats.total}</div>
+            <div className="text-xs text-gray-500 mt-0.5 hidden lg:block">Rete attiva</div>
+          </Card>
 
-      {/* Stats Cards - Ferrazzi Focus */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-primary">
-          <div className="text-xs sm:text-sm text-gray-600">Relazioni Totali</div>
-          <div className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
-          <div className="text-xs text-gray-500 mt-1">Rete professionale attiva</div>
-        </Card>
+          <Card padding={false} className="p-2 sm:p-4 border-l-4 border-green-500 min-w-[140px] sm:min-w-0">
+            <div className="text-xs text-gray-600 whitespace-nowrap">Strong</div>
+            <div className="text-lg sm:text-2xl font-bold text-green-600 mt-0.5">{stats.strong}</div>
+            <div className="text-xs text-gray-500 mt-0.5 hidden lg:block">Ready</div>
+          </Card>
 
-        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-green-500">
-          <div className="text-xs sm:text-sm text-gray-600">Strong Relationships</div>
-          <div className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{stats.strong}</div>
-          <div className="text-xs text-gray-500 mt-1 hidden sm:block">Ready for opportunities</div>
-        </Card>
+          <Card padding={false} className="p-2 sm:p-4 border-l-4 border-yellow-500 min-w-[140px] sm:min-w-0">
+            <div className="text-xs text-gray-600 whitespace-nowrap">Importanza Critica</div>
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600 mt-0.5">{stats.critical}</div>
+            <div className="text-xs text-gray-500 mt-0.5 hidden lg:block">Obiettivi</div>
+          </Card>
 
-        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-yellow-500">
-          <div className="text-xs sm:text-sm text-gray-600">Importanza Critica</div>
-          <div className="text-xl sm:text-2xl font-bold text-yellow-600 mt-1">{stats.critical}</div>
-          <div className="text-xs text-gray-500 mt-1 hidden sm:block">Per obiettivi chiave</div>
-        </Card>
-
-        <Card padding={false} className="p-3 sm:p-4 border-l-4 border-orange-500">
-          <div className="text-xs sm:text-sm text-gray-600">Sto Dando Valore</div>
-          <div className="text-xl sm:text-2xl font-bold text-orange-600 mt-1">{stats.needsAction}</div>
-          <div className="text-xs text-gray-500 mt-1 hidden sm:block">Azioni da fare per loro</div>
-        </Card>
+          <Card padding={false} className="p-2 sm:p-4 border-l-4 border-orange-500 min-w-[140px] sm:min-w-0">
+            <div className="text-xs text-gray-600 whitespace-nowrap">Sto Dando Valore</div>
+            <div className="text-lg sm:text-2xl font-bold text-orange-600 mt-0.5">{stats.needsAction}</div>
+            <div className="text-xs text-gray-500 mt-0.5 hidden lg:block">Azioni</div>
+          </Card>
+        </div>
       </div>
 
       {/* Filters */}
