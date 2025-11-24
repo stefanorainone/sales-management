@@ -2,10 +2,10 @@
 
 # Deploy to Cloud Run with all environment variables using Artifact Registry
 
-# Build and push to Artifact Registry using cloudbuild.yaml
-gcloud builds submit --config cloudbuild.yaml
+# Build and push to Artifact Registry using cloudbuild.yaml on the correct project
+gcloud builds submit --config cloudbuild.yaml --project=sales-management-01
 
-# Deploy to Cloud Run
+# Deploy to Cloud Run on culturaimmersiva-it project
 gcloud run deploy sales-crm \
   --image=europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest \
   --region=europe-west1 \
@@ -13,6 +13,7 @@ gcloud run deploy sales-crm \
   --allow-unauthenticated \
   --min-instances=1 \
   --max-instances=10 \
+  --project=culturaimmersiva-it \
   --set-env-vars="NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDB-wExH0S2A5XctlplM43JWG7p1RTETjQ" \
   --set-env-vars="NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=sales-management-01.firebaseapp.com" \
   --set-env-vars="NEXT_PUBLIC_FIREBASE_PROJECT_ID=sales-management-01" \
