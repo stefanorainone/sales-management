@@ -5,8 +5,8 @@ export function useRelationshipFilters(relationships: Relationship[]) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStrength, setFilterStrength] = useState('all');
   const [filterImportance, setFilterImportance] = useState('all');
-  const [sortBy, setSortBy] = useState<'name' | 'company' | 'role' | 'lastContact' | 'lastAction' | 'importance' | 'strength' | 'category'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState<'name' | 'company' | 'role' | 'lastContact' | 'lastAction' | 'importance' | 'strength' | 'category'>('importance');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const filteredAndSortedRelationships = useMemo(() => {
     let filtered = relationships.filter((rel) => {
@@ -51,6 +51,17 @@ export function useRelationshipFilters(relationships: Relationship[]) {
         case 'importance':
           const importanceOrder = { critical: 4, high: 3, medium: 2, low: 1 };
           comparison = (importanceOrder[a.importance] || 0) - (importanceOrder[b.importance] || 0);
+
+          // Secondary sort by last action (older actions first) when importance is the same
+          if (comparison === 0) {
+            const aLastAction = a.actionsHistory && a.actionsHistory.length > 0
+              ? new Date(a.actionsHistory[a.actionsHistory.length - 1].completedAt).getTime()
+              : 0;
+            const bLastAction = b.actionsHistory && b.actionsHistory.length > 0
+              ? new Date(b.actionsHistory[b.actionsHistory.length - 1].completedAt).getTime()
+              : 0;
+            comparison = aLastAction - bLastAction;
+          }
           break;
         case 'strength':
           const strengthOrder = { strong: 5, active: 4, developing: 3, weak: 2, prospective: 1 };
