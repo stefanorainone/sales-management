@@ -2,10 +2,15 @@
 
 # Deploy to Cloud Run with all environment variables using Artifact Registry
 
+# Load environment variables from .env.local
+if [ -f .env.local ]; then
+  export $(grep -v '^#' .env.local | xargs)
+fi
+
 # Build and push to Artifact Registry using cloudbuild.yaml on the correct project
 gcloud builds submit --config cloudbuild.yaml --project=sales-management-01
 
-# Deploy to Cloud Run on culturaimmersiva-it project
+# Deploy to Cloud Run on sales-management-01 project (same as Firebase)
 gcloud run deploy sales-crm \
   --image=europe-west1-docker.pkg.dev/sales-management-01/sales-crm-repo/sales-crm:latest \
   --region=europe-west1 \
@@ -13,7 +18,7 @@ gcloud run deploy sales-crm \
   --allow-unauthenticated \
   --min-instances=1 \
   --max-instances=10 \
-  --project=culturaimmersiva-it \
+  --project=sales-management-01 \
   --set-env-vars="NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDB-wExH0S2A5XctlplM43JWG7p1RTETjQ" \
   --set-env-vars="NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=sales-management-01.firebaseapp.com" \
   --set-env-vars="NEXT_PUBLIC_FIREBASE_PROJECT_ID=sales-management-01" \
@@ -53,4 +58,5 @@ bJ9TwU5cUVEA+C08gUnA4u1qL8br32ePC/4z1PE4YQBYIfLwJmaPha01mUs1sakg
 -----END PRIVATE KEY-----
 EOF
 )" \
-  --set-env-vars="OPENAI_API_KEY=***REMOVED***"
+  --set-env-vars="OPENAI_API_KEY=${OPENAI_API_KEY}" \
+  --set-env-vars="TAVILY_API_KEY=${TAVILY_API_KEY}"
