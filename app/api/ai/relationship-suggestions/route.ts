@@ -68,14 +68,14 @@ export async function POST(request: NextRequest) {
       return company;
     }).filter(Boolean))];
 
-    const roles = [...new Set(relationships.map((r: any) => r.role).filter(Boolean))];
+    const roles = [...new Set(relationships.map((r: any) => r.role).filter(Boolean))] as string[];
 
     // Crea contesto per ricerca prospect
     const sectorsContext = sectors.length > 0 ? sectors.slice(0, 5).join(', ') : 'tecnologia, innovazione';
     const rolesContext = roles.length > 0 ? roles.slice(0, 5).join(', ') : 'CEO, CTO, Direttore';
 
     // Search for real prospects using Tavily
-    const searchResults = await searchRealProspects(sectors, roles);
+    const searchResults = await searchRealProspects(sectors as string[], roles);
 
     // Format search results for the prompt
     const searchResultsContext = searchResults.length > 0
