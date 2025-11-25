@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { tavily } from '@tavily/core';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
-
-const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY || '' });
 
 // Function to search for real Italian prospects using Tavily
 async function searchRealProspects(sectors: string[], roles: string[]) {
@@ -16,6 +13,10 @@ async function searchRealProspects(sectors: string[], roles: string[]) {
       console.log('Tavily API key not configured, skipping real prospect search');
       return [];
     }
+
+    // Lazy import and initialize Tavily only when needed
+    const { tavily } = await import('@tavily/core');
+    const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
     // Build search queries for Italian tech executives and startups
     const searchQueries = [
