@@ -18,11 +18,12 @@ async function searchRealProspects(sectors: string[], roles: string[]) {
     const { tavily } = await import('@tavily/core');
     const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
-    // Build search queries for Italian tech executives and startups
+    // Build search queries focused on culture, tourism, education, museums, VR
     const searchQueries = [
-      `CEO founder startup italiana ${sectors.slice(0, 2).join(' ')} 2024 2025`,
-      `finanziamento round startup italia ${sectors.slice(0, 2).join(' ')} 2024`,
-      `scale-up italiana innovazione ${sectors[0] || 'technology'} CEO founder`
+      `direttore CEO museo italia cultura turismo 2024 2025`,
+      `innovazione digitale musei VR realtà virtuale italia cultura`,
+      `educazione scuole progetti culturali turismo esperienziale italia`,
+      `istituzioni culturali innovazione turismo sostenibile italia 2024`
     ];
 
     const allResults: any[] = [];
@@ -71,9 +72,9 @@ export async function POST(request: NextRequest) {
 
     const roles = [...new Set(relationships.map((r: any) => r.role).filter(Boolean))] as string[];
 
-    // Crea contesto per ricerca prospect
-    const sectorsContext = sectors.length > 0 ? sectors.slice(0, 5).join(', ') : 'tecnologia, innovazione';
-    const rolesContext = roles.length > 0 ? roles.slice(0, 5).join(', ') : 'CEO, CTO, Direttore';
+    // Crea contesto per ricerca prospect (focus su cultura, turismo, educazione)
+    const sectorsContext = sectors.length > 0 ? sectors.slice(0, 5).join(', ') : 'cultura, turismo, musei, educazione, VR';
+    const rolesContext = roles.length > 0 ? roles.slice(0, 5).join(', ') : 'Direttore Museo, Assessore, Responsabile Cultura';
 
     // Search for real prospects using Tavily
     const searchResults = await searchRealProspects(sectors as string[], roles);
@@ -148,29 +149,33 @@ FORMATO RICHIESTO:
 - fonte: URL ESATTO dal risultato di ricerca (quello fornito nei risultati sopra)
 
 SETTORI PRIORITARI PER PROSPECT:
-- Technology & Innovation (software, AI, SaaS)
-- Digital Transformation
-- Manufacturing 4.0 / Advanced Manufacturing
-- Fintech / Insurtech
-- E-commerce / Retail Tech
-- Green Tech / Sustainability
+- Cultura & Patrimonio (musei, fondazioni, enti culturali)
+- Turismo & Hospitality (turismo esperienziale, destination marketing)
+- Educazione & Scuole (progetti educativi, didattica innovativa)
+- Innovazione Culturale (VR/AR, digital heritage, gamification)
+- Istituzioni Pubbliche (comuni, regioni, soprintendenze)
+- Edutainment & Experience Design
 
 FONTI ACCETTABILI:
 ✅ linkedin.com/in/[nome-persona]
 ✅ ilsole24ore.com
-✅ repubblica.it/economia
-✅ startupitalia.eu
-✅ forbes.it
-✅ corriere.it/economia
-✅ Tech blog italiani (techprincess, techeconomy, etc.)
+✅ repubblica.it (cultura, turismo)
+✅ ansa.it (cultura, turismo)
+✅ artribune.com
+✅ beniculturali.it
+✅ turismo.it
+✅ agendadigitale.eu (cultura digitale)
+✅ corriere.it/cultura
+✅ Riviste specializzate (Archeomatica, MuseumNext, etc.)
 
 ❌ NON usare: esempio.com, sample.com, test.com, URL inventati
 
 CRITERI DI SELEZIONE:
-- Preferisci founder/CEO di startup che hanno raccolto funding negli ultimi 2 anni
-- Preferisci aziende italiane in crescita o scale-up
-- Preferisci persone attive su LinkedIn o con presenza mediatica
-- Evita multinazionali troppo grandi (meglio scale-up e PMI innovative)
+- Preferisci direttori di musei, responsabili cultura, assessori al turismo
+- Preferisci decisori in istituzioni culturali, scuole, enti pubblici
+- Focalizzati su progetti innovativi: VR/AR nei musei, turismo esperienziale, didattica digitale
+- Preferisci persone coinvolte in bandi culturali, finanziamenti PNRR, progetti europei
+- Cerca responsabili marketing turistico, destination manager, operatori culturali
 
 Rispondi SOLO con JSON valido in questo formato:
 {
