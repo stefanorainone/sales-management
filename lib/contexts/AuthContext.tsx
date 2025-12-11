@@ -11,6 +11,7 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/config';
 import type { User as AppUser } from '@/types';
+import { logActivityClient } from '@/lib/utils/activity-logger-client';
 
 // DEMO MODE: Set to true to bypass Firebase auth for UI testing
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
@@ -68,7 +69,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fetch user data from Firestore
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
-          setUser({ id: firebaseUser.uid, ...userDoc.data() } as AppUser);
+          const userData = { id: firebaseUser.uid, ...userDoc.data() } as AppUser;
+          setUser(userData);
+
+          // Log login activity
+          logActivityClient({
+            action: 'login',
+            entityType: 'auth',
+            details: {
+              timestamp: new Date().toISOString(),
+            },
+          });
         }
       } else {
         setUser(null);
@@ -108,6 +119,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Log logout activity before signing out
+    if (user) {
+      try {
+        await logActivityClient({
+          action: 'logout',
+          entityType: 'auth',
+          details: {
+            timestamp: new Date().toISOString(),
+          },
+        });
+      } catch (error) {
+        console.error('Error logging logout activity:', error);
+      }
+    }
+
     await firebaseSignOut(auth);
     setUser(null);
   };

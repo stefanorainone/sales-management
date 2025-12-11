@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-11-20T19:23:18.997Z",
+  "results": [
+    {
+      "viewport": "iPhone 12",
+      "success": false,
+      "error": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Griglia\")' is not a valid selector."
+    },
+    {
+      "viewport": "iPhone SE",
+      "success": false,
+      "error": "No element found for selector: input[type=\"email\"]"
+    },
+    {
+      "viewport": "Samsung Galaxy S20",
+      "success": false,
+      "error": "No element found for selector: input[type=\"email\"]"
+    }
+  ]
+}

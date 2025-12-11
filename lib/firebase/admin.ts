@@ -32,3 +32,4 @@ if (typeof window === 'undefined') {
 }
 
 export { adminApp, adminDb, adminAuth };
+export { adminDb as db };

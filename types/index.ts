@@ -134,6 +134,7 @@ export interface Relationship {
   email?: string;
   phone?: string;
   linkedIn?: string;
+  cities?: string[]; // città associate alla relazione (per filtraggio geografico)
 
   // Ferrazzi Model - Metriche Chiave
   strength: RelationshipStrength; // forza e solidità della relazione
@@ -855,4 +856,36 @@ export interface AIContextUpdateInput {
   communicationStyle?: string;
   industryKnowledge?: string;
   companyGuidelines?: string;
+}
+
+// AI Relationship Suggestions - Saved in database
+export interface AIProspectSuggestion {
+  id: string;
+  userId: string;
+  nome: string;
+  ruolo: string;
+  azienda: string;
+  settore: string;
+  motivo: string;
+  fonte: string;
+  generatedAt: string; // timestamp di quando è stato generato
+  contacted?: boolean; // se è stato contattato
+  notes?: string; // note aggiunte dall'utente
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AIRelationshipSuggestionsSession {
+  id: string;
+  userId: string;
+  generatedAt: string; // data di generazione (per controllare se è già stato generato oggi)
+  existingRelations: Array<{
+    relazione: string;
+    relazioneId: string;
+    task: string;
+    motivo: string;
+  }>;
+  newProspectsCount: number; // numero di prospect generati in questa sessione
+  createdAt: string;
+  updatedAt: string;
 }

@@ -170,25 +170,25 @@ export function TaskCard({ task, onStart, onSkip, onSnooze }: TaskCardProps) {
       )}
 
       {/* Actions */}
-      <div className="ml-6 sm:ml-7 flex gap-2 relative flex-wrap">
-        <button
-          onClick={() => setShowDetailsModal(true)}
-          className="flex-shrink-0 px-3 sm:px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-purple-200 transition-colors border border-purple-300"
-        >
-          📋 Vedi Guida
-        </button>
+      <div className="ml-6 sm:ml-7 flex flex-col sm:flex-row gap-2 relative">
         <button
           onClick={() => onStart(task)}
-          className="flex-1 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="w-full sm:flex-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
         >
           {task.type === 'email' ? 'Scrivi Email' : 'Inizia Task'}
         </button>
-        <div className="relative">
+        <button
+          onClick={() => setShowDetailsModal(true)}
+          className="w-full sm:w-auto px-4 py-2.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors border border-purple-300"
+        >
+          📋 Guida
+        </button>
+        <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setShowSnoozeMenu(!showSnoozeMenu)}
-            className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
+            className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Posticipa
+            ⏰ Posticipa
           </button>
           {showSnoozeMenu && (
             <>
@@ -231,9 +231,9 @@ export function TaskCard({ task, onStart, onSkip, onSnooze }: TaskCardProps) {
 
       {/* Postpone Reason Modal */}
       {showReasonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-lg p-5 sm:p-6 max-w-md w-full">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3">
               Perché vuoi posticipare questo task?
             </h3>
             <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
@@ -243,25 +243,25 @@ export function TaskCard({ task, onStart, onSkip, onSnooze }: TaskCardProps) {
               value={postponeReason}
               onChange={(e) => setPostponeReason(e.target.value)}
               placeholder="Es: Devo aspettare risposta del cliente, Ho altre priorità più urgenti, Non ho tutte le informazioni necessarie..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-primary"
               rows={4}
               autoFocus
             />
-            <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
+              <button
+                onClick={confirmPostpone}
+                className="w-full sm:flex-1 px-4 py-3 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm order-1"
+              >
+                Conferma
+              </button>
               <button
                 onClick={() => {
                   setShowReasonModal(false);
                   setPostponeReason('');
                 }}
-                className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full sm:flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors order-2"
               >
                 Annulla
-              </button>
-              <button
-                onClick={confirmPostpone}
-                className="flex-1 px-3 sm:px-4 py-2 bg-primary text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-primary-dark transition-colors"
-              >
-                Conferma
               </button>
             </div>
           </div>
@@ -270,20 +270,20 @@ export function TaskCard({ task, onStart, onSkip, onSnooze }: TaskCardProps) {
 
       {/* Task Details Modal */}
       {showDetailsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-3xl w-full my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-t-2xl sm:rounded-lg p-4 sm:p-6 max-w-3xl w-full min-h-screen sm:min-h-0 sm:my-8 sm:max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="flex items-start justify-between mb-4 sm:mb-6">
-              <div className="flex-1">
+            <div className="flex items-start justify-between mb-4 sm:mb-6 sticky top-0 bg-white pb-3 border-b sm:border-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:static z-10">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">{typeIcons[task.type]}</span>
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">{task.title}</h2>
+                  <span className="text-xl sm:text-2xl flex-shrink-0">{typeIcons[task.type]}</span>
+                  <h2 className="text-base sm:text-xl font-bold text-gray-900 break-words">{task.title}</h2>
                 </div>
-                <p className="text-sm text-gray-600">{task.description}</p>
+                <p className="text-xs sm:text-sm text-gray-600 break-words">{task.description}</p>
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="ml-4 text-gray-400 hover:text-gray-600 text-2xl"
+                className="ml-2 sm:ml-4 text-gray-400 hover:text-gray-600 text-2xl sm:text-3xl flex-shrink-0"
               >
                 ×
               </button>
@@ -397,10 +397,10 @@ export function TaskCard({ task, onStart, onSkip, onSnooze }: TaskCardProps) {
             )}
 
             {/* Action Button */}
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t sticky sm:static bottom-0 bg-white -mx-4 px-4 pb-4 sm:mx-0 sm:px-0 sm:pb-0">
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full sm:flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors order-2 sm:order-1"
               >
                 Chiudi
               </button>
@@ -409,7 +409,7 @@ export function TaskCard({ task, onStart, onSkip, onSnooze }: TaskCardProps) {
                   setShowDetailsModal(false);
                   onStart(task);
                 }}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="w-full sm:flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm order-1 sm:order-2"
               >
                 Inizia Task
               </button>

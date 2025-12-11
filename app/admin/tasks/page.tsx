@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { auth } from '@/lib/firebase/config';
 import type { AITask } from '@/types';
+import { logActivityClient } from '@/lib/utils/activity-logger-client';
 
 interface Seller {
   id: string;
@@ -38,6 +39,7 @@ export default function AdminTasksPage() {
     objectives: '',
     clientName: '',
     dealTitle: '',
+    estimatedDuration: '' as string | number,
   });
 
   useEffect(() => {
@@ -109,6 +111,7 @@ export default function AdminTasksPage() {
           clientName: editingTask.clientName,
           dealTitle: editingTask.dealTitle,
           objectives: editingTask.objectives,
+          estimatedDuration: editingTask.estimatedDuration,
         }),
       });
 
@@ -209,6 +212,30 @@ export default function AdminTasksPage() {
 
       const data = await response.json();
       setTasks(prev => [data.task, ...prev]);
+
+      // Log activity
+      try {
+        const seller = sellers.find(s => s.id === newTask.userId);
+        await logActivityClient({
+          action: 'task_created',
+          entityType: 'task',
+          entityId: data.task.id,
+          entityName: newTask.title,
+          details: {
+            title: newTask.title,
+            type: newTask.type,
+            priority: newTask.priority,
+            scheduledAt: newTask.scheduledAt,
+            assignedTo: seller?.displayName || newTask.userId,
+            clientName: newTask.clientName,
+            dealTitle: newTask.dealTitle,
+            createdByAdmin: true,
+          },
+        });
+      } catch (logError) {
+        console.error('Error logging task creation:', logError);
+      }
+
       setIsCreateModalOpen(false);
 
       // Reset form
@@ -222,6 +249,7 @@ export default function AdminTasksPage() {
         objectives: '',
         clientName: '',
         dealTitle: '',
+        estimatedDuration: '',
       });
 
       alert('✅ Task creato con successo');
@@ -284,50 +312,51 @@ export default function AdminTasksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">📋 Gestione Task</h1>
-          <p className="text-gray-600 mt-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">📋 Gestione Task</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
             Monitora e gestisci i task di tutti i venditori
           </p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <Button onClick={() => setIsCreateModalOpen(true)} className="w-full sm:w-auto">
           + Crea Task Manuale
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card padding={false} className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-          <div className="text-sm opacity-90">Task Totali</div>
-          <div className="text-3xl font-bold mt-1">{totalTasks}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <Card padding={false} className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <div className="text-xs sm:text-sm opacity-90">Task Totali</div>
+          <div className="text-xl sm:text-3xl font-bold mt-1">{totalTasks}</div>
         </Card>
-        <Card padding={false} className="p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
-          <div className="text-sm opacity-90">Da Fare</div>
-          <div className="text-3xl font-bold mt-1">{pendingTasks}</div>
+        <Card padding={false} className="p-3 sm:p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+          <div className="text-xs sm:text-sm opacity-90">Da Fare</div>
+          <div className="text-xl sm:text-3xl font-bold mt-1">{pendingTasks}</div>
         </Card>
-        <Card padding={false} className="p-4 bg-gradient-to-br from-green-500 to-green-600 text-white">
-          <div className="text-sm opacity-90">Completati</div>
-          <div className="text-3xl font-bold mt-1">{completedTasks}</div>
+        <Card padding={false} className="p-3 sm:p-4 bg-gradient-to-br from-green-500 to-green-600 text-white">
+          <div className="text-xs sm:text-sm opacity-90">Completati</div>
+          <div className="text-xl sm:text-3xl font-bold mt-1">{completedTasks}</div>
         </Card>
-        <Card padding={false} className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-          <div className="text-sm opacity-90">Completion Rate</div>
-          <div className="text-3xl font-bold mt-1">{completionRate}%</div>
+        <Card padding={false} className="p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+          <div className="text-xs sm:text-sm opacity-90">Completion</div>
+          <div className="text-xl sm:text-3xl font-bold mt-1">{completionRate}%</div>
         </Card>
       </div>
 
       {/* Filters */}
       <Card>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Venditore
             </label>
             <Select
               value={selectedSeller}
               onChange={(e) => setSelectedSeller(e.target.value)}
+              className="text-sm"
             >
               <option value="all">Tutti i venditori</option>
               {sellers.map(seller => (
@@ -338,13 +367,14 @@ export default function AdminTasksPage() {
             </Select>
           </div>
 
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Stato
             </label>
             <Select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
+              className="text-sm"
             >
               <option value="all">Tutti gli stati</option>
               <option value="pending">Da fare</option>
@@ -476,7 +506,7 @@ export default function AdminTasksPage() {
                     </div>
                   )}
 
-                  {/* Client and Deal */}
+                  {/* Client, Deal, and Estimated Duration */}
                   <div className="flex flex-wrap gap-4 text-xs text-gray-600">
                     <div className="flex items-center gap-1">
                       <span>👤 Cliente:</span>
@@ -495,6 +525,16 @@ export default function AdminTasksPage() {
                         placeholder="N/A"
                         className="font-medium"
                       />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>⏱️ Tempo stimato:</span>
+                      <InlineEdit
+                        value={String(task.estimatedDuration || '')}
+                        onSave={(value) => handleUpdateTaskField(task.id, 'estimatedDuration', value ? parseInt(String(value)) : null as any)}
+                        placeholder="N/A"
+                        className="font-medium"
+                      />
+                      {task.estimatedDuration && <span className="text-gray-500">min</span>}
                     </div>
                   </div>
 
@@ -690,6 +730,20 @@ export default function AdminTasksPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ⏱️ Tempo Stimato (minuti)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={newTask.estimatedDuration}
+              onChange={(e) => setNewTask({ ...newTask, estimatedDuration: e.target.value ? parseInt(e.target.value) : '' })}
+              placeholder="Es: 30"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+            />
           </div>
 
           <div>
@@ -1009,6 +1063,21 @@ export default function AdminTasksPage() {
                   placeholder="Titolo deal"
                 />
               </div>
+            </div>
+
+            {/* Estimated Duration */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ⏱️ Tempo Stimato (minuti)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={editingTask.estimatedDuration || ''}
+                onChange={(e) => setEditingTask({ ...editingTask, estimatedDuration: e.target.value ? parseInt(e.target.value) : undefined })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary text-black bg-white"
+                placeholder="Es: 30"
+              />
             </div>
 
             {/* Objectives */}

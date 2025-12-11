@@ -8,6 +8,7 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
       importance: 'medium',
       category: 'decision_maker',
       valueBalance: 'balanced',
+      cities: [''],
       whatICanGive: [''],
       whatICanReceive: [''],
     }
@@ -93,6 +94,7 @@ export function useRelationshipForm(initialData?: Partial<Relationship>) {
         importance: 'medium',
         category: 'decision_maker',
         valueBalance: 'balanced',
+        cities: [''],
         whatICanGive: [''],
         whatICanReceive: [''],
       }

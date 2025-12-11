@@ -244,6 +244,7 @@ export default function RelazioniPage() {
     try {
       const dataToSave = {
         ...form.formData,
+        cities: form.formData.cities?.filter((c: string) => c.trim()) || [],
         whatICanGive: form.formData.whatICanGive?.filter((b: string) => b.trim()) || [],
         whatICanReceive: form.formData.whatICanReceive?.filter((b: string) => b.trim()) || [],
       };
@@ -262,6 +263,7 @@ export default function RelazioniPage() {
           category: form.formData.category || 'decision_maker',
           valueBalance: form.formData.valueBalance || 'balanced',
           nextAction: form.formData.nextAction || '',
+          cities: form.formData.cities?.filter((c: string) => c.trim()) || [],
           whatICanGive: form.formData.whatICanGive?.filter((b: string) => b.trim()) || [],
           whatICanReceive: form.formData.whatICanReceive?.filter((b: string) => b.trim()) || [],
           lastContact: new Date().toISOString(),
@@ -299,6 +301,19 @@ export default function RelazioniPage() {
       showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const markAsContacted = async (rel: Relationship, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await updateRelationship(rel.id, {
+        lastContact: new Date().toISOString(),
+      });
+      showToast(`✅ ${rel.name} segnato come contattato`, 'success');
+    } catch (error: any) {
+      console.error('Error marking as contacted:', error);
+      showToast(`❌ Errore: ${error.message || 'Riprova'}`, 'error');
     }
   };
 
@@ -415,9 +430,9 @@ export default function RelazioniPage() {
 
   const getBalanceIndicator = (balance: string) => {
     switch (balance) {
-      case 'do_give_more': return { icon: '⬆️', text: 'Sto dando più valore', color: 'text-orange-600' };
+      case 'do_give_more': return { icon: '⬆️', text: 'Devo dare valore', color: 'text-orange-600' };
       case 'balanced': return { icon: '⚖️', text: 'Bilanciato', color: 'text-green-600' };
-      case 'do_receive_more': return { icon: '⬇️', text: 'Sto ricevendo', color: 'text-blue-600' };
+      case 'do_receive_more': return { icon: '⬇️', text: 'Devo ricevere valore', color: 'text-green-600' };
       default: return { icon: '', text: '', color: '' };
     }
   };
@@ -444,8 +459,31 @@ export default function RelazioniPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* AI Suggestions Widget - FIRST THING */}
-      <AIRelationshipSuggestions relationships={relationships} />
+      {/* Daily Motivational Quote - PRIMA DI TUTTO */}
+      <Card className="bg-gradient-to-r from-primary/10 to-purple-100 border-l-4 border-primary">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="text-2xl sm:text-3xl">💡</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm text-gray-700 italic mb-1">
+              "{dailyQuote.text}"
+            </p>
+            <p className="text-xs text-gray-500 font-medium">— {dailyQuote.author}</p>
+          </div>
+        </div>
+      </Card>
+
+      {/* AI Suggestions Widget */}
+      <div className="w-full overflow-hidden">
+        <AIRelationshipSuggestions
+          relationships={relationships}
+          onTaskClick={(relationshipId) => {
+            const relation = relationships.find(r => r.id === relationshipId);
+            if (relation) {
+              openActionsModal(relation);
+            }
+          }}
+        />
+      </div>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -482,10 +520,51 @@ export default function RelazioniPage() {
           </Card>
 
           <Card padding={false} className="p-2 sm:p-4 border-l-4 border-orange-500 min-w-[140px] sm:min-w-0">
-            <div className="text-xs text-gray-600 whitespace-nowrap">Sto Dando Valore</div>
+            <div className="text-xs text-gray-600 whitespace-nowrap">Devo Dare Valore</div>
             <div className="text-lg sm:text-2xl font-bold text-orange-600 mt-0.5">{stats.needsAction}</div>
             <div className="text-xs text-gray-500 mt-0.5 hidden lg:block">Azioni</div>
           </Card>
+        </div>
+      </div>
+
+      {/* Smart Preset Filters - Bella UI */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 sm:gap-3 min-w-max sm:grid sm:grid-cols-4">
+          {filters.smartPresets.map((preset) => {
+            const isActive = filters.activePreset === preset.id;
+            const count = filters.presetCounts[preset.id];
+            return (
+              <button
+                key={preset.id}
+                onClick={() => filters.activatePreset(preset.id)}
+                className={`
+                  flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all
+                  min-w-[100px] sm:min-w-0
+                  ${isActive
+                    ? `${preset.bgColor} ${preset.borderColor} shadow-md scale-[1.02]`
+                    : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                  }
+                `}
+              >
+                <div className="text-2xl sm:text-3xl mb-1">{preset.icon}</div>
+                <div className={`text-xs sm:text-sm font-semibold ${isActive ? preset.color : 'text-gray-700'}`}>
+                  {preset.label}
+                </div>
+                <div className={`text-xs ${isActive ? preset.color : 'text-gray-500'} hidden sm:block`}>
+                  {preset.description}
+                </div>
+                <div className={`
+                  mt-1 sm:mt-2 px-2 py-0.5 rounded-full text-xs font-bold
+                  ${isActive
+                    ? `${preset.bgColor} ${preset.color}`
+                    : 'bg-gray-100 text-gray-600'
+                  }
+                `}>
+                  {count}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -502,64 +581,108 @@ export default function RelazioniPage() {
             />
           </div>
 
-          {/* Filters Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <select
-              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
-              value={filters.filterStrength}
-              onChange={(e) => filters.setFilterStrength(e.target.value)}
-            >
-              <option value="all">💪 Tutte le Forze</option>
-              <option value="strong">💪 Strong</option>
-              <option value="active">✓ Active</option>
-              <option value="developing">⟳ Developing</option>
-              <option value="weak">○ Weak</option>
-            </select>
+          {/* Filtri Avanzati - Collapsible su mobile */}
+          <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer list-none text-sm text-gray-600 hover:text-gray-800">
+              <span className="flex items-center gap-2">
+                <span>🎛️</span>
+                <span>Filtri Avanzati</span>
+                {(filters.filterStrength !== 'all' || filters.filterImportance !== 'all' || filters.filterCity !== 'all') && (
+                  <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                    Attivi
+                  </span>
+                )}
+              </span>
+              <span className="transform group-open:rotate-180 transition-transform">▼</span>
+            </summary>
 
-            <select
-              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
-              value={filters.filterImportance}
-              onChange={(e) => filters.setFilterImportance(e.target.value)}
-            >
-              <option value="all">⭐ Tutte le Importanze</option>
-              <option value="critical">⭐⭐⭐ Critical</option>
-              <option value="high">⭐⭐ High</option>
-              <option value="medium">⭐ Medium</option>
-              <option value="low">○ Low</option>
-            </select>
-          </div>
+            <div className="mt-3 space-y-3">
+              {/* Filters Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <select
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+                  value={filters.filterStrength}
+                  onChange={(e) => filters.setFilterStrength(e.target.value)}
+                >
+                  <option value="all">💪 Tutte le Forze</option>
+                  <option value="strong">💪 Strong</option>
+                  <option value="active">✓ Active</option>
+                  <option value="developing">⟳ Developing</option>
+                  <option value="weak">○ Weak</option>
+                </select>
 
-          {/* Sorting Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <select
-              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
-              value={filters.sortBy}
-              onChange={(e) => filters.setSortBy(e.target.value as any)}
-            >
-              <option value="name">📛 Nome</option>
-              <option value="company">🏢 Azienda</option>
-              <option value="role">💼 Ruolo</option>
-              <option value="lastContact">📅 Ultimo Contatto</option>
-              <option value="lastAction">⏱️ Ultima Azione</option>
-              <option value="importance">⭐ Importanza</option>
-              <option value="strength">💪 Forza</option>
-              <option value="category">🎯 Categoria</option>
-            </select>
+                <select
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+                  value={filters.filterImportance}
+                  onChange={(e) => filters.setFilterImportance(e.target.value)}
+                >
+                  <option value="all">⭐ Tutte le Importanze</option>
+                  <option value="critical">⭐⭐⭐ Critical</option>
+                  <option value="high">⭐⭐ High</option>
+                  <option value="medium">⭐ Medium</option>
+                  <option value="low">○ Low</option>
+                </select>
 
-            <select
-              className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
-              value={filters.sortOrder}
-              onChange={(e) => filters.setSortOrder(e.target.value as 'asc' | 'desc')}
-            >
-              <option value="asc">⬆️ Crescente</option>
-              <option value="desc">⬇️ Decrescente</option>
-            </select>
-          </div>
+                <select
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+                  value={filters.filterCity}
+                  onChange={(e) => filters.setFilterCity(e.target.value)}
+                >
+                  <option value="all">🏙️ Tutte le Città</option>
+                  {filters.availableCities.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sorting Controls */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <select
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+                  value={filters.sortBy}
+                  onChange={(e) => filters.setSortBy(e.target.value as any)}
+                  disabled={filters.activePreset !== 'none'}
+                >
+                  <option value="name">📛 Nome</option>
+                  <option value="company">🏢 Azienda</option>
+                  <option value="role">💼 Ruolo</option>
+                  <option value="lastContact">📅 Ultimo Contatto</option>
+                  <option value="lastAction">⏱️ Ultima Azione</option>
+                  <option value="importance">⭐ Importanza</option>
+                  <option value="strength">💪 Forza</option>
+                  <option value="category">🎯 Categoria</option>
+                </select>
+
+                <select
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm sm:text-base"
+                  value={filters.sortOrder}
+                  onChange={(e) => filters.setSortOrder(e.target.value as 'asc' | 'desc')}
+                  disabled={filters.activePreset !== 'none'}
+                >
+                  <option value="asc">⬆️ Crescente</option>
+                  <option value="desc">⬇️ Decrescente</option>
+                </select>
+              </div>
+
+              {filters.activePreset !== 'none' && (
+                <p className="text-xs text-gray-500 italic">
+                  L'ordinamento è gestito dal preset attivo. Clicca di nuovo sul preset per disattivarlo.
+                </p>
+              )}
+            </div>
+          </details>
 
           {/* Results Count and View Toggle */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-gray-100">
             <div className="text-xs sm:text-sm text-gray-600 flex items-center justify-center sm:justify-start px-3 py-2 bg-gray-50 rounded-lg">
-              📊 {filters.filteredRelationships.length} relazioni trovate
+              <span className="mr-2">📊</span>
+              <span className="font-medium">{filters.filteredRelationships.length}</span>
+              <span className="ml-1">relazioni</span>
+              {filters.activePreset !== 'none' && (
+                <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs">
+                  {filters.smartPresets.find(p => p.id === filters.activePreset)?.label}
+                </span>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -674,8 +797,17 @@ export default function RelazioniPage() {
                   <div className="text-xs text-gray-500 truncate">
                     📅 {formatLastContact(rel.lastContact)}
                   </div>
-                  <div className="text-xs text-gray-500 whitespace-nowrap">
-                    📝 {rel.noteCount} note
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => markAsContacted(rel, e)}
+                      className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded transition-colors"
+                      title="Segna come contattato oggi"
+                    >
+                      ✓ Contattato
+                    </button>
+                    <div className="text-xs text-gray-500 whitespace-nowrap">
+                      📝 {rel.noteCount}
+                    </div>
                   </div>
                 </div>
                 </div>
@@ -723,6 +855,13 @@ export default function RelazioniPage() {
                       {balance.icon} {balance.text}
                     </span>
                     <span className="text-xs text-gray-500 whitespace-nowrap">📅 {formatLastContact(rel.lastContact)}</span>
+                    <button
+                      onClick={(e) => markAsContacted(rel, e)}
+                      className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-0.5 rounded transition-colors whitespace-nowrap"
+                      title="Segna come contattato oggi"
+                    >
+                      ✓ Contattato
+                    </button>
                   </div>
 
                   {/* Next Action - Clickable */}
@@ -813,6 +952,53 @@ export default function RelazioniPage() {
             )}
           </div>
 
+          {/* Città */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+              🏙️ Città
+            </label>
+            <div className="space-y-2">
+              {(form.formData.cities || ['']).map((city: string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={city}
+                    onChange={(e) => {
+                      const newCities = [...(form.formData.cities || [''])];
+                      newCities[index] = e.target.value;
+                      updateFormField('cities', newCities);
+                    }}
+                    placeholder="Es. Roma, Milano, Firenze"
+                    className="flex-1 text-sm"
+                  />
+                  {(form.formData.cities?.length || 0) > 1 && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        const newCities = (form.formData.cities || ['']).filter((_: string, i: number) => i !== index);
+                        updateFormField('cities', newCities.length > 0 ? newCities : ['']);
+                      }}
+                      className="px-3"
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  const newCities = [...(form.formData.cities || ['']), ''];
+                  updateFormField('cities', newCities);
+                }}
+                className="w-full text-xs sm:text-sm"
+              >
+                + Aggiungi Città
+              </Button>
+            </div>
+          </div>
+
           {/* Strength e Importance */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -878,9 +1064,9 @@ export default function RelazioniPage() {
                 value={form.formData.valueBalance || 'balanced'}
                 onChange={(e) => updateFormField('valueBalance', e.target.value)}
               >
-                <option value="do_give_more">⬆️ Sto dando più valore</option>
+                <option value="do_give_more">⬆️ Devo dare valore</option>
                 <option value="balanced">⚖️ Bilanciato</option>
-                <option value="do_receive_more">⬇️ Sto ricevendo più valore</option>
+                <option value="do_receive_more">⬇️ Devo ricevere valore</option>
               </select>
             </div>
           </div>
@@ -1361,19 +1547,6 @@ export default function RelazioniPage() {
           </div>
         )}
       </Modal>
-
-      {/* Daily Motivational Quote */}
-      <Card className="bg-gradient-to-r from-primary/10 to-purple-100 border-l-4 border-primary">
-        <div className="flex items-start gap-3 sm:gap-4">
-          <div className="text-2xl sm:text-4xl">💡</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs sm:text-sm text-gray-700 italic mb-2">
-              "{dailyQuote.text}"
-            </p>
-            <p className="text-xs sm:text-sm text-gray-600 font-semibold">— {dailyQuote.author}</p>
-          </div>
-        </div>
-      </Card>
 
       {/* Confirm Delete Action Dialog */}
       <ConfirmDialog

@@ -5,6 +5,7 @@ import { AITask } from '@/types';
 import { Modal } from '../ui/Modal';
 import { uploadMultipleFiles, validateFile, formatFileSize } from '@/lib/utils/fileUpload';
 import { auth } from '@/lib/firebase/config';
+import { logActivityClient } from '@/lib/utils/activity-logger-client';
 
 // Inline editable objectives component
 function ObjectivesList({ objectives, taskId }: { objectives: string[], taskId: string }) {
@@ -219,6 +220,28 @@ export function TaskExecutionModal({
 
       // Pass results as notes for API compatibility
       const combinedNotes = results + (additionalNotes ? `\n\nNote aggiuntive:\n${additionalNotes}` : '');
+
+      // Log activity before completing task
+      try {
+        await logActivityClient({
+          action: 'task_completed',
+          entityType: 'task',
+          entityId: task.id,
+          entityName: task.title,
+          details: {
+            outcome,
+            actualDuration: parseInt(actualDuration),
+            estimatedDuration: task.estimatedDuration,
+            hasAttachments: attachmentUrls.length > 0,
+            clientName: task.clientName,
+            dealTitle: task.dealTitle,
+          },
+        });
+      } catch (logError) {
+        console.error('Error logging task completion:', logError);
+        // Don't block task completion if logging fails
+      }
+
       onComplete(task.id, combinedNotes, outcome, parseInt(actualDuration), attachmentUrls);
       onClose();
       setIsUploading(false);

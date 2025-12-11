@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { db } from '@/lib/firebase/admin';
+import { Timestamp } from 'firebase-admin/firestore';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -55,12 +57,69 @@ async function searchRealProspects(sectors: string[], roles: string[]) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { relationships } = await request.json();
+    const { relationships, userId, forceRegenerate } = await request.json();
+
+    if (!userId) {
+      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
+    }
+
+    if (!db) {
+      return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
+    }
 
     if (!relationships || relationships.length === 0) {
       return NextResponse.json({
         suggestions: { existingRelations: [], newProspects: [] }
       });
+    }
+
+    // Check if suggestions were already generated today (unless forceRegenerate is true)
+    if (!forceRegenerate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const existingSessionsSnapshot = await db
+        .collection('aiSuggestionsSessions')
+        .where('userId', '==', userId)
+        .where('generatedAt', '>=', Timestamp.fromDate(today))
+        .orderBy('generatedAt', 'desc')
+        .limit(1)
+        .get();
+
+      if (!existingSessionsSnapshot.empty) {
+        // Return existing session suggestions
+        const session = existingSessionsSnapshot.docs[0].data();
+
+        // Get saved prospects from this session
+        const prospectsSnapshot = await db
+          .collection('aiProspectSuggestions')
+          .where('userId', '==', userId)
+          .where('generatedAt', '>=', Timestamp.fromDate(today))
+          .orderBy('generatedAt', 'desc')
+          .get();
+
+        const savedProspects = prospectsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        return NextResponse.json({
+          suggestions: {
+            existingRelations: session.existingRelations || [],
+            newProspects: savedProspects.map((p: any, idx: number) => ({
+              id: `prospect-${idx}`,
+              nome: p.nome,
+              ruolo: p.ruolo,
+              azienda: p.azienda,
+              settore: p.settore,
+              motivo: p.motivo,
+              fonte: p.fonte,
+            })),
+          },
+          cached: true,
+          generatedAt: session.generatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+        });
+      }
     }
 
     // Analizza settori e ruoli dalle relazioni esistenti
@@ -222,7 +281,51 @@ Rispondi SOLO con JSON valido in questo formato:
       id: `prospect-${idx}`
     }));
 
-    return NextResponse.json({ suggestions });
+    // Save suggestions to database
+    try {
+      const now = Timestamp.now();
+
+      // Save session
+      await db.collection('aiSuggestionsSessions').add({
+        userId,
+        generatedAt: now,
+        existingRelations: suggestions.existingRelations || [],
+        newProspectsCount: (suggestions.newProspects || []).length,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Save each prospect suggestion
+      const batch = db.batch();
+      for (const prospect of (suggestions.newProspects || [])) {
+        const prospectRef = db.collection('aiProspectSuggestions').doc();
+        batch.set(prospectRef, {
+          userId,
+          nome: prospect.nome,
+          ruolo: prospect.ruolo,
+          azienda: prospect.azienda,
+          settore: prospect.settore,
+          motivo: prospect.motivo,
+          fonte: prospect.fonte,
+          generatedAt: now,
+          contacted: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+      await batch.commit();
+
+      console.log(`✅ Saved ${(suggestions.newProspects || []).length} AI prospect suggestions for user ${userId}`);
+    } catch (saveError) {
+      console.error('Error saving suggestions to database:', saveError);
+      // Continue anyway, we can still return the suggestions
+    }
+
+    return NextResponse.json({
+      suggestions,
+      cached: false,
+      generatedAt: new Date().toISOString(),
+    });
 
   } catch (error: any) {
     console.error('Error generating AI suggestions:', error);

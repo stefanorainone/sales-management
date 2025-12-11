@@ -1,8 +1,11 @@
 'use client';
 
-import { Card, Button } from '@/components/ui';
+import { Card, Button, Modal } from '@/components/ui';
 import { useState, useEffect } from 'react';
 import { Relationship } from '@/lib/hooks/useRelationships';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 interface TaskSuggestion {
   id: string;
@@ -28,15 +31,21 @@ interface AIRelationshipSuggestionsProps {
 }
 
 export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRelationshipSuggestionsProps) {
+  const { user } = useAuth();
   const [suggestions, setSuggestions] = useState<{ existingRelations: TaskSuggestion[], newProspects: ProspectSuggestion[] }>({
     existingRelations: [],
     newProspects: []
   });
   const [loading, setLoading] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true); // Start collapsed by default
+  const [cached, setCached] = useState(false);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+  const [showAllProspects, setShowAllProspects] = useState(false);
+  const [allSavedProspects, setAllSavedProspects] = useState<ProspectSuggestion[]>([]);
+  const [loadingAllProspects, setLoadingAllProspects] = useState(false);
 
-  const generateSuggestions = async () => {
-    if (relationships.length === 0) return;
+  const generateSuggestions = async (forceRegenerate = false) => {
+    if (relationships.length === 0 || !user) return;
 
     setLoading(true);
 
@@ -60,7 +69,11 @@ export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRela
       const response = await fetch('/api/ai/relationship-suggestions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relationships: relationsData })
+        body: JSON.stringify({
+          relationships: relationsData,
+          userId: user.id,
+          forceRegenerate
+        })
       });
 
       if (!response.ok) {
@@ -73,16 +86,74 @@ export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRela
       if (data.suggestions &&
           (data.suggestions.existingRelations?.length > 0 || data.suggestions.newProspects?.length > 0)) {
         setSuggestions(data.suggestions);
+        setCached(data.cached || false);
+        setGeneratedAt(data.generatedAt || null);
       } else {
         // AI returned empty suggestions
         console.log('AI returned empty suggestions');
         setSuggestions({ existingRelations: [], newProspects: [] });
+        setCached(false);
+        setGeneratedAt(null);
       }
     } catch (error) {
       console.error('Error generating suggestions:', error);
       setSuggestions({ existingRelations: [], newProspects: [] });
+      setCached(false);
+      setGeneratedAt(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAllSavedProspects = async () => {
+    if (!user) return;
+
+    setLoadingAllProspects(true);
+    try {
+      // Prima prova con ordinamento, se fallisce prova senza
+      let prospects: any[] = [];
+
+      try {
+        const q = query(
+          collection(db, 'aiProspectSuggestions'),
+          where('userId', '==', user.id),
+          orderBy('generatedAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        prospects = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      } catch (indexError) {
+        // Se l'indice non esiste, prova senza orderBy
+        console.log('Index not ready, trying without orderBy:', indexError);
+        const q = query(
+          collection(db, 'aiProspectSuggestions'),
+          where('userId', '==', user.id)
+        );
+        const snapshot = await getDocs(q);
+        prospects = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // Ordina manualmente
+        prospects.sort((a, b) => {
+          const aTime = a.generatedAt?.toDate?.()?.getTime() || 0;
+          const bTime = b.generatedAt?.toDate?.()?.getTime() || 0;
+          return bTime - aTime;
+        });
+      }
+
+      console.log('Loaded prospects:', prospects.length);
+      setAllSavedProspects(prospects);
+      setShowAllProspects(true);
+    } catch (error) {
+      console.error('Error loading saved prospects:', error);
+      // Mostra il modal anche in caso di errore così l'utente vede il messaggio
+      setAllSavedProspects([]);
+      setShowAllProspects(true);
+    } finally {
+      setLoadingAllProspects(false);
     }
   };
 
@@ -119,24 +190,30 @@ export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRela
   }
 
   return (
-    <Card padding={false} className="w-full bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 sm:border-2 p-3 sm:p-4 lg:p-6">
-      <div className="flex items-start justify-between mb-2 sm:mb-3">
-        <div className="flex-1">
-          <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
-            <span className="text-lg sm:text-xl">🤖</span>
-            <span className="leading-tight">Suggerimenti AI</span>
-          </h3>
-          <p className="text-xs text-gray-600 mt-0.5 sm:mt-1">
-            Task intelligenti per le tue relazioni
-          </p>
+    <>
+      <Card padding={false} className="w-full bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 sm:border-2 p-3 sm:p-4 lg:p-6">
+        <div className="flex items-start justify-between mb-2 sm:mb-3">
+          <div className="flex-1">
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="text-lg sm:text-xl">🤖</span>
+              <span className="leading-tight">Suggerimenti AI</span>
+              {cached && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                  ✓ Generati oggi
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-gray-600 mt-0.5 sm:mt-1">
+              Task intelligenti per le tue relazioni
+            </p>
+          </div>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="text-gray-500 hover:text-gray-700 p-1 sm:p-2 text-lg sm:text-xl flex-shrink-0"
+          >
+            {collapsed ? '▼' : '▲'}
+          </button>
         </div>
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-500 hover:text-gray-700 p-1 sm:p-2 text-lg sm:text-xl flex-shrink-0"
-        >
-          {collapsed ? '▼' : '▲'}
-        </button>
-      </div>
 
       {!collapsed && (
         <>
@@ -180,11 +257,22 @@ export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRela
               {/* Persone che dovresti conoscere */}
               {suggestions.newProspects.length > 0 && (
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2 flex items-center gap-1.5">
-                    <span className="text-sm sm:text-base">🎯</span>
-                    <span>Persone che dovresti conoscere</span>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{suggestions.newProspects.length}</span>
-                  </h4>
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                      <span className="text-sm sm:text-base">🎯</span>
+                      <span>Persone che dovresti conoscere</span>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{suggestions.newProspects.length}</span>
+                    </h4>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={loadAllSavedProspects}
+                      disabled={loadingAllProspects}
+                      className="text-xs py-1 px-2"
+                    >
+                      📋 Vedi tutte
+                    </Button>
+                  </div>
                   <div className="space-y-1.5 sm:space-y-2">
                     {suggestions.newProspects.map((prospect) => (
                       <div
@@ -223,7 +311,7 @@ export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRela
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={generateSuggestions}
+                  onClick={() => generateSuggestions(true)}
                   disabled={loading}
                   className="text-xs py-1 sm:py-1.5"
                 >
@@ -234,6 +322,107 @@ export function AIRelationshipSuggestions({ relationships, onTaskClick }: AIRela
           )}
         </>
       )}
-    </Card>
+      </Card>
+
+      {/* Modal per visualizzare tutte le persone salvate */}
+      <Modal
+        isOpen={showAllProspects}
+        onClose={() => setShowAllProspects(false)}
+        title="📋 Tutte le Persone Suggerite"
+        size="lg"
+      >
+        <div className="space-y-3">
+          {loadingAllProspects ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600">Caricamento...</p>
+            </div>
+          ) : allSavedProspects.length === 0 && suggestions.newProspects.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3">🔍</div>
+              <p className="text-sm text-gray-600">Nessuna persona suggerita ancora</p>
+              <p className="text-xs text-gray-500 mt-2">Clicca "Rigenera" nel widget per generare nuovi suggerimenti</p>
+            </div>
+          ) : allSavedProspects.length === 0 && suggestions.newProspects.length > 0 ? (
+            <>
+              <p className="text-sm text-gray-600 mb-4">
+                Suggerimenti di oggi: {suggestions.newProspects.length} persone
+              </p>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {suggestions.newProspects.map((prospect: any) => (
+                  <div
+                    key={prospect.id}
+                    className="bg-white border border-blue-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex flex-col gap-1.5 mb-2">
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 text-sm">{prospect.nome}</div>
+                        <div className="text-xs text-gray-600 mt-0.5">
+                          {prospect.ruolo} @ {prospect.azienda}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          Settore: {prospect.settore}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded mb-2">
+                      <span className="font-semibold">Perché contattare:</span> {prospect.motivo}
+                    </div>
+                    <a
+                      href={prospect.fonte}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                    >
+                      📰 Fonte
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600 mb-4">
+                Totale: {allSavedProspects.length} persone suggerite dall'AI
+              </p>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {allSavedProspects.map((prospect: any) => (
+                  <div
+                    key={prospect.id}
+                    className="bg-white border border-blue-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex flex-col gap-1.5 mb-2">
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 text-sm">{prospect.nome}</div>
+                        <div className="text-xs text-gray-600 mt-0.5">
+                          {prospect.ruolo} @ {prospect.azienda}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          Settore: {prospect.settore}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Generato il: {new Date(prospect.generatedAt?.toDate?.() || prospect.generatedAt).toLocaleDateString('it-IT')}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded mb-2">
+                      <span className="font-semibold">Perché contattare:</span> {prospect.motivo}
+                    </div>
+                    <a
+                      href={prospect.fonte}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                    >
+                      📰 Fonte
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+    </>
   );
 }

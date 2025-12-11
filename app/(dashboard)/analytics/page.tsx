@@ -120,33 +120,34 @@ export default function AnalyticsPage() {
   const totalActivities = activityMetrics.reduce((sum, metric) => sum + metric.count, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics & Reports</h1>
-          <p className="text-gray-600 mt-2">Analisi dettagliata delle tue performance</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Analytics & Reports</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Analisi dettagliata delle tue performance</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Select
             value={timePeriod}
             onChange={(e) => setTimePeriod(e.target.value as TimePeriod)}
             fullWidth={false}
+            className="w-full sm:w-auto text-sm"
           >
             <option value="week">Settimana</option>
             <option value="month">Mese</option>
             <option value="quarter">Trimestre</option>
             <option value="year">Anno</option>
           </Select>
-          <Button>📊 Esporta Report</Button>
+          <Button className="w-full sm:w-auto text-sm">📊 Esporta Report</Button>
         </div>
       </div>
 
       {/* Metric Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-1 sm:gap-2 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => setActiveMetric('relationships')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+          className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition whitespace-nowrap ${
             activeMetric === 'relationships'
               ? 'border-primary text-primary'
               : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -156,7 +157,7 @@ export default function AnalyticsPage() {
         </button>
         <button
           onClick={() => setActiveMetric('time_investment')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+          className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition whitespace-nowrap ${
             activeMetric === 'time_investment'
               ? 'border-primary text-primary'
               : 'border-transparent text-gray-600 hover:text-gray-900'

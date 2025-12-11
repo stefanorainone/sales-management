@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { logActivityClient } from '@/lib/utils/activity-logger-client';
 
 export interface RelationshipAction {
   id: string;
@@ -38,6 +39,7 @@ export interface Relationship {
   name: string;
   company: string;
   role: string;
+  cities?: string[]; // città associate alla relazione
   strength: 'strong' | 'active' | 'developing' | 'weak' | 'prospective';
   importance: 'critical' | 'high' | 'medium' | 'low';
   category: 'decision_maker' | 'influencer' | 'champion' | 'gatekeeper' | 'advisor' | 'connector';
@@ -106,6 +108,27 @@ export function useRelationships() {
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       });
+
+      // Log activity
+      try {
+        await logActivityClient({
+          action: 'relationship_created',
+          entityType: 'relationship',
+          entityId: docRef.id,
+          entityName: `${relationshipData.name} (${relationshipData.company})`,
+          details: {
+            name: relationshipData.name,
+            company: relationshipData.company,
+            role: relationshipData.role,
+            strength: relationshipData.strength,
+            importance: relationshipData.importance,
+            category: relationshipData.category,
+          },
+        });
+      } catch (logError) {
+        console.error('Error logging relationship creation:', logError);
+      }
+
       return docRef.id;
     } catch (err: any) {
       console.error('Error adding relationship:', err);
@@ -122,6 +145,23 @@ export function useRelationships() {
         ...updates,
         updatedAt: Timestamp.now(),
       });
+
+      // Log activity
+      const relationship = relationships.find(r => r.id === relationshipId);
+      try {
+        await logActivityClient({
+          action: 'relationship_updated',
+          entityType: 'relationship',
+          entityId: relationshipId,
+          entityName: relationship ? `${relationship.name} (${relationship.company})` : relationshipId,
+          details: {
+            updatedFields: Object.keys(updates),
+            ...updates,
+          },
+        });
+      } catch (logError) {
+        console.error('Error logging relationship update:', logError);
+      }
     } catch (err: any) {
       console.error('Error updating relationship:', err);
       throw err;
@@ -132,7 +172,28 @@ export function useRelationships() {
     if (!user) throw new Error('User not authenticated');
 
     try {
+      // Get relationship info before deletion
+      const relationship = relationships.find(r => r.id === relationshipId);
+
       await deleteDoc(doc(db, 'relationships', relationshipId));
+
+      // Log activity
+      try {
+        await logActivityClient({
+          action: 'relationship_deleted',
+          entityType: 'relationship',
+          entityId: relationshipId,
+          entityName: relationship ? `${relationship.name} (${relationship.company})` : relationshipId,
+          details: relationship ? {
+            name: relationship.name,
+            company: relationship.company,
+            strength: relationship.strength,
+            importance: relationship.importance,
+          } : {},
+        });
+      } catch (logError) {
+        console.error('Error logging relationship deletion:', logError);
+      }
     } catch (err: any) {
       console.error('Error deleting relationship:', err);
       throw err;
@@ -198,6 +259,24 @@ export function useRelationships() {
         nextAction: '', // Clear next action after completing
         updatedAt: Timestamp.now(),
       });
+
+      // Log activity
+      try {
+        await logActivityClient({
+          action: 'action_completed',
+          entityType: 'relationship',
+          entityId: relationshipId,
+          entityName: `${relationship.name} (${relationship.company})`,
+          details: {
+            actionTitle: action,
+            notes,
+            relationshipName: relationship.name,
+            relationshipCompany: relationship.company,
+          },
+        });
+      } catch (logError) {
+        console.error('Error logging action completion:', logError);
+      }
     } catch (err: any) {
       console.error('Error completing action:', err);
       throw err;
@@ -230,6 +309,24 @@ export function useRelationships() {
         noteCount: updatedNotes.length,
         updatedAt: Timestamp.now(),
       });
+
+      // Log activity
+      try {
+        await logActivityClient({
+          action: 'note_added',
+          entityType: 'note',
+          entityId: relationshipId,
+          entityName: `${relationship.name} (${relationship.company})`,
+          details: {
+            noteContent: content.substring(0, 100), // First 100 chars
+            noteLength: content.length,
+            relationshipName: relationship.name,
+            relationshipCompany: relationship.company,
+          },
+        });
+      } catch (logError) {
+        console.error('Error logging note addition:', logError);
+      }
     } catch (err: any) {
       console.error('Error adding note:', err);
       throw err;

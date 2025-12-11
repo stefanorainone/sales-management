@@ -1,0 +1,101 @@
+{
+  "timestamp": "2025-11-20T19:59:56.021Z",
+  "allPassed": false,
+  "results": [
+    {
+      "viewport": "iPhone_12",
+      "width": 390,
+      "success": true,
+      "hasOverflow": false,
+      "overflowAmount": 0,
+      "overflowingElements": [
+        {
+          "tag": "DIV",
+          "class": "\n        w-64 bg-gray-900 text-white min-h-screen ",
+          "id": "",
+          "width": 256,
+          "right": 0,
+          "left": -256,
+          "text": "Sales CRMAI-Powered🎯I Miei Ta"
+        },
+        {
+          "tag": "DIV",
+          "class": "p-6 border-b border-gray-800",
+          "id": "",
+          "width": 256,
+          "right": 0,
+          "left": -256,
+          "text": "Sales CRMAI-Powered"
+        },
+        {
+          "tag": "H1",
+          "class": "text-xl font-bold",
+          "id": "",
+          "width": 208,
+          "right": -24,
+          "left": -232,
+          "text": "Sales CRM"
+        },
+        {
+          "tag": "P",
+          "class": "text-xs text-gray-400 mt-1",
+          "id": "",
+          "width": 208,
+          "right": -24,
+          "left": -232,
+          "text": "AI-Powered"
+        },
+        {
+          "tag": "NAV",
+          "class": "flex-1 px-4 py-6 space-y-1",
+          "id": "",
+          "width": 256,
+          "right": 0,
+          "left": -256,
+          "text": "🎯I Miei Task🤝Relazioni📈Anal"
+        }
+      ],
+      "listInfo": {
+        "totalCards": 15,
+        "cards": [
+          {
+            "index": 0,
+            "width": 308,
+            "height": 164,
+            "fitsInViewport": true
+          },
+          {
+            "index": 1,
+            "width": 308,
+            "height": 188,
+            "fitsInViewport": true
+          },
+          {
+            "index": 2,
+            "width": 308,
+            "height": 172,
+            "fitsInViewport": true
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "iPhone_SE",
+      "width": 375,
+      "success": false,
+      "error": "No element found for selector: input[type=\"email\"]"
+    },
+    {
+      "viewport": "Samsung_S20",
+      "width": 360,
+      "success": false,
+      "error": "No element found for selector: input[type=\"email\"]"
+    },
+    {
+      "viewport": "Small_Mobile",
+      "width": 320,
+      "success": false,
+      "error": "No element found for selector: input[type=\"email\"]"
+    }
+  ]
+}
