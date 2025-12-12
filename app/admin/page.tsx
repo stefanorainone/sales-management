@@ -30,18 +30,6 @@ export default function AdminPage() {
       ]
     },
     {
-      title: '📋 Gestione Task',
-      description: 'Visualizza, crea e gestisci i task di tutti i venditori',
-      href: '/admin/tasks',
-      color: 'from-purple-500 to-purple-600',
-      features: [
-        'Vista completa task di tutti i sellers',
-        'Filtri avanzati per venditore e stato',
-        'Creazione task manuali',
-        'Eliminazione e modifica task',
-      ]
-    },
-    {
       title: '🧠 AI Config',
       description: 'Configura il comportamento dell\'AI e gli obiettivi business',
       href: '/admin/ai-config',
@@ -151,25 +139,25 @@ export default function AdminPage() {
             </div>
           </Link>
 
-          <Link href="/admin/tasks">
+          <Link href="/admin/ai-tasks">
             <div className="p-4 bg-white rounded-lg border border-gray-200 hover:border-primary transition cursor-pointer">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">📋</span>
+                <span className="text-2xl">🤖</span>
                 <div>
-                  <div className="font-semibold text-gray-900">Crea Task Manuale</div>
-                  <div className="text-sm text-gray-600">Assegna task a specifici venditori</div>
+                  <div className="font-semibold text-gray-900">AI Task Manager</div>
+                  <div className="text-sm text-gray-600">Gestisci i task generati dall'AI</div>
                 </div>
               </div>
             </div>
           </Link>
 
-          <Link href="/admin/tasks">
+          <Link href="/admin/activities">
             <div className="p-4 bg-white rounded-lg border border-gray-200 hover:border-primary transition cursor-pointer">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">👁️</span>
+                <span className="text-2xl">📊</span>
                 <div>
-                  <div className="font-semibold text-gray-900">Monitora Task Sellers</div>
-                  <div className="text-sm text-gray-600">Visualizza task di tutti i venditori</div>
+                  <div className="font-semibold text-gray-900">Activities Admin</div>
+                  <div className="text-sm text-gray-600">Monitora attività dei venditori</div>
                 </div>
               </div>
             </div>
@@ -185,8 +173,8 @@ export default function AdminPage() {
             <h3 className="font-bold text-gray-900 mb-2">Suggerimento</h3>
             <p className="text-sm text-gray-700">
               Usa il <span className="font-semibold">Command Center</span> per avere una visione d'insieme del team e lanciare le automazioni AI.
-              La <span className="font-semibold">Gestione Task</span> ti permette di intervenire manualmente sui task dei venditori.
-              Con <span className="font-semibold">AI Config</span> puoi ottimizzare il comportamento dell'intelligenza artificiale in base ai tuoi obiettivi business.
+              Con <span className="font-semibold">AI Task Manager</span> gestisci i task generati dall'intelligenza artificiale.
+              Con <span className="font-semibold">AI Config</span> puoi ottimizzare il comportamento dell'AI in base ai tuoi obiettivi business.
             </p>
           </div>
         </div>
