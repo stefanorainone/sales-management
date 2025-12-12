@@ -10,10 +10,9 @@ import { getOpenAI } from '@/lib/ai/openai';
  * 2. Ricerca nuovi prospect (opzionale, basato su configurazione)
  *
  * Questo endpoint può essere chiamato da:
- * - Vercel Cron (se hostato su Vercel)
+ * - Google Cloud Scheduler (produzione)
  * - External cron service (cron-job.org, etc.)
  * - GitHub Actions
- * - Node-cron se self-hosted
  *
  * Sicurezza: Richiede un segreto CRON_SECRET nell'header
  */

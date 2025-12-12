@@ -33,7 +33,7 @@ Sistema completo di gestione vendite con AI coaching integrato per monitorare se
 - **Database**: Firebase Firestore
 - **Auth**: Firebase Authentication
 - **AI**: Claude Opus (Anthropic)
-- **Deployment**: Vercel (recommended)
+- **Deployment**: Firebase Hosting + Cloud Run
 
 ## 📦 Installazione
 
@@ -181,27 +181,19 @@ aiTasks/
 
 ## 🚢 Deployment
 
-### Vercel (Raccomandato)
+### Firebase Hosting + Cloud Run (Produzione)
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+# Deploy su Cloud Run (build + deploy container)
+./deploy-cloud-run.sh
 
-# Deploy
-vercel
-
-# Add environment variables in Vercel dashboard
-```
-
-### Firebase Hosting
-
-```bash
-# Build
-npm run build
-
-# Deploy
+# Deploy Firebase Hosting (proxy a Cloud Run)
 firebase deploy --only hosting
 ```
+
+**URLs di produzione:**
+- Firebase Hosting: https://sales-management-01.web.app
+- Cloud Run: https://sales-crm-412055180465.europe-west1.run.app
 
 ## 🔒 Security
 
@@ -295,7 +287,7 @@ MIT License - Feel free to use for your business
 4. **Crea primo seller account** via `/login`
 5. **Aggiungi deals, clients e activities** per testare
 6. **Configura AI** da admin panel (TODO: implement)
-7. **Deploy to Vercel** quando pronto
+7. **Deploy con `./deploy-cloud-run.sh`** quando pronto
 
 ## 📞 Support
 

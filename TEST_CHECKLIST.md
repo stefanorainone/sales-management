@@ -198,8 +198,8 @@ ANTHROPIC_API_KEY=✓
 CRON_SECRET=✓
 ```
 
-### ✅ Cron Jobs (Vercel)
-- [x] File `vercel.json` configurato
+### ✅ Cron Jobs (Cloud Scheduler)
+- [x] Cloud Scheduler configurato
 - [x] Schedule: 0 6 * * * (ogni giorno alle 6 AM)
 - [x] Endpoint: /api/cron/daily-automation
 
@@ -303,4 +303,4 @@ GET /api/admin/chats 200
 **Note:**
 - Fast Refresh warnings sono normali durante development
 - Sistema pronto per testing manuale nell'interfaccia
-- Cron jobs funzioneranno quando deployato su Vercel (o configurato manualmente)
+- Cron jobs configurati con Cloud Scheduler su Google Cloud

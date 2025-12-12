@@ -118,26 +118,25 @@ Authorization: Bearer <CRON_SECRET>
 2. Ricerca nuovi prospect (solo lunedì e giovedì)
 3. Salva tutto nel database centralizzato
 
-### Configurazione Vercel Cron
+### Configurazione Cloud Scheduler (Google Cloud)
 
-Se hostato su **Vercel**, i cron jobs sono configurati in `vercel.json`:
+I cron jobs sono configurati con **Google Cloud Scheduler** per chiamare l'endpoint su Cloud Run:
 
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/daily-automation",
-      "schedule": "0 6 * * *"
-    }
-  ]
-}
+```bash
+# Crea job Cloud Scheduler
+gcloud scheduler jobs create http daily-automation \
+  --schedule="0 6 * * *" \
+  --uri="https://sales-crm-412055180465.europe-west1.run.app/api/cron/daily-automation" \
+  --http-method=POST \
+  --headers="Authorization=Bearer YOUR_CRON_SECRET" \
+  --location=europe-west1
 ```
 
 **Schedule**: Ogni giorno alle 6:00 AM (UTC)
 
 ### Environment Variables Required
 ```bash
-# .env.local o Vercel Environment Variables
+# .env.local o Cloud Run Environment Variables
 CRON_SECRET=your-super-secret-cron-key-here
 
 # Firebase Admin
@@ -151,7 +150,7 @@ ANTHROPIC_API_KEY=your-claude-api-key
 
 ### Configurazione Alternativa (Self-Hosted)
 
-Se **NON** usi Vercel, puoi configurare un cron job esterno che chiama l'endpoint:
+Puoi anche configurare un cron job esterno alternativo che chiama l'endpoint:
 
 #### Opzione 1: cron-job.org (Free)
 1. Vai su https://cron-job.org
@@ -286,7 +285,7 @@ Genera prospect che:
 
 ### Cron job non parte
 1. Verifica `CRON_SECRET` in env variables
-2. Controlla logs Vercel/server
+2. Controlla logs Cloud Run (Google Cloud Console)
 3. Testa manualmente: `curl -X POST https://your-domain.com/api/cron/daily-automation -H "Authorization: Bearer YOUR_CRON_SECRET"`
 
 ### Task non vengono generati
@@ -309,8 +308,8 @@ Ogni esecuzione logga:
 - Eventuali errori
 
 Check logs:
-- Vercel: Dashboard → Deployments → Functions
-- Self-hosted: Console output
+- Cloud Run: Google Cloud Console → Cloud Run → sales-crm → Logs
+- Firebase: Firebase Console → Functions → Logs
 
 ## 🔒 Sicurezza
 
