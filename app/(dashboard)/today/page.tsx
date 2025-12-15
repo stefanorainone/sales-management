@@ -7,6 +7,8 @@ import { TaskCard } from '@/components/ai/TaskCard';
 import { TaskExecutionModal } from '@/components/ai/TaskExecutionModal';
 import { CompletedTaskModal } from '@/components/today/CompletedTaskModal';
 import { ArchivedTasks } from '@/components/today/ArchivedTasks';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
+import { QuickTaskModal } from '@/components/today/QuickTaskModal';
 import type { AITask, AIInsight, DailyBriefing } from '@/types';
 import { logActivityClient } from '@/lib/utils/activity-logger-client';
 
@@ -21,6 +23,7 @@ export default function TodayPage() {
   const [selectedCompletedTask, setSelectedCompletedTask] = useState<AITask | null>(null);
   const [tasks, setTasks] = useState<AITask[]>([]);
   const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [isQuickTaskModalOpen, setIsQuickTaskModalOpen] = useState(false);
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -90,6 +93,11 @@ export default function TodayPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTaskCreated = () => {
+    hasLoadedRef.current = false;
+    loadDailyBriefing();
   };
 
   const handleStartTask = (task: AITask) => {
@@ -450,6 +458,19 @@ export default function TodayPage() {
           setSelectedCompletedTask(null);
         }}
         onSave={handleUpdateCompletedTask}
+      />
+
+      {/* Floating Action Button per creazione rapida task */}
+      <FloatingActionButton
+        onClick={() => setIsQuickTaskModalOpen(true)}
+        label="Nuovo task"
+      />
+
+      {/* Modal creazione rapida task */}
+      <QuickTaskModal
+        isOpen={isQuickTaskModalOpen}
+        onClose={() => setIsQuickTaskModalOpen(false)}
+        onTaskCreated={handleTaskCreated}
       />
     </div>
   );
