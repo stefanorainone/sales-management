@@ -7,7 +7,6 @@ import { TaskCard } from '@/components/ai/TaskCard';
 import { TaskExecutionModal } from '@/components/ai/TaskExecutionModal';
 import { CompletedTaskModal } from '@/components/today/CompletedTaskModal';
 import { ArchivedTasks } from '@/components/today/ArchivedTasks';
-import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { QuickTaskModal } from '@/components/today/QuickTaskModal';
 import type { AITask, AIInsight, DailyBriefing } from '@/types';
 import { logActivityClient } from '@/lib/utils/activity-logger-client';
@@ -347,6 +346,16 @@ export default function TodayPage() {
                 {allPendingTasks.length} task • Ordinati per priorità
               </p>
             </div>
+            <button
+              onClick={() => setIsQuickTaskModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden sm:inline">Crea nuovo task</span>
+              <span className="sm:hidden">Nuovo</span>
+            </button>
           </div>
 
           {allPendingTasks.length === 0 ? (
@@ -458,12 +467,6 @@ export default function TodayPage() {
           setSelectedCompletedTask(null);
         }}
         onSave={handleUpdateCompletedTask}
-      />
-
-      {/* Floating Action Button per creazione rapida task */}
-      <FloatingActionButton
-        onClick={() => setIsQuickTaskModalOpen(true)}
-        label="Nuovo task"
       />
 
       {/* Modal creazione rapida task */}
